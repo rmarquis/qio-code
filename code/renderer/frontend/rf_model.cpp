@@ -270,6 +270,18 @@ void model_c::printBoneNames() const {
 
 	}
 }
+u32 model_c::getTotalVertexCount() const {
+	if(type == MOD_DECL) {
+		return this->declModel->getTotalVertexCount();
+	} else if(type == MOD_SKELETAL) {
+		return this->skelModel->getTotalVertexCount();
+	} else if(type == MOD_STATIC) {
+		return this->staticModel->getTotalVertexCount();
+	} else {
+
+	}
+	return 0;
+}
 u32 model_c::getTotalTriangleCount() const {
 	if(type == MOD_DECL) {
 		return this->declModel->getTotalTriangleCount();

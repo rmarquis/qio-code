@@ -56,7 +56,7 @@ static void CG_DrawFPS( float y ) {
 
 	previousTimes[index % FPS_FRAMES] = frameTime;
 	index++;
-	fontAPI_i *f = rf->registerFont("Arial");
+	fontAPI_i *f = g_core->GetDefaultFont();
 	if(f == 0) {
 		return;
 	}	
@@ -176,7 +176,7 @@ static void CG_DrawDisconnect( void ) {
 		|| cmd.serverTime > cg.time ) {	// special check for map_restart
 		return;
 	}
-	fontAPI_i *f = rf->registerFont("Arial");
+	fontAPI_i *f = g_core->GetDefaultFont();
 	if(f == 0)
 		return;
 
@@ -331,7 +331,7 @@ static void CG_Draw2D()
 	CG_DrawChat();
 
 	if(cg.snap) {
-		fontAPI_i *f = rf->registerFont("Arial");
+		fontAPI_i *f = g_core->GetDefaultFont();
 		if(f) {
 			const char *s = va("%i/%i", cg.snap->ps.viewWeaponCurClipSize, cg.snap->ps.viewWeaponMaxClipSize);
 			float w = f->getStringWidth(s) + 64;

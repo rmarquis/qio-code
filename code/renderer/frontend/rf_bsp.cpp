@@ -1664,7 +1664,12 @@ bool rBspTree_c::loadStaticModels() {
 		re->setModel(RF_RegisterModel(str("models/")+s.model));
 		re->updateAnimatedEntity();
 		re->setBDontUpdateAnimation(true);
-		re->setVertexColorsRGB(vertexData + s.firstVertexData);
+		if(s.numVertexData != re->getEntityVertexCount()) {
+			g_core->RedWarning("rBspTree_c::loadStaticModels: vertex data count mismatch %i vs %i for %s\n",
+				s.numVertexData,re->getEntityVertexCount(),s.model);
+		} else {
+			re->setVertexColorsRGB(vertexData + s.firstVertexData);
+		}
 		staticModelEntities[i] = re;
 	}
 	return false; // error

@@ -116,6 +116,13 @@ class skelModelIMPL_c : public skelModelAPI_i, public modelPostProcessFuncs_i {
 	virtual u32 getNumBones() const {
 		return bones.size();
 	}
+	virtual u32 getTotalVertexCount() const {
+		u32 ret = 0;
+		for(u32 i = 0; i < surfs.size(); i++) {
+			ret += surfs[i].getNumVerts();
+		}
+		return ret;
+	}
 	virtual u32 getTotalTriangleCount() const {
 		u32 ret = 0;
 		for(u32 i = 0; i < surfs.size(); i++) {

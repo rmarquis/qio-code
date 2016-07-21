@@ -45,6 +45,19 @@ u32 q3PlayerModelDecl_c::getNumTotalSurfaces() const {
 	}
 	return ret;
 }
+u32 q3PlayerModelDecl_c::getTotalVertexCount() const {
+	u32 ret = 0;
+	if(legsModel) {
+		ret += legsModel->getTotalVertexCount();
+	}
+	if(torsoModel) {
+		ret += torsoModel->getTotalVertexCount();
+	}
+	if(headModel) {
+		ret += headModel->getTotalVertexCount();
+	}
+	return ret;
+}
 u32 q3PlayerModelDecl_c::getTotalTriangleCount() const {
 	u32 ret = 0;
 	if(legsModel) {

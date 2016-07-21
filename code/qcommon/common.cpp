@@ -1490,7 +1490,10 @@ static void Com_InitRand(void)
 	else
 		srand(time(NULL));
 }
-
+fontAPI_i *Com_GetDefaultFont() {
+	fontAPI_i *r = rf->registerFont("camingocode/CamingoCode-Bold");
+	return r;
+}
 void Com_EditorInitRenderer() {
 	CL_InitRef();
 	rf->init(true);
@@ -1518,6 +1521,7 @@ void Com_InitCoreAPI() {
 	g_staticCoreAPI.Cbuf_ExecuteText = Cbuf_ExecuteText;
 	g_staticCoreAPI.Cbuf_AddText = Cbuf_AddText;
 	g_staticCoreAPI.EditorInitRenderer = Com_EditorInitRenderer;
+	g_staticCoreAPI.GetDefaultFont = Com_GetDefaultFont;
 
 	g_core = &g_staticCoreAPI;
 	g_iFaceMan->registerInterface(&g_staticCoreAPI,CORE_API_IDENTSTR);

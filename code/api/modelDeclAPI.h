@@ -42,6 +42,7 @@ public:
 	virtual u32 getNumBones() = 0;
 	virtual u32 getNumSurfaces() = 0;
 	virtual u32 getTotalTriangleCount() = 0;
+	virtual u32 getTotalVertexCount() = 0;
 
 	// bones / tags
 	virtual int getBoneNumForName(const char *boneName) const = 0;

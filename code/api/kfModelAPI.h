@@ -46,6 +46,7 @@ public:
 	virtual float getFrameTime() const = 0;
 	virtual u32 getNumTags() const = 0;
 	virtual u32 getTotalTriangleCount() const = 0;
+	virtual u32 getTotalVertexCount() const = 0;
 	virtual const kfSurfAPI_i *getSurfAPI(u32 surfNum) const = 0;
 	virtual u32 fixFrameNum(u32 inFrameNum) const = 0;
 	virtual void scale(float f) = 0;

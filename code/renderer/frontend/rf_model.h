@@ -220,6 +220,7 @@ public:
 	virtual bool getModelData(class staticModelCreatorAPI_i *out) const;
 	virtual void printBoneNames() const;
 	virtual u32 getTotalTriangleCount() const;
+	virtual u32 getTotalVertexCount() const;
 	virtual bool hasStageWithoutBlendFunc() const;
 	// will return -1 if bone not found
 	virtual int findBone(const char *boneName) const;

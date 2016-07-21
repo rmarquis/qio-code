@@ -887,6 +887,13 @@ void rEntityImpl_c::updateAnimatedEntity() {
 		}
 	}
 }
+u32 rEntityImpl_c::getEntityVertexCount() const {
+	if(instance)
+		return instance->getTotalVertexCount();
+	if(model)
+		return model->getTotalVertexCount();
+	return 0;
+}
 u32 rEntityImpl_c::getEntityTriangleCount() const {
 	if(instance)
 		return instance->getTotalTriangleCount();

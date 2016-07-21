@@ -64,6 +64,7 @@ public:
 	virtual const rIndexBuffer_c *getIBO() const;
 	virtual u32 getNumVertices() const;
 	virtual u32 getNumTriangles() const;
+	virtual u32 getNumVerts() const;
 	virtual void copyTexCoords(void *outTC, u32 outStride) const;
 	virtual void instanceSingleFrame(void *outXYZ, u32 outStride, u32 frameNum) const;
 	virtual void instance(void *outXYZ, u32 outStride, u32 from, u32 to, float lerp) const;
@@ -107,6 +108,13 @@ public:
 	}
 	virtual u32 getNumTags() const {
 		return tagNames.size();
+	}
+	virtual u32 getTotalVertexCount() const {
+		u32 ret = 0;
+		for(u32 i = 0; i < surfs.size(); i++) {
+			ret += surfs[i].getNumVerts();
+		}
+		return ret;
 	}
 	virtual u32 getTotalTriangleCount() const {
 		u32 ret = 0;

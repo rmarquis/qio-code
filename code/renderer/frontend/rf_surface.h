@@ -503,6 +503,15 @@ public:
 		}
 		return ret;
 	}
+	u32 getTotalVertexCount() const {
+		u32 ret = 0;
+		for(u32 i = 0; i < surfs.size(); i++) {
+			ret += surfs[i].getNumVerts();
+		}
+		return ret;
+	}
+
+	
 };
 
 #endif // __RF_SURFACE_H__
