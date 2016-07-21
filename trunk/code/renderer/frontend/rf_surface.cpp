@@ -309,13 +309,23 @@ bool r_surface_c::createDecalInternal(class decalProjector_c &proj) {
 	}
 	return newPoints;
 }
-void r_surface_c::initSkelSurfInstance(const skelSurfaceAPI_i *skelSF) {
+void r_surface_c::initSkelSurfInstance(const skelSurfaceAPI_i *skelSF, const class skelModelAPI_i *skelModel) {
 	clear();
 	this->mySkelSF = skelSF;
 	// V: this is needed for .skin files to work.
 	// .skin files are used eg. in Enemy Territory
 	this->name = skelSF->getSurfName();
 	setMaterial(skelSF->getMatName());
+	// if material is not valid, try to look for image files in the skelmodels directory
+	if(mat == 0 || mat->isValidMaterial() == false) {
+		str fixedPath = skelModel->getName();
+		fixedPath.toDir();
+		fixedPath.append(skelSF->getMatName());
+		mtrAPI_i *newMat = g_ms->registerMaterial(fixedPath);
+		if(newMat->isValidMaterial()) {
+			this->setMaterial(newMat);
+		}
+	}
 	verts.resize(skelSF->getNumVerts());
 	rVert_c *v = verts.getArray();
 	const skelVert_s *inV = skelSF->getVerts();
@@ -1546,7 +1556,7 @@ void r_model_c::initSkelModelInstance(const class skelModelAPI_i *skel) {
 	this->mySkel = skel;
 	for(u32 i = 0; i < surfs.size(); i++, sf++) {
 		const skelSurfaceAPI_i *inSF = skel->getSurface(i);
-		sf->initSkelSurfInstance(inSF);
+		sf->initSkelSurfInstance(inSF,skel);
 	}
 }
 void r_model_c::updateSkelModelInstance(const class skelModelAPI_i *skel, const class boneOrArray_c &bones) {

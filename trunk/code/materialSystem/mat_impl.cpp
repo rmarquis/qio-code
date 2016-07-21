@@ -436,6 +436,7 @@ mtrIMPL_c::mtrIMPL_c() {
 	editorTransparency = 1.f;;
 	bMarkedAsUsed = true;
 	minShadow = 0;
+	bValid = true;
 }
 mtrIMPL_c::~mtrIMPL_c() {
 	clear();
@@ -469,6 +470,7 @@ void mtrIMPL_c::clear() {
 	bGenericSky = false;
 	bHasEditorTransparency = false;
 	editorTransparency = 1.f;;
+	bValid = true;
 	// but don't clear material name and this->hashNext pointer...
 }
 
@@ -494,6 +496,8 @@ void mtrIMPL_c::createFromImage() {
 	textureAPI_i *tex = MAT_RegisterTexture(this->name,TWM_REPEAT);
 	// save the source file name
 	this->sourceFileName = tex->getName();
+	// is this a default texture? (image was not found)
+	this->bValid = stricmp(tex->getName(),"default");
 	// create single material stage
 	this->createFromTexturePointer(tex);
 
