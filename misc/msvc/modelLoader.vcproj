@@ -274,6 +274,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\shared\fileStreamHelper.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\fileStreamHelper.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\parser.cpp"
 				>
 			</File>
