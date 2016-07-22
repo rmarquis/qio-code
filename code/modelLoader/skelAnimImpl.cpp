@@ -351,6 +351,150 @@ bool skelAnimGeneric_c::loadSMDAnim(const char *fname) {
 	return false;
 }
 //
+//	ActorX .psa files loading
+//
+bool skelAnimGeneric_c::loadPSAAnim(const char *fname) {
+	byte *fileData;
+	// load raw file data from disk
+	u32 fileLen = g_vfs->FS_ReadFile(fname,(void**)&fileData);
+	if(fileData == 0) {
+		return true; // cannot open file
+	}
+
+	const axChunkHeader_t *h = (const axChunkHeader_t*)fileData;
+	if(h->hasIdent(PSA_IDENT_HEADER)==false) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: psa file %s has wrong ident %s, should be %s\n",fname,h->ident,PSA_IDENT_HEADER);
+		return true; // error
+	}
+	const axChunkHeader_t *s;
+	//
+	// read BONENAMES
+	//
+	s = h->getNextHeader();
+	if(s->hasIdent(PSA_IDENT_BONENAMES)==false) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: psa file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSA_IDENT_BONENAMES);
+		return true; // error
+	}
+	if(s->dataSize != sizeof(axReferenceBone_t)) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: psa file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axReferenceBone_t));
+		return true; // error
+	}
+	u32 numBones = s->numData;
+	this->bones.resize(numBones);
+	const axChunkHeader_t *bonesSection = s;
+	for(u32 i = 0; i < numBones; i++) {
+		const axReferenceBone_t *bn = s->getBone(i);
+		str boneName = bn->name;
+
+		this->bones[i].nameIndex = SK_RegisterString(boneName);
+		this->bones[i].parentIndex = bn->parentIndex;
+	}
+	//
+	// read ANIM INFO
+	//
+	s = s->getNextHeader();
+	if(s->hasIdent(PSA_IDENT_INFO)==false) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: psa file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSA_IDENT_INFO);
+		return true; // error
+	}
+	if(s->dataSize != sizeof(axAnimationInfo_s)) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: psa file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axAnimationInfo_s));
+		return true; // error
+	}
+	const axChunkHeader_t *animsSection = s;
+	u32 numAnims = s->numData;
+	if(0) {
+		for(u32 i = 0; i < numAnims; i++) {
+			const axAnimationInfo_s *info = s->getAnimInfo(i);
+			g_core->RedWarning("PSA animInfo: name %s, group %s, frameRate %f, numRawFrames %i\n",info->name,info->group,info->frameRate, info->numRawFrames);
+		}
+	}
+	//
+	// read VALUES
+	//
+	s = s->getNextHeader();
+	if(s->hasIdent(PSA_IDENT_KEYS)==false) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: psa file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSA_IDENT_KEYS);
+		return true; // error
+	}
+	if(s->dataSize != sizeof(axAnimationKey_t)) {
+		g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: psa file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axAnimationKey_t));
+		return true; // error
+	}
+	const char *subAnimName = 0;
+
+	u32 totalFrames = 0;
+	//if(subAnimName == 0) {
+	//	subAnims.resize(numAnims);
+	//}
+	for(u32 i = 0; i < numAnims; i++) {
+		const axAnimationInfo_s *ai = animsSection->getAnimInfo(i);
+	//	// if we want to load a single specific animation
+	//	if(subAnimName) {
+	//		// check the name
+	//		if(stricmp(ai->name,subAnimName)) {
+	//			continue; // that's not it
+	//		}
+	//		// save the frame time
+	//		this->frameTime = 1.f / ai->frameRate;
+	//	} else  {
+	//		subAnims[i].name = ai->name;
+	//		subAnims[i].firstFrame = ai->firstRawFrame;
+	//		subAnims[i].numFrames = ai->numRawFrames;
+	//		subAnims[i].frameRate = ai->frameRate;
+	//	}
+		totalFrames += ai->numRawFrames;
+		if(i == 0)
+		{
+			this->frameTime = 1.f / ai->frameRate;
+		}
+	}
+	//if(totalFrames == 0) {
+	//	// didnt found the wanted animation (subAnimName)
+	//	g_core->RedWarning("Cannot find %s inside %s\n",subAnimName,fname);
+	//	return true; // error
+	//}
+	this->frames.resize(totalFrames);
+
+	u32 inputFrameIndex = 0;
+	u32 outputFrameIndex = 0;
+	for(u32 i = 0; i < numAnims; i++) {
+		const axAnimationInfo_s *ai = animsSection->getAnimInfo(i);	
+		// if we want to load a single specific animation
+		//if(subAnimName) {
+		//	// check the name
+		//	if(stricmp(ai->name,subAnimName)) {
+		//		inputFrameIndex += ai->numRawFrames;
+		//		continue; // that's not it
+		//	}
+		//}
+		// do the sanity check
+		if(ai->numBones != numBones) {
+			g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: numBones mismatch ! (%i %i)\n",ai->numBones,numBones);
+			return true; // ..error ? Should never happen
+		}	
+		for(u32 j = 0; j < ai->numRawFrames; j++, inputFrameIndex++, outputFrameIndex++) {
+			if(outputFrameIndex >= frames.size()) {
+				g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: invalid outputFrameIndex\n");
+				return true;
+			}
+			skelFrame_c *f = &frames[outputFrameIndex];
+			f->bones.resize(ai->numBones);
+			for(u32 k = 0; k < ai->numBones; k++) {
+				const axAnimationKey_t *key = s->getAnimKey(inputFrameIndex,numBones,k);
+				quat_c q = key->quat;
+				if(k == 0 || bonesSection->getBone(k)->parentIndex < 0) {
+					q.conjugate();
+				}
+				q.conjugate();
+				f->bones[k].setQuat(q);
+				f->bones[k].setVec3(key->position);
+			}
+		}
+	}
+	return false;
+}
+//
 //	ActorX .psk files loading
 //
 bool skelAnimGeneric_c::loadPSKAnim(const char *fname) {

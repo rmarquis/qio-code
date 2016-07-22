@@ -150,6 +150,46 @@ void skelModelIMPL_c::addTorsoBoneIndices(arraySTD_c<u32> &out) const {
 		}
 	}
 }
+void skelModelIMPL_c::appendSkelModel(const skelModelAPI_i *s) {
+	const skelModelIMPL_c *os = dynamic_cast<const skelModelIMPL_c*>(s);
+	arraySTD_c<u32> mapping;
+	mapping.resize(os->bones.size());
+	for(u32 i = 0; i < os->bones.size(); i++) {
+		const boneDef_s &bd = os->bones[i];
+		int existing = bones.getLocalBoneIndexForBoneName(bd.nameIndex);
+		if(existing != -1) {
+			mapping[i] = existing;
+			if(bones[existing].parentIndex == -1) {
+				if(bd.parentIndex != -1) {
+					u16 parentName = os->bones[bd.parentIndex].nameIndex;
+					bones[existing].parentIndex = bones.getLocalBoneIndexForBoneName(parentName);
+				}
+			}
+		} else {
+			mapping[i] = bones.size();
+			boneDef_s newBone;
+			newBone.flags = bd.flags;
+			newBone.nameIndex = bd.nameIndex;
+			if(bd.parentIndex == -1) {
+				newBone.parentIndex = -1;
+			} else {
+				u16 parentName = os->bones[bd.parentIndex].nameIndex;
+				newBone.parentIndex = bones.getLocalBoneIndexForBoneName(parentName);
+			}
+			bones.push_back(bd);
+		}
+	}
+	for(u32 i = 0; i < os->surfs.size(); i++) {
+		skelSurfIMPL_c &ns = surfs.pushBack();
+		ns = os->surfs[i];
+		for(u32 j = 0; j < ns.weights.size(); j++) {
+			skelWeight_s &w = ns.weights[j];
+			w.boneIndex = mapping[w.boneIndex];
+		}
+	}
+	// TODO: merge baseframe
+
+}
 void skelModelIMPL_c::printBoneNames() const {
 	for(u32 i = 0; i < bones.size(); i++) {
 		g_core->Print("%i/%i: %s (%i)\n",i,bones.size(),SK_GetString(bones[i].nameIndex),bones[i].nameIndex);
