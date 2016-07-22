@@ -141,6 +141,7 @@ public:
 	bool loadSMDAnim(const char *fname);
 	bool loadSKAAnim(const char *fname);
 	bool loadPSKAnim(const char *fname);
+	bool loadPSAAnim(const char *fname);
 	// not fully supported
 	bool loadSKCAnim(const char *fname);
 

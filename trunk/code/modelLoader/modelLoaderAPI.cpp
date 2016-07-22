@@ -425,6 +425,13 @@ public:
 				return 0;
 			}
 			ret = pskAnim;
+		} else if(!_stricmp(ext,"psa")) {
+			skelAnimGeneric_c *psaAnim = new skelAnimGeneric_c;
+			if(psaAnim->loadPSAAnim(fname)) {
+				delete psaAnim;
+				return 0;
+			}
+			ret = psaAnim;
 		} else if(!_stricmp(ext,"skc")) {
 #if 0
 			//skelAnimChannels_c *skcAnim = new skelAnimChannels_c;

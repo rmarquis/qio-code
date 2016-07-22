@@ -81,6 +81,7 @@ public:
 	virtual const char *getBoneName(u32 boneIndex) const = 0;
 	virtual u32 getBoneNameIndex(u32 boneIndex) const = 0;
 	virtual int getBoneParentIndex(u32 boneIndex) const = 0;
+	virtual void appendSkelModel(const skelModelAPI_i *s) = 0;
 	//virtual const aabb &getEstimatedBounds() const = 0;
 	virtual void printBoneNames() const = 0;
 	// SKB models have torso bones marked

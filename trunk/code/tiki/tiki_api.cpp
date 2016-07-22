@@ -368,8 +368,14 @@ public:
 		scale = f;
 	}
 	virtual void addSkelModel(const char *skelModelName) {
-		if(skelModel)
+		if(skelModel) {
+			skelModelAPI_i *s = g_modelLoader->loadSkelModelFile(skelModelName);
+			if(s) {
+				s->scaleXYZ(scale);
+				skelModel->appendSkelModel(s);
+			}
 			return;
+		}
 		skelModel = g_modelLoader->loadSkelModelFile(skelModelName);
 		if(skelModel) {
 			skelModel->scaleXYZ(scale);
