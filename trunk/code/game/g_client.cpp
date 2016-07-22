@@ -190,16 +190,15 @@ void ClientSpawn(edict_s *ent) {
 	g_server->GetUsercmd( index, &pl->pers.cmd );
 	pl->setClientViewAngle(spawnAngles);
 
-
-	// don't allow full run speed for a bit
-
-#if 0
-	// Qio player model
-	pl->setPlayerModel("models/player/shina/body.md5mesh");
-#elif 1
-	pl->setPlayerModel("models/julie_swamp.tik");
-	pl->loadStateMachineLegs("global/julie_legs.st");
-	pl->loadStateMachineTorso("global/julie_torso.st");
+#if 1
+	if(g_vfs->FS_FileExists("models/julie_swamp.tik")) {
+		pl->setPlayerModel("models/julie_swamp.tik");
+		pl->loadStateMachineLegs("global/julie_legs.st");
+		pl->loadStateMachineTorso("global/julie_torso.st");
+	} else {
+		// Qio player model
+		pl->setPlayerModel("models/player/shina/body.md5mesh");
+	}
 #else
 	// load q3 player model (three .md3's)
 	pl->setPlayerModel("$sarge");

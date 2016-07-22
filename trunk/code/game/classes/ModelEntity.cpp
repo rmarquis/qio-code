@@ -215,7 +215,7 @@ void ModelEntity::setRenderModel(const char *newRModelName) {
 			this->modelDecl = 0;
 		}
 		// try to load a TIKI model (FAKK, MoHAA)
-		if(g_tikiMgr) {
+		if(g_tikiMgr && renderModelName.hasExt("tik")) {
 			this->tiki = g_tikiMgr->registerModel(newRModelName);
 		} else {
 			this->tiki = 0;

@@ -193,6 +193,7 @@ public:
 	skelAnimMD5_c();
 	virtual ~skelAnimMD5_c();
 	bool loadMD5Anim(const char *fname);
+	bool writeMD5Anim(const char *fname);
 };
 
 #endif //__SKELANIMMD5_H__

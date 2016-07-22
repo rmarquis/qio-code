@@ -34,6 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/vfsAPI.h>
 #include <api/skelModelAPI.h>
 #include <shared/skc.h>
+#include <shared/fileStreamHelper.h> // boneOrArray_c
 
 skelAnimMD5_c::skelAnimMD5_c() {
 	animFlags = 0;
@@ -43,6 +44,85 @@ skelAnimMD5_c::~skelAnimMD5_c() {
 	bones.clear();
 	md5AnimBones.clear();
 	baseFrame.clear();
+}
+//
+//	Doom3 .md5anim files writing
+//
+bool skelAnimMD5_c::writeMD5Anim(const char *fname) {
+	fileStreamHelper_c f;
+	writeStreamAPI_i *w = &f;
+
+	if(frames.size() == 0)
+		return true;
+
+	f.beginWriting(fname);
+	w->writeText("MD5Version 10\n");
+	w->writeText("commandline \"\"\n");
+	w->writeText("\n");
+
+	w->writeText("numFrames %i\n",frames.size());
+	w->writeText("numJoints %i\n",bones.size());
+	w->writeText("frameRate %i\n",int(frameRate));
+	w->writeText("numAnimatedComponents %i\n",frames[0].components.size());
+
+	w->writeText("\n");
+	
+	w->writeText("hierarchy {\n");
+	for(u32 i = 0; i < bones.size(); i++) {
+		const boneDef_s &b = bones[i];
+		const md5AnimBone_s &ab = md5AnimBones[i];
+		const char *boneName = SK_GetString(b.nameIndex);
+		const char *parentName;
+		if(b.parentIndex == -1)
+			parentName = "";
+		else 
+			parentName = SK_GetString(bones[b.parentIndex].nameIndex);
+
+		w->writeText("\t\"%s\"\t%i %i %i // %s\n",
+			boneName,b.parentIndex,ab.componentFlags,ab.firstComponent,parentName);
+	}
+	w->writeText("}\n");
+
+	w->writeText("\n");
+	
+	w->writeText("bounds {\n");
+	for(u32 i = 0; i < frames.size(); i++) {
+		const md5Frame_c &f = frames[i];
+		const aabb &bb = f.bounds;
+		const vec3_c &mi = bb.getMins();
+		const vec3_c &ma = bb.getMaxs();
+		w->writeText("\t( %f %f %f ) ( %f %f %f )\n",
+			mi.getX(),mi.getY(),mi.getZ(),ma.getX(),ma.getY(),ma.getZ());
+	}
+	w->writeText("}\n");
+	w->writeText("\n");
+	
+	w->writeText("baseframe {\n");
+	for(u32 i = 0; i < baseFrame.size(); i++) {
+		const md5BoneVal_s &f = baseFrame[i];
+		w->writeText("\t( %f %f %f ) ( %f %f %f )\n",
+			f.pos[0],f.pos[1],f.pos[2],f.quat[0],f.quat[1],f.quat[2]);
+	}
+	w->writeText("}\n");
+	for(u32 i = 0; i < frames.size(); i++) {
+		const md5Frame_c &f = frames[i];
+		w->writeText("\n");
+		w->writeText("frame %i {\n",i);
+		for(u32 j = 0; j < f.components.size(); j++) {
+			if(j % 6 == 0) {
+				if(j != 0)
+					w->writeText("\n");
+				w->writeText("\t");
+			} else {
+				w->writeText(" ");
+			}
+			w->writeText("%f",f.components[j]);
+		}
+		w->writeText("\n");
+		w->writeText("}\n");
+	}
+	w->writeText("\n");
+	return false;
 }
 //
 //	Doom3 .md5anim files loading
@@ -191,6 +271,12 @@ bool skelAnimMD5_c::loadMD5Anim(const char *fname) {
 
 	frameTime = 1.f / frameRate;
 	totalTime = frameTime * float(frames.size());
+
+	str testName = fname;
+	testName.stripExtension();
+	testName.append("_rewrite.md5anim");
+	writeMD5Anim(testName);
+
 	return false; // no error
 }	
 void skelAnimMD5_c::clearMD5BoneComponentFlags(const char *boneName) {
