@@ -56,6 +56,9 @@ public:
 		loaded.resize(anims.size());
 		for(u32 i = 0; i < anims.size(); i++) {
 			loaded[i] = base->createSubAnim(anims[i].firstFrame,anims[i].numFrames);
+			if(loaded[i]) {
+				loaded[i]->setFrameTime(anims[i].frameTime);
+			}
 		}
 		delete base;
 		return false;
