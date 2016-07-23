@@ -468,6 +468,28 @@ public:
 	virtual u32 readMD3FrameCount(const char *fname) {
 		return MOD_ReadMD3FileFrameCount(fname);
 	}
+	virtual bool convertToMD5Mesh(const char *fname, const char *out) {
+		str tmpFName, tmpOut;
+		skelModelAPI_i *a = loadSkelModelFile(fname);
+		if(a == 0) {
+			tmpFName = "models/";
+			tmpFName.append(fname);
+			a = loadSkelModelFile(tmpFName);
+			if(a == 0) {
+				return true;
+			}
+			fname = tmpFName;
+		}
+		str strOut;
+		if(out == 0) {
+			strOut = fname;
+			strOut.setExtension("md5mesh");
+		} else {
+			strOut = out;
+		}	
+		a->writeMD5Mesh(strOut);
+		return false;
+	}
 	virtual bool convertToMD5Anim(const char *fname, const char *out) {
 		str tmpFName, tmpOut;
 		skelAnimAPI_i *a = loadSkelAnimFile(fname);
@@ -478,6 +500,7 @@ public:
 			if(a == 0) {
 				return true;
 			}
+			fname = tmpFName;
 		}
 		str strOut;
 		if(out == 0) {
@@ -525,19 +548,46 @@ void ConvertToMD5Anim_f() {
 		return;
 	}
 	const char *from = g_core->Argv(1);
-	str to;
+	const char *to;
 	if(g_core->Argc() >= 3) {
 		to = g_core->Argv(2);
 	} else {
-		to = from;
-		to.setExtension("md5anim");
+		to = 0;
 	}
-	g_core->Print("ConvertToMD5Anim: %s to %s\n",from,to.c_str());
+	if(to) {
+		g_core->Print("ConvertToMD5Anim: %s to %s\n",from,to);
+	} else {
+		g_core->Print("ConvertToMD5Anim: %s\n",from);
+	}
 	g_modelLoader->convertToMD5Anim(from,to);
+}
+void ConvertToMD5Mesh_f() {
+	if(g_core->Argc() < 2) {
+		g_core->Print("ConvertToMD5Mesh_f: function required at least one argument (model file name)\n");
+		return;
+	}
+	const char *from = g_core->Argv(1);
+	const char *to;
+	if(g_core->Argc() >= 3) {
+		to = g_core->Argv(2);
+	} else {
+		to = 0;;
+	}
+	if(to) {
+		g_core->Print("ConvertToMD5Mesh: %s to %s\n",from,to);
+	} else {
+		g_core->Print("ConvertToMD5Mesh: %s\n",from);
+	}
+	g_modelLoader->convertToMD5Mesh(from,to);
 }
 static aCmd_c convertToMD5Anim("convertToMD5Anim",ConvertToMD5Anim_f);
 static aCmd_c convertPSAToMD5Anim("convertPSAToMD5Anim",ConvertToMD5Anim_f);
 static aCmd_c convertMDSToMD5Anim("convertMDSToMD5Anim",ConvertToMD5Anim_f);
+
+static aCmd_c convertToMD5Mesh("convertToMD5Mesh",ConvertToMD5Mesh_f);
+static aCmd_c convertPSKToMD5Mesh("convertPSKToMD5Mesh",ConvertToMD5Mesh_f);
+static aCmd_c convertMDSToMD5Mesh("convertMDSToMD5Mesh",ConvertToMD5Mesh_f);
+
 
 void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan = iFMA;

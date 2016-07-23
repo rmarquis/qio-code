@@ -52,6 +52,7 @@ public:
 	virtual u32 readMD3FrameCount(const char *fname) = 0;
 	// development tools
 	virtual bool convertToMD5Anim(const char *fname, const char *out = 0) = 0;
+	virtual bool convertToMD5Mesh(const char *fname, const char *out = 0) = 0;
 };
 
 extern class modelLoaderDLLAPI_i *g_modelLoader;

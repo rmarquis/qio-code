@@ -86,6 +86,7 @@ public:
 	virtual void printBoneNames() const = 0;
 	// SKB models have torso bones marked
 	virtual void addTorsoBoneIndices(arraySTD_c<u32> &out) const = 0;
+	virtual bool writeMD5Mesh(const char *fname) = 0;
 };
 
 #endif // __SKELMODELAPI_H__
