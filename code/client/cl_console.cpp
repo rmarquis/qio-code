@@ -352,6 +352,11 @@ void Cmd_CompleteAnimationName( char *args, int argNum ) {
 		AC_CompleteFilename( "models", "mds", "psa", "smd", false, false );
 	}
 }
+void Cmd_CompleteSkelModelName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		AC_CompleteFilename( "models", "mds", "psk", "smd", false, false );
+	}
+}
 void Cmd_CompletePSAName( char *args, int argNum ) {
 	if( argNum == 2 ) {
 		AC_CompleteFilename( "models", "psa", 0, 0, false, false );
@@ -481,6 +486,12 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "convertMDSToMD5Anim", Cmd_CompleteMDSName );
 	Cmd_AddCommand ("convertPSAToMD5Anim", 0);
 	Cmd_SetCommandCompletionFunc( "convertPSAToMD5Anim", Cmd_CompletePSAName );
+	Cmd_AddCommand ("convertToMD5Mesh", 0);
+	Cmd_SetCommandCompletionFunc( "convertToMD5Mesh", Cmd_CompleteSkelModelName );
+	Cmd_AddCommand ("convertMDSToMD5Mesh", 0);
+	Cmd_SetCommandCompletionFunc( "convertMDSToMD5Mesh", Cmd_CompleteMDSName );
+	Cmd_AddCommand ("convertPSKToMD5Mesh", 0);
+	Cmd_SetCommandCompletionFunc( "convertPSKToMD5Mesh", Cmd_CompletePSKName );
 	Cmd_AddCommand ("psk_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "psk_spawn", Cmd_CompletePSKName );
 	Cmd_AddCommand ("tan_spawn", 0);
