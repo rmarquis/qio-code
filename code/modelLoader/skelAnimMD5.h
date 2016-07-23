@@ -35,6 +35,12 @@ struct md5BoneVal_s {
 	float pos[4];
 	float quat[4]; // W component will be calculated
 
+	void negateQuat() {
+		this->quat[0] = -this->quat[0];
+		this->quat[1] = -this->quat[1];
+		this->quat[2] = -this->quat[2];
+		this->quat[3] = -this->quat[3];
+	}
 	void clearPosition() {
 		pos[0] = pos[1] = pos[2] = pos[3] = 0.f;
 	}
@@ -90,10 +96,12 @@ enum {
 
 class md5Frame_c {
 friend class skelAnimMD5_c;
+friend class skelAnimGeneric_c;
 	arraySTD_c<float> components;
 	aabb bounds;
 };
 class skelAnimMD5_c : public skelAnimAPI_i {
+	friend class skelAnimGeneric_c;
 	str animFileName;
 	float frameRate; // fps
 	float frameTime; // 1 / fps
@@ -189,6 +197,7 @@ class skelAnimMD5_c : public skelAnimAPI_i {
 	virtual void buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const;
 	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out, const class skelModelAPI_i *skelModel = 0) const;
 	virtual void scaleAnimation(float s);
+	virtual bool convertToMD5Anim(const char *outPath);
 public:
 	skelAnimMD5_c();
 	virtual ~skelAnimMD5_c();

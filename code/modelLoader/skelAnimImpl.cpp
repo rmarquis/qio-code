@@ -421,11 +421,11 @@ bool skelAnimGeneric_c::loadPSAAnim(const char *fname) {
 		g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: psa file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axAnimationKey_t));
 		return true; // error
 	}
-	const char *subAnimName = 0;
+	//const char *subAnimName = 0;
 
 	u32 totalFrames = 0;
 	//if(subAnimName == 0) {
-	//	subAnims.resize(numAnims);
+		subAnims.resize(numAnims);
 	//}
 	for(u32 i = 0; i < numAnims; i++) {
 		const axAnimationInfo_s *ai = animsSection->getAnimInfo(i);
@@ -438,10 +438,10 @@ bool skelAnimGeneric_c::loadPSAAnim(const char *fname) {
 	//		// save the frame time
 	//		this->frameTime = 1.f / ai->frameRate;
 	//	} else  {
-	//		subAnims[i].name = ai->name;
-	//		subAnims[i].firstFrame = ai->firstRawFrame;
-	//		subAnims[i].numFrames = ai->numRawFrames;
-	//		subAnims[i].frameRate = ai->frameRate;
+			subAnims[i].name = ai->name;
+			subAnims[i].firstFrame = ai->firstRawFrame;
+			subAnims[i].numFrames = ai->numRawFrames;
+			subAnims[i].frameRate = ai->frameRate;
 	//	}
 		totalFrames += ai->numRawFrames;
 		if(i == 0)
@@ -826,6 +826,131 @@ void skelFrame_c::setOrs(const class boneOrArray_c &ors) {
 		v.setVec3(m.getOrigin());
 	}
 }		
+bool skelAnimGeneric_c::convertToMD5Anim(const char *outPath) {
+	for(u32 i = 0; i < subAnims.size(); i++) {
+		const subAnimDef_s &sad = subAnims[i];
+		skelAnimGeneric_c copy;
+		copy.animFileName = this->animFileName;
+		copy.animFlags = this->animFlags;
+		copy.baseFrame = this->baseFrame;
+		copy.bones = this->bones;
+		copy.frameRate = this->frameRate;
+		copy.frameTime = this->frameTime;
+		copy.totalTime = this->totalTime;
+		for(u32 j = 0; j < sad.numFrames; j++) {
+			copy.frames.push_back(frames[j+sad.firstFrame]);
+		}
+		str fullPath = outPath;
+		fullPath.stripExtension();
+		fullPath.append("/");
+		fullPath.append(sad.name);
+		fullPath.append(".md5anim");
+		copy.convertToMD5Anim(fullPath);
+	}
+	g_core->Print("Converting %s to md5anim...\n",getName());
+	for(u32 i = 0; i < frames.size(); i++) {
+		skelFrame_c &f = frames[i];
+		for(u32 j = 0; j < f.bones.size(); j++) {
+			md5BoneVal_s &b = f.bones[j];
+			if(b.quat[3] > 0) {
+				b.negateQuat();
+			}
+		}
+	}
+	arraySTD_c<md5BoneVal_s> md5BaseFrame = frames[0].bones;
+	arraySTD_c<md5AnimBone_s> animBones;
+	u32 numComponents = 0;
+	animBones.resize(bones.size());
+	for(u32 bi = 0; bi < bones.size(); bi++) {
+		md5AnimBone_s &ab = animBones[bi];
+		const skelFrame_c &ff = frames[0];
+		const md5BoneVal_s &fb = ff.bones[bi];
+		ab.componentFlags = 0;
+		ab.firstComponent = numComponents;
+		for(u32 i = 1; i < frames.size(); i++) {
+			skelFrame_c &f = frames[i];
+			const md5BoneVal_s &cb = f.bones[bi];
+			if(fb.pos[0] != cb.pos[0]) {
+				ab.componentFlags |= COMPONENT_BIT_TX;
+			}
+			if(fb.pos[1] != cb.pos[1]) {
+				ab.componentFlags |= COMPONENT_BIT_TY;
+			}
+			if(fb.pos[2] != cb.pos[2]) {
+				ab.componentFlags |= COMPONENT_BIT_TZ;
+			}
+			if(fb.quat[0] != cb.quat[0]) {
+				ab.componentFlags |= COMPONENT_BIT_QX;
+			}
+			if(fb.quat[1] != cb.quat[1]) {
+				ab.componentFlags |= COMPONENT_BIT_QY;
+			}
+			if(fb.quat[2] != cb.quat[2]) {
+				ab.componentFlags |= COMPONENT_BIT_QZ;
+			}
+		}	
+		if(ab.componentFlags & COMPONENT_BIT_TX)
+			numComponents++;
+		if(ab.componentFlags & COMPONENT_BIT_TY)
+			numComponents++;
+		if(ab.componentFlags & COMPONENT_BIT_TZ)
+			numComponents++;
+		if(ab.componentFlags & COMPONENT_BIT_QX)
+			numComponents++;
+		if(ab.componentFlags & COMPONENT_BIT_QY)
+			numComponents++;
+		if(ab.componentFlags & COMPONENT_BIT_QZ)
+			numComponents++;
+	}
+	arraySTD_c<md5Frame_c> md5Frames;
+	md5Frames.resize(frames.size());
+	for(u32 bi = 0; bi < bones.size(); bi++) {
+		const md5AnimBone_s &ab = animBones[bi];
+		for(u32 i = 0; i < frames.size(); i++) {
+			md5Frame_c &nf = md5Frames[i];
+			skelFrame_c &f = frames[i];
+			const md5BoneVal_s &cb = f.bones[bi];
+			if(ab.componentFlags & COMPONENT_BIT_TX) {
+				nf.components.push_back(cb.pos[0]);
+			}
+			if(ab.componentFlags & COMPONENT_BIT_TY) {
+				nf.components.push_back(cb.pos[1]);
+			}
+			if(ab.componentFlags & COMPONENT_BIT_TZ) {
+				nf.components.push_back(cb.pos[2]);
+			}
+			if(ab.componentFlags & COMPONENT_BIT_QX) {
+				nf.components.push_back(cb.quat[0]);
+			}
+			if(ab.componentFlags & COMPONENT_BIT_QY) {
+				nf.components.push_back(cb.quat[1]);
+			}
+			if(ab.componentFlags & COMPONENT_BIT_QZ) {
+				nf.components.push_back(cb.quat[2]);
+			}
+		}
+	}
+	for(u32 i = 1; i < frames.size(); i++) {
+		md5Frame_c &nf = md5Frames[i];
+		if(nf.components.size() != numComponents) {
+			g_core->RedWarning("MD5ANIM components count mismatch\n");
+			return true;
+		}
+	}
+	skelAnimMD5_c md5;
+	skelAnimMD5_c *o = &md5;
+	o->animFileName = outPath;
+	o->animFlags = this->animFlags;
+	o->bones = this->bones;
+	o->frames = md5Frames;
+	o->md5AnimBones = animBones;
+	o->baseFrame = md5BaseFrame;
+	o->frameRate = this->frameRate;
+	o->totalTime = this->totalTime;
+	o->frameTime = this->frameTime;
+	md5.writeMD5Anim(outPath);
+	return false;
+}
 void skelAnimGeneric_c::scaleAnimation(float s) {
 	for(u32 i = 0; i < frames.size(); i++) {
 		skelFrame_c &f = frames[i];

@@ -39,6 +39,12 @@ friend class skelAnimGeneric_c;
 
 	void setOrs(const class boneOrArray_c &ors);
 };
+struct subAnimDef_s {
+	str name;
+	u16 firstFrame, numFrames;
+	float frameRate;
+};
+
 class skelAnimGeneric_c : public skelAnimAPI_i {
 	str animFileName;
 	float frameRate; // fps
@@ -48,6 +54,7 @@ class skelAnimGeneric_c : public skelAnimAPI_i {
 	boneDefArray_c bones;
 	arraySTD_c<md5BoneVal_s> baseFrame;
 	int animFlags;
+	arraySTD_c<subAnimDef_s> subAnims;
 
 	virtual const char *getName() const {
 		return animFileName;
@@ -132,6 +139,7 @@ class skelAnimGeneric_c : public skelAnimAPI_i {
 	virtual void buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const;
 	virtual void buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out, const class skelModelAPI_i *skelModel = 0) const;
 	virtual void scaleAnimation(float s);
+	virtual bool convertToMD5Anim(const char *outPath);
 	void addFrameRelative(const class boneOrArray_c &ors);
 public:
 	skelAnimGeneric_c();
