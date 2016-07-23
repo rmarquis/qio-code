@@ -666,11 +666,14 @@ void rEntityImpl_c::updateInstanceAttachments() {
 			continue;
 		matrix_c m;
 		getBoneLocalOrientation(a.boneIndex,m);
-#if 0
-		vec3_c angles = m.getAngles();
-		angles.y*=-1;
-		m.fromAnglesAndOrigin(angles,m.getOrigin());
-#endif
+
+		// needed for only RTCW/ET player heads
+		// TODO: better fix
+		if(this->getModel() && strstr(this->getModel()->getName(),".mds")) {
+			vec3_c angles = m.getAngles();
+			angles.y*=-1;
+			m.fromAnglesAndOrigin(angles,m.getOrigin());
+		}
 		if(a.model->isKeyframed()) {
 			const kfModelAPI_i *kfModel = a.model->getKFModelAPI();
 			instance->updateKeyframedModelInstance(kfModel,0,firstSurface);
