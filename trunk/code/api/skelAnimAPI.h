@@ -44,6 +44,7 @@ public:
 	virtual const class boneDefArray_c *getBoneDefs() const = 0;
 	virtual float getFrameTime() const = 0;
 	virtual float getTotalTimeSec() const = 0;
+	virtual void setFrameTime(float newFrameTime) = 0;
 	virtual skelAnimAPI_i *createSubAnim(u32 firstFrame, u32 numFrames) const = 0;
 	// returns true if animation should stop after reaching the last frame (instead of starting again)
 	virtual bool getBLoopLastFrame() const = 0;

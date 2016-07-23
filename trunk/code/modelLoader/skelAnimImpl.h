@@ -75,6 +75,11 @@ class skelAnimGeneric_c : public skelAnimAPI_i {
 	virtual float getTotalTimeSec() const {
 		return totalTime;
 	}
+	virtual void setFrameTime(float newFrameTime) {
+		this->frameTime = newFrameTime;
+		this->frameRate = 1.f / this->frameTime;
+		this->totalTime = frames.size() * frameTime;
+	}
 	virtual skelAnimAPI_i *createSubAnim(u32 firstFrame, u32 numFrames) const;
 	// anim post process funcs impl
 	virtual void scaleAnimationSpeed(float scale) {
