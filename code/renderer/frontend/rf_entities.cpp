@@ -832,23 +832,27 @@ void rEntityImpl_c::updateAnimatedEntity() {
 		}
 	} else if(model->isKeyframed()) {
 		const kfModelAPI_i *kfModel = model->getKFModelAPI();
-		if(rf_forceKFModelsFrame.getInt() >= 0) {
-			u32 fixedFrameIndex = kfModel->fixFrameNum(rf_forceKFModelsFrame.getInt());
-			instance->updateKeyframedModelInstance(kfModel,fixedFrameIndex);
+		if(kfModel == 0) {
+
 		} else {
-			u32 fixedFrameIndex = kfModel->fixFrameNum(kfFrameNum);
-			if(rf_printKFModelsFrame.getInt()) {
-				g_core->Print("Using frame %i for model %s\n",kfFrameNum,getModelName());
-			}
-			instance->updateKeyframedModelInstance(kfModel,fixedFrameIndex);
-		}
-		// if model needs normals
-		if(1) {
-			// if model needs TBN
-			if(1) {
-				instance->recalcModelTBNs(false); // this is slow
+			if(rf_forceKFModelsFrame.getInt() >= 0) {
+				u32 fixedFrameIndex = kfModel->fixFrameNum(rf_forceKFModelsFrame.getInt());
+				instance->updateKeyframedModelInstance(kfModel,fixedFrameIndex);
 			} else {
-				instance->recalcModelNormals(); // this is slow
+				u32 fixedFrameIndex = kfModel->fixFrameNum(kfFrameNum);
+				if(rf_printKFModelsFrame.getInt()) {
+					g_core->Print("Using frame %i for model %s\n",kfFrameNum,getModelName());
+				}
+				instance->updateKeyframedModelInstance(kfModel,fixedFrameIndex);
+			}
+			// if model needs normals
+			if(1) {
+				// if model needs TBN
+				if(1) {
+					instance->recalcModelTBNs(false); // this is slow
+				} else {
+					instance->recalcModelNormals(); // this is slow
+				}
 			}
 		}
 	} else if(model->isQ3PlayerModel()) {

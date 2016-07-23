@@ -520,6 +520,10 @@ void SKC_TestAllFiles() {
 	g_vfs->FS_FreeFileList( skcNames );
 }
 void ConvertToMD5Anim_f() {
+	if(g_core->Argc() < 2) {
+		g_core->Print("ConvertToMD5Anim_f: function required at least one argument (animation file name)\n");
+		return;
+	}
 	const char *from = g_core->Argv(1);
 	str to;
 	if(g_core->Argc() >= 3) {

@@ -254,6 +254,14 @@
 			Name="shared"
 			>
 			<File
+				RelativePath="..\..\code\shared\autoCmd.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\autoCmd.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\shared\autoCvar.cpp"
 				>
 			</File>

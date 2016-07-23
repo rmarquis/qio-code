@@ -432,25 +432,44 @@ void ListFilesIn(const char *dir, const char *ext, int &nfiles, char *list[MAX_F
 
 	// search
 	findhandle = _findfirst (search, &findinfo);
-	if (findhandle == -1) {
-		return;
+	if (findhandle != -1) {
+
+		do {
+			if ( nfiles == MAX_FOUND_FILES - 1 ) {
+				break;
+			}
+			if(baseDirLen) {
+				char fullPath[MAX_OSPATH];
+				Com_sprintf( fullPath, sizeof(fullPath), "%s\\%s", dir, findinfo.name );
+				list[ nfiles ] = _strdup( fullPath+baseDirLen+1 );
+			} else {
+				list[ nfiles ] = _strdup( findinfo.name );
+			}
+			nfiles++;
+		} while ( _findnext (findhandle, &findinfo) != -1 );
+
+		_findclose (findhandle);
 	}
 
-	do {
-		if ( nfiles == MAX_FOUND_FILES - 1 ) {
-			break;
-		}
-		if(baseDirLen) {
-			char fullPath[MAX_OSPATH];
-			Com_sprintf( fullPath, sizeof(fullPath), "%s\\%s", dir, findinfo.name );
-			list[ nfiles ] = _strdup( fullPath+baseDirLen+1 );
-		} else {
-			list[ nfiles ] = _strdup( findinfo.name );
-		}
-		nfiles++;
-	} while ( _findnext (findhandle, &findinfo) != -1 );
+	// check subdirs
+	Com_sprintf( search, sizeof(search), "%s\\*", dir );
+	findhandle = _findfirst (search, &findinfo);
+	if (findhandle != -1) {
+		do {
+			if(findinfo.attrib & _A_SUBDIR) {
+				if(findinfo.name[0] != '.') {
+					//printf("subdir: %s\n",findinfo.name);
+					char newDir[MAX_OSPATH];
+					strcpy(newDir,dir);
+					strcat(newDir,"\\");
+					strcat(newDir,findinfo.name);
+					ListFilesIn(newDir,ext,nfiles,list,baseDirLen);
+				}
+			}
+		} while ( _findnext (findhandle, &findinfo) != -1 );
+		_findclose (findhandle);
+	}
 
-	_findclose (findhandle);
 
 }
 /*
@@ -494,27 +513,9 @@ char **Sys_ListFiles( const char *directory, const char *extension, const char *
 	}
 
 	nfiles = 0;
-	ListFilesIn(directory,extension,nfiles,list,0);
+	ListFilesIn(directory,extension,nfiles,list,strlen(directory));
 
 
-	// check subdirs
-	Com_sprintf( search, sizeof(search), "%s\\*", directory );
-	findhandle = _findfirst (search, &findinfo);
-	if (findhandle != -1) {
-		do {
-			if(findinfo.attrib & _A_SUBDIR) {
-				if(findinfo.name[0] != '.') {
-					//printf("subdir: %s\n",findinfo.name);
-					char newDir[MAX_OSPATH];
-					strcpy(newDir,directory);
-					strcat(newDir,"\\");
-					strcat(newDir,findinfo.name);
-					ListFilesIn(newDir,extension,nfiles,list,strlen(directory));
-				}
-			}
-		} while ( _findnext (findhandle, &findinfo) != -1 );
-		_findclose (findhandle);
-	}
 
 
 
