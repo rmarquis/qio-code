@@ -1140,6 +1140,8 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// V: found in cqbtest materials
 				} else if(p.atWord("nocompress")) {
 					// V: found in cqbtest materials
+				} else if(p.atWord("picmip2")) {
+					// V: RTCW?
 				} else {
 					u32 line = p.getCurrentLineNumber();
 					str token  = p.getToken();

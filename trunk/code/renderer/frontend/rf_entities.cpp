@@ -60,6 +60,7 @@ static aCvar_c rf_printEntityTriangleCounts("rf_printEntityTriangleCounts","0");
 static aCvar_c rfe_drawFuncStatic("rfe_drawFuncStatic","1");
 static aCvar_c rfe_drawPlayers("rfe_drawPlayers","1");
 static aCvar_c rfe_drawGeneral("rfe_drawGeneral","1");
+static aCvar_c rfe_printAttachments("rfe_printAttachments","0");
 // usefull to see how ragdolls are slowing engine down
 static aCvar_c rf_dontUpdateRagdollAnimations("rf_dontUpdateRagdollAnimations","0");
 // TIKI debugging
@@ -278,7 +279,9 @@ void rEntityImpl_c::setAttachment(u32 which, const char *modelName, const char *
 				boneIndex = skelAnimCtrl->getAnim()->getLocalBoneIndexForBoneName(boneName);
 			}
 		}
-		g_core->Print("rEntityImpl_c::setAttachment: model %s - bone %s - %i\n",modelName,boneName,boneIndex);
+		if(rfe_printAttachments.getInt()) {
+			g_core->Print("rEntityImpl_c::setAttachment: model %s - bone %s - %i\n",modelName,boneName,boneIndex);
+		}
 		if(attachments.size() <= which) {
 			attachments.resize(which+1);
 		}

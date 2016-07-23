@@ -1165,22 +1165,77 @@ bool skelModelIMPL_c::loadMDS(const char *fname) {
 		}
 	}
 
-#if 0
 	this->bones.resize(h->numBones);
 	boneOr_s *bfb = this->baseFrameABS.getArray();
 	boneDef_s *b = this->bones.getArray();
 	for(u32 i = 0; i < h->numBones; i++, b++) {
 		const mdsBoneInfo_t *bi = h->pBone(i);
 
-		b->name = SK_RegisterString(bi->name);
+		b->nameIndex = SK_RegisterString(bi->name);
 		b->parentIndex = bi->parent;
 	}
-#endif
 
+	u32 baseFrameNum = 0;
+
+	const mdsFrame_t *f = h->pFrame(baseFrameNum);
+	// step 1 - build ABS frameBones
+	baseFrameABS.resize(h->numBones);
+	boneOr_s *bor = baseFrameABS.getArray();
+	for(u32 j = 0; j < h->numBones; j++, bor++) {
+		const mdsBoneFrameCompressed_t *bi = f->pBone(j);
+		const mdsBoneInfo_t *bd = h->pBone(j);
+
+		vec3_c offsetAngles = bi->getOfsAngles();
+
+		matrix_c matRot;
+		matRot.fromAngles(offsetAngles);
+		vec3_c point(bd->parentDist,0,0);
+
+		matRot.transformPoint(point);
+
+		vec3_c parentOrigin;
+		if(bd->parent == -1) {
+			parentOrigin = f->parentOffset;
+		} else {
+			parentOrigin = baseFrameABS[bd->parent].mat.getOrigin();
+		}
+		point += parentOrigin;
+
+		vec3_c angles = bi->getAngles();
+
+		// we cant just use matrix_c::fromAngles
+		// because the order of rotations in mds
+		// is slightly different.
+		// (pitch-yaw-roll vs roll-pitch-yaw)
+
+		matrix_c rollMatrix;
+		rollMatrix.setupXRotation(angles[ROLL]);
+
+		matrix_c yawMatrix;
+		yawMatrix.setupZRotation(angles[YAW]);
+
+		matrix_c pitchMatrix;
+		pitchMatrix.setupYRotation(angles[PITCH]);
+
+		matrix_c rotMatrix = yawMatrix * pitchMatrix * rollMatrix;
+
+		rotMatrix.inverse();
+
+		bor->boneName = bones[j].nameIndex;
+
+		// copy rotation
+		bor->mat = rotMatrix;
+
+		// and just set matrix origin fields
+		bor->mat.setOrigin(point);			
+		
+		///g_core->Print("ABS : Vec %i - parent %i - %f %f %f\n",j,bones[j].parentIndex,point[0],point[1],point[2]);
+
+	}
+
+	// hack?
+	bones.clear();
 	return false; // no error
-
-
-	return false;
 }
 bool skelModelIMPL_c::loadMDM(const char *fname) {
 	this->name = fname;
