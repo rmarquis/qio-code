@@ -35,6 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <fileFormats/skab_file_format.h>
 #include <fileFormats/skd_file_format.h>
 #include <math/quat.h>
+#include <shared/fileStreamHelper.h> // boneOrArray_c
 
 static stringRegister_c sk_boneNames;
 
@@ -278,6 +279,74 @@ skelSurfIMPL_c *skelModelIMPL_c::registerSurface(const char *matName) {
 	surfs.push_back(ns);
 	return &surfs[surfs.size()-1];
 }
+bool skelModelIMPL_c::writeMD5Mesh(const char *fname) {
+	fileStreamHelper_c f;
+	writeStreamAPI_i *w = &f;
+
+	f.beginWriting(fname);
+	w->writeText("MD5Version 10\n");
+	w->writeText("commandline \"\"\n");
+	w->writeText("\n");
+
+	w->writeText("numJoints %i\n",bones.size());
+	w->writeText("numMeshes %i\n",surfs.size());
+
+	w->writeText("\n");
+	w->writeText("joints {\n");
+	for(u32 i = 0; i < bones.size(); i++) {
+		const boneDef_s &b = bones[i];
+		const char *boneName = SK_GetString(b.nameIndex);
+		const char *parentName;
+		if(b.parentIndex == -1)
+			parentName = "";
+		else
+			parentName = SK_GetString(bones[b.parentIndex].nameIndex);
+		vec3_c v;
+		quat_c q;
+		if(baseFrameABS.size()) {
+			q = baseFrameABS[i].mat.getQuat();
+			v = baseFrameABS[i].mat.getOrigin();
+		} else {
+			q.identity();
+			v.clear();
+		}
+		if(q.getW() > 0)
+			q.negate();
+		w->writeText("\t\"%s\"\t%i ( %f %f %f ) ( %f %f %f )		// %s\n",
+			boneName,b.parentIndex,v.x,v.y,v.z,q.x,q.y,q.z,parentName);
+	}
+	w->writeText("}\n");
+	w->writeText("\n");
+	for(u32 i = 0; i < surfs.size(); i++) {
+		const skelSurfIMPL_c &sf = surfs[i];
+		w->writeText("mesh {\n");
+		w->writeText("\tshader \"%s\"\n",sf.matName.c_str());
+		w->writeText("\n");
+		w->writeText("\tnumverts %i\n",sf.verts.size());
+		for(u32 j = 0; j < sf.verts.size(); j++) {
+			const skelVert_s &v = sf.verts[j];
+			w->writeText("\tvert %i ( %f %f ) %i %i\n",
+				j,v.tc[0],v.tc[1],v.firstWeight,v.numWeights);
+		}
+		w->writeText("\n");
+		w->writeText("\tnumtris %i\n",sf.indices.size()/3);
+		for(u32 j = 0; j < sf.indices.size(); j += 3) {
+			w->writeText("\ttri %i %i %i %i\n",
+				j/3,sf.indices[j+0],sf.indices[j+1],sf.indices[j+2]);
+		}
+		w->writeText("\n");
+		w->writeText("\tnumweights %i\n",sf.weights.size());
+		for(u32 j = 0; j < sf.weights.size(); j ++) {
+			const skelWeight_s &sw = sf.weights[j];
+			w->writeText("\tweight %i %i %f ( %f %f %f )\n",
+				j,sw.boneIndex,sw.weight,sw.ofs.x,sw.ofs.y,sw.ofs.z);
+		}
+
+		w->writeText("}\n");
+		w->writeText("\n");
+	}
+	return false;
+}
 bool skelModelIMPL_c::loadMD5Mesh(const char *fname) {
 	// md5mesh files are a raw text files, so setup the parsing
 	parser_c p;
@@ -511,6 +580,12 @@ bool skelModelIMPL_c::loadMD5Mesh(const char *fname) {
 	}
 	this->name = fname;
 
+	if(1) {
+		str testWrite = fname;
+		testWrite.stripExtension();
+		testWrite.append("_rewritten.md5mesh");
+		writeMD5Mesh(testWrite);
+	}
 	return false; // no error
 }
 struct smdLink_s {
