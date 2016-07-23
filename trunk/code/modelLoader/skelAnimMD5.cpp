@@ -122,6 +122,7 @@ bool skelAnimMD5_c::writeMD5Anim(const char *fname) {
 		w->writeText("}\n");
 	}
 	w->writeText("\n");
+	g_core->Print("Wrote md5anim %s\n",fname);
 	return false;
 }
 //
@@ -346,6 +347,10 @@ void skelAnimMD5_c::buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) c
 	buildFrameBonesLocal(frameNum,out);
 	out.localBonesToAbsBones(&this->bones);
 }	
+bool skelAnimMD5_c::convertToMD5Anim(const char *outPath) {
+	// it is actually a md5 anim, so just save
+	return writeMD5Anim(outPath);
+}
 void skelAnimMD5_c::scaleAnimation(float s) {
 
 }

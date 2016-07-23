@@ -38,6 +38,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/staticModelCreatorAPI.h>
 #include <api/materialSystemAPI.h>
 #include <shared/autoCvar.h>
+#include <shared/autoCMD.h>
 #include <shared/skc.h>
 
 void MOD_CreateSphere(staticModelCreatorAPI_i *out, float radius, unsigned int rings, unsigned int sectors) {
@@ -100,6 +101,15 @@ void MOD_CreateSphere(staticModelCreatorAPI_i *out, float radius, unsigned int r
 bool MOD_LoadModelFromHeightmap(const char *fname, staticModelCreatorAPI_i *out);
 class modelLoaderDLLIMPL_c : public modelLoaderDLLAPI_i {
 public:
+	// for console commands and cvars
+	virtual void initModelLoader() {
+		AUTOCMD_RegisterAutoConsoleCommands();
+		AUTOCVAR_RegisterAutoCvars();
+	}
+	virtual void shutdownModelLoader() {
+		AUTOCMD_UnregisterAutoConsoleCommands();
+		AUTOCVAR_UnregisterAutoCvars();
+	}
 	virtual bool isStaticModelFile(const char *fname) {
 		// that's a procedural model
 		if(fname[0] == '_')
@@ -458,6 +468,27 @@ public:
 	virtual u32 readMD3FrameCount(const char *fname) {
 		return MOD_ReadMD3FileFrameCount(fname);
 	}
+	virtual bool convertToMD5Anim(const char *fname, const char *out) {
+		str tmpFName, tmpOut;
+		skelAnimAPI_i *a = loadSkelAnimFile(fname);
+		if(a == 0) {
+			tmpFName = "models/";
+			tmpFName.append(fname);
+			a = loadSkelAnimFile(tmpFName);
+			if(a == 0) {
+				return true;
+			}
+		}
+		str strOut;
+		if(out == 0) {
+			strOut = fname;
+			strOut.setExtension("md5anim");
+		} else {
+			strOut = out;
+		}	
+		a->convertToMD5Anim(strOut);
+		return false;
+	}
 };
 
 // interface manager (import)
@@ -488,6 +519,21 @@ void SKC_TestAllFiles() {
 	}
 	g_vfs->FS_FreeFileList( skcNames );
 }
+void ConvertToMD5Anim_f() {
+	const char *from = g_core->Argv(1);
+	str to;
+	if(g_core->Argc() >= 3) {
+		to = g_core->Argv(2);
+	} else {
+		to = from;
+		to.setExtension("md5anim");
+	}
+	g_core->Print("ConvertToMD5Anim: %s to %s\n",from,to.c_str());
+	g_modelLoader->convertToMD5Anim(from,to);
+}
+static aCmd_c convertToMD5Anim("convertToMD5Anim",ConvertToMD5Anim_f);
+static aCmd_c convertPSAToMD5Anim("convertPSAToMD5Anim",ConvertToMD5Anim_f);
+static aCmd_c convertMDSToMD5Anim("convertMDSToMD5Anim",ConvertToMD5Anim_f);
 
 void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan = iFMA;
@@ -503,7 +549,6 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_img,IMG_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&rf,RENDERER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&rb,RENDERER_BACKEND_API_IDENTSTR);
-
 }
 
 qioModule_e IFM_GetCurModule() {

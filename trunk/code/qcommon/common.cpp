@@ -36,6 +36,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/coreAPI.h>
 #include <api/declManagerAPI.h>
 #include <api/materialSystemAPI.h>
+#include <api/modelLoaderDLLAPI.h>
 #include <api/editorAPI.h>
 #include <api/tikiAPI.h>
 #include <shared/colorTable.h>
@@ -131,6 +132,7 @@ char	com_errorMessage[MAXPRINTMSG];
 
 // this is NULL if client module is not running
 class materialSystemAPI_i *g_ms = 0;
+class modelLoaderDLLAPI_i *g_modelLoader = 0;
 
 void Com_WriteConfig_f();
 void CIN_CloseAllVideos();
@@ -1527,6 +1529,7 @@ void Com_InitCoreAPI() {
 	g_iFaceMan->registerInterface(&g_staticCoreAPI,CORE_API_IDENTSTR);
 	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)g_moduleMgr,MODULEMANAGER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_modelLoader,MODELLOADERDLL_API_IDENTSTR);
 
 	IN_InitInputSystemAPI();
 	Com_InitSysEventCasterAPI();
@@ -1583,6 +1586,8 @@ void Com_InitModelLoaderDLL() {
 		} else {
 			Com_Error(ERR_DROP,"Cannot load modelLoader DLL");
 		}
+	} else {
+		g_modelLoader->initModelLoader();
 	}
 }
 
@@ -1639,9 +1644,9 @@ void Com_ShutdownModelLoaderDLL() {
 	if(com_modelLoaderDLL == 0) {
 		return;
 	}
-	//if(g_declMgr) {
-	//	g_declMgr->shutdown();
-	//}
+	if(com_modelLoaderDLL) {
+		g_modelLoader->shutdownModelLoader();
+	}
 	g_moduleMgr->unload(&com_modelLoaderDLL);
 }
 void Com_ShutdownCMDLL() {

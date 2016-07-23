@@ -31,6 +31,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class modelLoaderDLLAPI_i {
 public:
+	// for console commands and cvars
+	virtual void initModelLoader() = 0;
+	virtual void shutdownModelLoader() = 0;
+
 	/// static (non animated) models.
 	virtual bool isStaticModelFile(const char *fname) = 0;
 	virtual bool loadStaticModelFile(const char *fname, class staticModelCreatorAPI_i *out) = 0;
@@ -46,6 +50,8 @@ public:
 	/// helpers
 	// read the number of animation frames in .md3 file (1 for non-animated models, 0 if model file does not exist)
 	virtual u32 readMD3FrameCount(const char *fname) = 0;
+	// development tools
+	virtual bool convertToMD5Anim(const char *fname, const char *out = 0) = 0;
 };
 
 extern class modelLoaderDLLAPI_i *g_modelLoader;

@@ -322,6 +322,11 @@ void Cmd_CompleteMD5MeshName( char *args, int argNum ) {
 		AC_CompleteFilename( "models", "md5mesh", 0, 0, false, false );
 	}
 }
+void Cmd_CompleteMD5AnimName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		AC_CompleteFilename( "models", "md5anim", 0, 0, false, false );
+	}
+}
 void Cmd_CompleteOBJName( char *args, int argNum ) {
 	if( argNum == 2 ) {
 		AC_CompleteFilename( "models", "obj", 0, 0, false, false );
@@ -340,6 +345,21 @@ void Cmd_CompleteTANName( char *args, int argNum ) {
 void Cmd_CompleteMDMName( char *args, int argNum ) {
 	if( argNum == 2 ) {
 		AC_CompleteFilename( "models", "mdm", 0, 0, false, false );
+	}
+}
+void Cmd_CompleteAnimationName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		AC_CompleteFilename( "models", "mds", "psa", "smd", false, false );
+	}
+}
+void Cmd_CompletePSAName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		AC_CompleteFilename( "models", "psa", 0, 0, false, false );
+	}
+}
+void Cmd_CompleteMDSName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		AC_CompleteFilename( "models", "mds", 0, 0, false, false );
 	}
 }
 void Cmd_CompleteMDCName( char *args, int argNum ) {
@@ -455,6 +475,12 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "md5r_spawn", Cmd_CompleteMD5RName );
 	Cmd_AddCommand ("md5mesh_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "md5mesh_spawn", Cmd_CompleteMD5MeshName );
+	Cmd_AddCommand ("convertToMD5Anim", 0);
+	Cmd_SetCommandCompletionFunc( "convertToMD5Anim", Cmd_CompleteAnimationName );
+	Cmd_AddCommand ("convertMDSToMD5Anim", 0);
+	Cmd_SetCommandCompletionFunc( "convertMDSToMD5Anim", Cmd_CompleteMDSName );
+	Cmd_AddCommand ("convertPSAToMD5Anim", 0);
+	Cmd_SetCommandCompletionFunc( "convertPSAToMD5Anim", Cmd_CompletePSAName );
 	Cmd_AddCommand ("psk_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "psk_spawn", Cmd_CompletePSKName );
 	Cmd_AddCommand ("tan_spawn", 0);
