@@ -2472,6 +2472,7 @@ void rBspTree_c::updateVisibility() {
 		bspSurfBatch_s *b = batches[i];
 		// see if we have to rebuild IBO of current batch
 		bool changed = false;
+		u32 c_visible = 0;
 		for(u32 j = 0; j < b->sfs.size(); j++) {
 			bool visible = b->sfs[j]->lastVisCount == this->visCounter;
 			bool wasVisible = b->lastVisSet.get(j);
@@ -2479,8 +2480,13 @@ void rBspTree_c::updateVisibility() {
 				changed = true;
 				b->lastVisSet.set(j,visible);
 			}
+			if(visible)
+				c_visible++;
 		}
 		if(changed == false) {
+			if(c_visible == 0) {
+				b->indices.setNullCount();
+			}
 			c_curBatchIndexesCount += b->indices.getNumIndices();
 			continue;
 		}
@@ -2541,6 +2547,8 @@ void rBspTree_c::addDrawCalls() {
 		bspSurfBatch_s *b = batches[i];
 		if(b->indices.getNumIndices() == 0)
 			continue;
+		//if(this->visCounter != b->visCount)
+		//	continue;
 		if(rf_bsp_noFrustumCull.getInt() == 0 && rf_camera.getFrustum().cull(b->bounds) == CULL_OUT) {
 			c_culledBatches++;
 			continue;

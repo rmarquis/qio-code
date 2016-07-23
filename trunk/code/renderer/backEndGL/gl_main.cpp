@@ -1822,6 +1822,10 @@ public:
 	//	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);*/
 	//}
 	bool bDeformsDone;
+	// it's here so we don't have to realloc the array every frame
+	rVertexBuffer_c vertsCopy;
+	rIndexBuffer_c indicesCopy;
+
 	virtual void drawElements(const class rVertexBuffer_c &verts, const class rIndexBuffer_c &indices) {
 		if(indices.getNumIndices() == 0)
 			return;
@@ -1840,8 +1844,6 @@ public:
 		if(bDeformsDone == false && lastMat && lastMat->hasDeforms()) {
 			// right now we're only supporting the autoSprite deform
 			if(lastMat->hasDeformOfType(DEFORM_AUTOSPRITE)) {
-				rVertexBuffer_c vertsCopy;
-				rIndexBuffer_c indicesCopy;
 				if(verts.size() > indices.getNumIndices()) {
 					// extract the vertices we want
 					// The large VBO buffer is used by Qio to speed up rendering,

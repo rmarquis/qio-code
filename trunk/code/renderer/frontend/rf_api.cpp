@@ -68,6 +68,7 @@ class rAPIImpl_c : public rAPI_i {
 	bool initialized;
 	projDef_s projDef;
 	axis_c camAxis;
+	fontAPI_i *defaultFont;
 
 	void unloadMaterialSystem() {
 		if(materialSystemDLL == 0) {
@@ -95,6 +96,7 @@ public:
 	rAPIImpl_c() {
 		materialSystemDLL = 0;
 		initialized = false;
+		defaultFont = 0;
 	}
 	~rAPIImpl_c() {
 
@@ -141,6 +143,7 @@ public:
 		RF_Draw3DView();
 	}
 	virtual void setup2DView() {
+		defaultFont = g_core->GetDefaultFont();
 		rb->setup2DView();
 	}
 	virtual void set2DColor(const float *rgba) {
@@ -151,8 +154,7 @@ public:
 		r_2dCmds.addDrawStretchPic(x, y, w, h, s1, t1, s2, t2, material);
 	}
 	fontAPI_i *getAnyWorkingFont() {
-		fontAPI_i *f = g_core->GetDefaultFont();
-		return f;
+		return defaultFont;
 	}
 	virtual float getStringWidth(const char *s) {
 		fontAPI_i *f = getAnyWorkingFont();
@@ -306,6 +308,7 @@ public:
 		RF_InitDecals();
 		RFT_InitTerrain();
 		RF_InitFonts();
+		defaultFont = g_core->GetDefaultFont();
 	}
 	virtual void endRegistration() {
 
