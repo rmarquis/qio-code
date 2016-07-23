@@ -207,6 +207,9 @@ public:
 	}
 
 
+	float getW() const {
+		return w;
+	}
 	// fast-access operators
 	inline operator float *() const {
 		return (float*)&x;
