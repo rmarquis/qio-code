@@ -83,6 +83,7 @@ struct bspSurf_s {
 	}
 };
 struct bspSurfBatch_s {
+	//int visCount;
 	// we can only merge surfaces with the same material and lightmap....
 	class mtrAPI_i *mat;
 	class textureAPI_i *lightmap;

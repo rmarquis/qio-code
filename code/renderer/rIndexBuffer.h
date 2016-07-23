@@ -56,11 +56,20 @@ public:
 		unloadFromGPU();
 	}
 	u16 *initU16(u32 newCount) {
+#if 0
 		destroy();
 		type = IBO_U16;
 		data.resize(newCount * sizeof(u16));
 		numIndices = newCount;
 		return (u16*)data.getArray();
+#else
+		// dont resize the array if thats not needed
+		unloadFromGPU();
+		type = IBO_U16;
+		ensureAllocated_bytes(newCount * sizeof(u16));
+		numIndices = newCount;
+		return (u16*)data.getArray();
+#endif
 	}
 	u32 *initU32(u32 newCount) {
 		destroy();
