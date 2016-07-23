@@ -1559,13 +1559,19 @@ void r_model_c::initSkelModelInstance(const class skelModelAPI_i *skel) {
 		sf->initSkelSurfInstance(inSF,skel);
 	}
 }
-void r_model_c::updateSkelModelInstance(const class skelModelAPI_i *skel, const class boneOrArray_c &bones) {
-	r_surface_c *sf = surfs.getArray();
-	this->bounds.clear();
-	for(u32 i = 0; i < skel->getNumSurfs(); i++, sf++) {
+void r_model_c::updateSkelModelInstance(const class skelModelAPI_i *skel, const class boneOrArray_c &bones, u32 sfOfs) {
+	for(u32 i = 0; i < skel->getNumSurfs(); i++) {
 		const skelSurfaceAPI_i *inSF = skel->getSurface(i);
-		sf->updateSkelSurfInstance(inSF,bones);
-		this->bounds.addBox(sf->getBB());
+		u32 useSFIndex = sfOfs + i;
+		if(useSFIndex >= surfs.size()) {
+			surfs.resize(useSFIndex+1);
+			surfs[useSFIndex].initSkelSurfInstance(inSF,skel);
+		}
+		surfs[useSFIndex].updateSkelSurfInstance(inSF,bones);
+	}
+	this->bounds.clear();
+	for(u32 i = 0; i < surfs.size(); i++) {
+		this->bounds.addBox(surfs[i].getBB());
 	}
 }
 void r_model_c::initKeyframedModelInstance(const class kfModelAPI_i *kf, u32 firstSurface) {

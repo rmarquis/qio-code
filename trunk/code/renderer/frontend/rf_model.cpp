@@ -298,6 +298,8 @@ u32 model_c::getTotalTriangleCount() const {
 int model_c::findBone(const char *boneName) const {
 	if(type == MOD_SKELETAL) {
 		return this->skelModel->getLocalBoneIndexForBoneName(boneName);
+	} else if(type == MOD_TIKI) {
+		return this->tiki->getBoneNumForName(boneName);
 	} else {
 		// TODO?
 		return -1;
@@ -494,6 +496,8 @@ void RF_MarkModelMaterials() {
 }
 rModelAPI_i *RF_RegisterModel(const char *modNameWithParameters) {
 	if(modNameWithParameters == 0)
+		return 0;
+	if(modNameWithParameters[0] == 0)
 		return 0;
 	// see if the model is already loaded
 	rModelAPI_i *existing = rf_models.getEntry(modNameWithParameters);

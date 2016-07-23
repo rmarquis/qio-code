@@ -43,14 +43,21 @@ static aCvar_c cg_testModelAttached_extraY("cg_testModelAttached_extraY","0");
 static aCvar_c cg_testModelAttached_extraZ("cg_testModelAttached_extraZ","0");
 static aCvar_c cg_testModel_attachToCamera("cg_testModel_attachToCamera","0");
 static aCvar_c cg_testModel_printNumTris("cg_testModel_printNumTris","0");
+static aCvar_c cg_testModel_attachmentModel("cg_testModel_attachmentModel","");
+static aCvar_c cg_testModel_attachmentTag("cg_testModel_attachmentTag","t_weapon_R");
 
 static rEntityAPI_i *cg_testModelEntity = 0;
+static rEntityAPI_i *cg_testModelAttachmentEntity = 0;
 
 static void CG_FreeTestModel() {
 	if(cg_testModelEntity) {
 		rf->removeEntity(cg_testModelEntity);
 		cg_testModelEntity = 0;
 	}
+	//if(cg_testModelAttachmentEntity) {
+	//	rf->removeEntity(cg_testModelAttachmentEntity);
+	//	cg_testModelAttachmentEntity = 0;
+	//}
 }
 void CG_RunTestModel() {
 	if(cg_testModel.getStr()[0] == 0 || cg_testModel.getStr()[0] == '0') {
@@ -88,6 +95,22 @@ void CG_RunTestModel() {
 		usePos += cg.refdefViewAxis.getUp() * cg_testModelAttached_extraZ.getFloat();
 		cg_testModelEntity->setOrigin(usePos);
 		cg_testModelEntity->setAngles(cg.refdefViewAngles);
+	}
+	
+	rModelAPI_i *attachedMod = rf->registerModel(cg_testModel_attachmentModel.getStr());
+	if(attachedMod == 0 || attachedMod->isValid() == false) {
+		//if(cg_testModelAttachmentEntity) {
+		//	rf->removeEntity(cg_testModelAttachmentEntity);
+		//	cg_testModelAttachmentEntity = 0;
+		//}
+		cg_testModelEntity->setAttachment(0,"","");
+	} else {
+		cg_testModelEntity->setAttachment(0,attachedMod->getName(),cg_testModel_attachmentTag.getStr());
+		//if(cg_testModelAttachmentEntity == 0) {
+		//	cg_testModelAttachmentEntity = rf->allocEntity();
+		//}
+		//cg_testModelAttachmentEntity->setModel(mod);
+		//cg_testModelEntity->setAttachment
 	}
 	if(cg_testModel_printNumTris.getInt()) {
 		g_core->Print("Testmodel has %i triangles\n",cg_testModelEntity->getEntityTriangleCount());

@@ -278,7 +278,7 @@ void rEntityImpl_c::setAttachment(u32 which, const char *modelName, const char *
 				boneIndex = skelAnimCtrl->getAnim()->getLocalBoneIndexForBoneName(boneName);
 			}
 		}
-		g_core->Print("rEntityImpl_c::setAttachment: model %s - bone %s\n",modelName,boneName);
+		g_core->Print("rEntityImpl_c::setAttachment: model %s - bone %s - %i\n",modelName,boneName,boneIndex);
 		if(attachments.size() <= which) {
 			attachments.resize(which+1);
 		}
@@ -659,9 +659,11 @@ void rEntityImpl_c::updateInstanceAttachments() {
 	u32 firstSurface = skelModel->getNumSurfs();
 	for(u32 i = 0; i < attachments.size(); i++) {
 		class rEntityAttachment_c &a = attachments[i];
+		if(a.model == 0)
+			continue;
 		matrix_c m;
 		getBoneLocalOrientation(a.boneIndex,m);
-#if 1
+#if 0
 		vec3_c angles = m.getAngles();
 		angles.y*=-1;
 		m.fromAnglesAndOrigin(angles,m.getOrigin());
@@ -671,6 +673,12 @@ void rEntityImpl_c::updateInstanceAttachments() {
 			instance->updateKeyframedModelInstance(kfModel,0,firstSurface);
 			instance->transform(m,firstSurface,firstSurface+kfModel->getNumSurfaces());
 			firstSurface += kfModel->getNumSurfaces();
+		} else if(a.model->isSkeletal()) {
+			const skelModelAPI_i *skelModel = a.model->getSkelModelAPI();
+			const boneOrArray_c &bones = skelModel->getBaseFrameABS();
+			instance->updateSkelModelInstance(skelModel,bones,firstSurface);
+			instance->transform(m,firstSurface,firstSurface+skelModel->getNumSurfs());
+			firstSurface += skelModel->getNumSurfs();
 		} else {
 			// TODO
 		}
@@ -828,6 +836,8 @@ void rEntityImpl_c::updateAnimatedEntity() {
 				// V: update vertex positions, normals, tangents and binormals (TBN approx)
 				instance->updateSkelModelInstance(skelModel,*finalBones);	
 				updateInstanceAttachments();	
+			} else {
+				updateInstanceAttachments();
 			}
 		}
 	} else if(model->isKeyframed()) {
@@ -974,6 +984,17 @@ bool rEntityImpl_c::getBoneLocalOrientation(int localBoneIndex, class matrix_c &
 		return true; // error 
 	}
 	if(skelAnimCtrl == 0) {
+		if(finalBones) {
+			out = finalBones->getBoneMat(localBoneIndex);
+			return false;
+		}
+		// we still can try to use baseframe (if it's present)
+		if(skel) {
+			if(localBoneIndex < skel->getBaseFrameABS().size()) {
+				out = skel->getBaseFrameABS()[localBoneIndex].mat;
+				return false;
+			}
+		}
 		out.identity();
 		return true; // error 
 	}

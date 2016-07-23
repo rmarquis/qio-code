@@ -396,7 +396,7 @@ public:
 	void addGeometryToColMeshBuilder(class colMeshBuilderAPI_i *out);
 	// skeletal models instancing
 	void initSkelModelInstance(const class skelModelAPI_i *skel);
-	void updateSkelModelInstance(const class skelModelAPI_i *skel, const class boneOrArray_c &bones);
+	void updateSkelModelInstance(const class skelModelAPI_i *skel, const class boneOrArray_c &bones, u32 sfOfs = 0);
 	// keyframed models instacing
 	void initKeyframedModelInstance(const class kfModelAPI_i *kf, u32 firstSurface = 0);
 	void updateKeyframedModelInstance(const class kfModelAPI_i *kf, u32 frameNum, u32 firstSurface = 0);

@@ -345,6 +345,7 @@ bool skelModelIMPL_c::writeMD5Mesh(const char *fname) {
 		w->writeText("}\n");
 		w->writeText("\n");
 	}
+	g_core->Print("Wrote %i bones %i surfs to %s\n",bones.size(),surfs.size(),fname);
 	return false;
 }
 bool skelModelIMPL_c::loadMD5Mesh(const char *fname) {
@@ -580,7 +581,7 @@ bool skelModelIMPL_c::loadMD5Mesh(const char *fname) {
 	}
 	this->name = fname;
 
-	if(1) {
+	if(0) {
 		str testWrite = fname;
 		testWrite.stripExtension();
 		testWrite.append("_rewritten.md5mesh");
