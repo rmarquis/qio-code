@@ -35,6 +35,9 @@ public:
 
 	virtual void postSpawn();
 
+	void setSkin(const char *skinName);
+
+
 	virtual void setKeyValue(const char *key, const char *value);
 };
 

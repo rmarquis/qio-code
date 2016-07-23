@@ -32,31 +32,39 @@ AI_RTCW_Base::AI_RTCW_Base() {
 	bTakeDamage = true;
 
 }
+void AI_RTCW_Base::setSkin(const char *skinName) {
+	// "skin" "infantryss/assault1"
+	// modelName / skinName
+	str modelName = skinName;
+	modelName.stripAfterFirst('/');
+	str modelPath = "models/players/";
+	modelPath.append(modelName);
+	modelPath.append("/body.mds");
+	str headPath = "models/players/";
+	headPath.append(modelName);
+	headPath.append("/head.mdc");
+	setRenderModel(modelPath);
+	// old test to play all anims
+	//setAnimation(modelPath);
+	// This animation name is inside wolfanim.cfg
+	//setAnimation("alert_bk_1h");
+	setAnimation("alert_idle_1h");
+	
+	setRenderModelAttachment(0,"tag_head",headPath);
+	const char *skin = strchr(skinName,'/');
+	if(skin) {
+		skin++; // skip /
+		setRenderModelSkin(skin);
+	}
+}
 void AI_RTCW_Base::setKeyValue(const char *key, const char *value) {
 	if(!stricmp(key,"skin")) {
 		// "skin" "infantryss/assault1"
 		// modelName / skinName
-		str modelName = value;
-		modelName.stripAfterFirst('/');
-		str modelPath = "models/players/";
-		modelPath.append(modelName);
-		modelPath.append("/body.mds");
-		str headPath = "models/players/";
-		headPath.append(modelName);
-		headPath.append("/head.mdc");
-		setRenderModel(modelPath);
-		// old test to play all anims
-		//setAnimation(modelPath);
-		// This animation name is inside wolfanim.cfg
-		setAnimation("alert_bk_1h");
-		setRenderModelAttachment(0,"tag_head",headPath);
-		const char *skin = strchr(value,'/');
-		if(skin) {
-			skin++; // skip /
-			setRenderModelSkin(skin);
-		}
+		this->setSkin(value);
+	} else {
+		ModelEntity::setKeyValue(key,value);
 	}
-	ModelEntity::setKeyValue(key,value);
 }
 void AI_RTCW_Base::postSpawn() {
 	if(cmod) {
