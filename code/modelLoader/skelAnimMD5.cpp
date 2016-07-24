@@ -273,10 +273,12 @@ bool skelAnimMD5_c::loadMD5Anim(const char *fname) {
 	frameTime = 1.f / frameRate;
 	totalTime = frameTime * float(frames.size());
 
-	str testName = fname;
-	testName.stripExtension();
-	testName.append("_rewrite.md5anim");
-	writeMD5Anim(testName);
+	if(0) {
+		str testName = fname;
+		testName.stripExtension();
+		testName.append("_rewrite.md5anim");
+		writeMD5Anim(testName);
+	}
 
 	return false; // no error
 }	

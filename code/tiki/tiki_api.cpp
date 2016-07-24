@@ -262,6 +262,18 @@ public:
 	virtual const char *getClassName() const {
 		return className;
 	}
+	virtual const char *getAnimAlias(int animIndex) const {
+		if(animIndex < 0)
+			return 0;
+		if(animIndex >= anims.size())
+			return 0;
+		if(anims[animIndex]==0)
+			return 0;
+		return anims[animIndex]->getAlias();
+	}
+	virtual u32 getNumAnims() const {
+		return anims.size();
+	}
 	virtual const class tikiAnim_i *getAnim(int animIndex) const {
 		if(animIndex < 0)
 			return 0;
@@ -498,9 +510,22 @@ class tikiParser_c : public parser_c {
 	str curPath;
 	tikiBuilder_i *out;
 
+	bool checkForPath() {
+		if(atWord("path")) {
+			curPath = getToken();
+			if(curPath.isLastChar('/')==false && curPath.isLastChar('\\')==false) {
+				curPath.appendChar('/');
+			}
+			curPath.backSlashesToSlashes();
+			return true;
+		}
+		return false;
+	}
 	bool parseSetup() {
 		while(atChar('}')==false) {
-			if(atWord("scale")) {
+			if(checkForPath()) {
+				continue;
+			} else if(atWord("scale")) {
 				float sc = getFloat();
 				if(out) {
 					out->setScale(sc);
@@ -516,12 +541,6 @@ class tikiParser_c : public parser_c {
 			} else if(atWord("radius")) {
 				// models/otto.tik
 				float sc = getFloat();
-			} else if(atWord("path")) {
-				curPath = getToken();
-				if(curPath.isLastChar('/')==false && curPath.isLastChar('\\')==false) {
-					curPath.appendChar('/');
-				}
-				curPath.backSlashesToSlashes();
 			} else if(atWord("skelmodel")) {
 				str skelModelName;
 				// used for skeletal TIKIs,
@@ -568,6 +587,9 @@ class tikiParser_c : public parser_c {
 	}
 	bool parseAnimations() {
 		while(atChar('}')==false) {
+			if(checkForPath()) {
+				continue;
+			}
 			//if(atWord("$include")) {
 			//	str fileName;
 			//	getToken(fileName);

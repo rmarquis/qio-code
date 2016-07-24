@@ -45,6 +45,7 @@ static aCvar_c cg_testModel_attachToCamera("cg_testModel_attachToCamera","0");
 static aCvar_c cg_testModel_printNumTris("cg_testModel_printNumTris","0");
 static aCvar_c cg_testModel_attachmentModel("cg_testModel_attachmentModel","");
 static aCvar_c cg_testModel_attachmentTag("cg_testModel_attachmentTag","t_weapon_R");
+static aCvar_c cg_testModel_printAnimsList("cg_testModel_printAnimsList","0");
 
 static rEntityAPI_i *cg_testModelEntity = 0;
 static rEntityAPI_i *cg_testModelAttachmentEntity = 0;
@@ -93,8 +94,16 @@ void CG_RunTestModel() {
 		usePos += cg.refdefViewAxis.getForward() * cg_testModelAttached_extraX.getFloat();
 		usePos += cg.refdefViewAxis.getLeft() * cg_testModelAttached_extraY.getFloat();
 		usePos += cg.refdefViewAxis.getUp() * cg_testModelAttached_extraZ.getFloat();
+#if 1
+		matrix_c m;
+		m.fromAnglesAndOrigin(cg.refdefViewAngles,usePos);
+		m.rotateZ(cg_testModelAttached_extraYaw.getFloat());
+		cg_testModelEntity->setOrigin(m.getOrigin());
+		cg_testModelEntity->setAngles(m.getAngles());
+#else
 		cg_testModelEntity->setOrigin(usePos);
-		cg_testModelEntity->setAngles(cg.refdefViewAngles);
+		cg_testModelEntity->setAngles(cg.refdefViewAngles+vec3_c(0,cg_testModelAttached_extraYaw.getFloat(),0));
+#endif
 	}
 	
 	rModelAPI_i *attachedMod = rf->registerModel(cg_testModel_attachmentModel.getStr());
@@ -114,6 +123,12 @@ void CG_RunTestModel() {
 	}
 	if(cg_testModel_printNumTris.getInt()) {
 		g_core->Print("Testmodel has %i triangles\n",cg_testModelEntity->getEntityTriangleCount());
+	}
+	if(cg_testModel_printAnimsList.getInt()) {
+		for(u32 i = 0; i < mod->getNumAnims(); i++) {
+			const char *alias = mod->getAnimAlias(i);
+			g_core->Print("Testmodel anim %i of %i - %s\n",i,mod->getNumAnims(),alias);
+		}
 	}
 	//cg_testModelEntity->hideSurface(2);
 	//cg_testModelEntity->hideSurface(3);
