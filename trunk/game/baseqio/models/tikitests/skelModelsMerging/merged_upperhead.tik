@@ -1,0 +1,7 @@
+TIKI
+setup
+{
+	path models/tikitests/skelModelsMerging/
+	skelmodel head.md5mesh
+	skelmodel body_upper.md5mesh
+}
