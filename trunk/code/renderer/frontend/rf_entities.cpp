@@ -402,6 +402,11 @@ void rEntityImpl_c::setAnim(const char *animName, int newFlags) {
 		const class skelAnimAPI_i *anim = this->model->findSkelAnim(animName);
 		return setAnim(anim,newFlags);
 	}
+	if(this->model->isTIKI()) {
+		int animIndex = this->model->getTIKI()->findAnim(animName);
+		this->setTIKIModelAnimLocalIndex(animIndex,0);
+		return;
+	}
 	class modelDeclAPI_i *dm = this->model->getDeclModelAPI();
 	if(dm == 0)
 		return;
