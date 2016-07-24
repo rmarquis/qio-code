@@ -69,6 +69,8 @@ public:
 		return verts.size();
 	}
 	u32 getNumTris() const {
+		if(refIndices != 0)
+			return refIndices->getNumIndices() / 3;
 		return indices.getNumIndices() / 3;
 	}
 	u32 getNumIndices() const {
