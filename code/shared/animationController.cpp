@@ -154,6 +154,9 @@ void skelAnimController_c::updateModelAnimationLocal(const class skelModelAPI_i 
 	if(anim == 0) {
 		return;
 	}
+	if(skelModel == 0) {
+		return;
+	}
 	if(anim == nextAnim) {
 		if(anim->getNumBones()) {
 			outLocalBones.resize(anim->getNumBones());

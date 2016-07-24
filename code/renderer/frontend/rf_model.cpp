@@ -292,6 +292,8 @@ u32 model_c::getTotalTriangleCount() const {
 		return this->skelModel->getTotalTriangleCount();
 	} else if(type == MOD_STATIC) {
 		return this->staticModel->getTotalTriangleCount();
+	} else if(type == MOD_KEYFRAMED) {
+		return this->kfModel->getTotalTriangleCount();
 	} else {
 
 	}
