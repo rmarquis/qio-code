@@ -49,6 +49,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/afRagdollHelper.h>
 #include <shared/skelUtils.h>
 #include <shared/perStringCallback.h>
+#include <shared/parser.h>
 
 DEFINE_CLASS(ModelEntity, "BaseEntity");
 DEFINE_CLASS_ALIAS(ModelEntity, brushmodel);
@@ -167,6 +168,10 @@ ModelEntity::ModelEntity() {
 	torsoAnimationTime = 0;
 }
 ModelEntity::~ModelEntity() {
+	for(u32 i = 0; i < privateAttachedEntities.size(); i++) {
+		delete privateAttachedEntities[i];
+		privateAttachedEntities[i] = 0;
+	}
 	if(body) {
 		destroyPhysicsObject();
 	}
@@ -552,6 +557,8 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 		this->myEdict->s->scale.set(f,f,f);
 	} else if(!_stricmp(key,"anim")) {
 		this->setAnimation(value);
+	} else if(!_stricmp(key,"attachmodel")) {
+		this->attachModel(value);
 	} else {
 		// fallback to parent class keyvalues
 		BaseEntity::setKeyValue(key,value);
@@ -837,6 +844,22 @@ void ModelEntity::destroyPhysicsObject() {
 		ragdoll = 0;
 		this->myEdict->s->activeRagdollDefNameIndex = 0;
 	}
+}
+void ModelEntity::attachModel(const char *args) {
+	parser_c p;
+	str modelName;
+	str tagName;
+	p.setup(args);
+	p.getToken(modelName);
+	p.getToken(tagName);
+	BaseEntity *be = G_SpawnGeneric(modelName);
+	if(be == 0) {
+
+		return;
+	}
+	int tagNum = this->getBoneNumForName(tagName);
+	be->setParent(this,tagNum);
+	privateAttachedEntities.push_back(be);
 }
 void ModelEntity::updateAnimations() {
 	{
