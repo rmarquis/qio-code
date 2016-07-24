@@ -34,7 +34,9 @@ class Player;
 
 class ModelEntity : public BaseEntity {
 	str renderModelName;
-	
+	// those are fried along with this entity
+	arraySTD_c<BaseEntity*> privateAttachedEntities; 
+
 	void setDamageZone(const char *zoneName, const char *value);
 protected:
 	// bullet physics object
@@ -84,6 +86,7 @@ protected:
 		return renderModelName;
 	}
 	void updateAnimations();
+	void attachModel(const char *args);
 public:
 	ModelEntity();
 	virtual ~ModelEntity();
