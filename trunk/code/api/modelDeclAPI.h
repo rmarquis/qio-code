@@ -50,7 +50,7 @@ public:
 
 	//// animations list access
 	virtual u32 getNumAnims() const = 0;
-	//virtual const char *animAliasForNum(u32 index) = 0;
+	virtual const char *getAnimAlias(u32 index) const = 0;
 	//virtual const char *animFileNameForNum(u32 index) = 0;
 	//virtual const class animDefAPI_i *animDefForNum(u32 index) = 0;
 	virtual int getAnimIndexForAnimAlias(const char *alias) const = 0;

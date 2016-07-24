@@ -148,7 +148,19 @@ u32 model_c::getNumAnims() const {
 	if(type == MOD_DECL) {
 		return declModel->getNumAnims();
 	}
+	if(type == MOD_TIKI) {
+		return tiki->getNumAnims();
+	}
 	return 0;
+}
+const char *model_c::getAnimAlias(u32 i) const {
+	if(type == MOD_DECL) {
+		return declModel->getAnimAlias(i);
+	}
+	if(type == MOD_TIKI) {
+		return tiki->getAnimAlias(i);
+	}
+	return 0;	
 }
 bool model_c::hasAnim(const char *animName) const {
 	if(type == MOD_DECL) {

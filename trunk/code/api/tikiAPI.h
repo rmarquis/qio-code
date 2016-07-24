@@ -67,6 +67,8 @@ public:
 
 	virtual int findAnim(const char *animAlias) const = 0;
 	virtual const class tikiAnim_i *getAnim(int animIndex) const = 0;
+	virtual u32 getNumAnims() const = 0;
+	virtual const char *getAnimAlias(int animIndex) const = 0;
 	virtual int getAnimTotalTimeMs(int animIndex) const = 0;
 	virtual void applyMaterialRemapsTo(class modelPostProcessFuncs_i *out) const = 0;
 	// for both bones and TAN tags

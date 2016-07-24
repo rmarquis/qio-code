@@ -303,6 +303,9 @@ public:
 			return "bad_bone_index";
 		return skelModel->getBoneName(boneIndex);
 	}
+	virtual const char *getAnimAlias(u32 index) const {
+		return anims[index].getAlias();
+	}
 	virtual u32 getNumAnims() const {
 		return anims.size();
 	}
