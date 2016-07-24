@@ -1,0 +1,12 @@
+TIKI
+setup
+{
+	path models/tikitests/skelModelsMerging/
+	skelmodel body_lower.md5mesh
+	skelmodel body_upper.md5mesh
+	skelmodel head.md5mesh
+}
+animations
+{
+	idle anim_test_run.md5anim
+}
