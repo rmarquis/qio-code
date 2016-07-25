@@ -134,6 +134,12 @@ bool InputGeom::fromOBJ(class rcContext* ctx, rcMeshLoaderObj *obj) {
 	
 	m_mesh = obj;
 
+	if (m_mesh->getVerts() == 0 || m_mesh->getVertCount() == 0)
+	{
+		ctx->log(RC_LOG_ERROR, "buildTiledNavigation: mesh has no vertices.");
+		return false;
+	}		
+
 	rcCalcBounds(m_mesh->getVerts(), m_mesh->getVertCount(), m_meshBMin, m_meshBMax);
 
 	m_chunkyMesh = new rcChunkyTriMesh;

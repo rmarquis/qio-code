@@ -186,6 +186,10 @@ void rcFreePolyMeshDetail(rcPolyMeshDetail* dmesh)
 
 void rcCalcBounds(const float* verts, int nv, float* bmin, float* bmax)
 {
+	// V: this happends for empty obj models
+	if(verts == 0){
+		return;
+	}
 	// Calculate bounding box.
 	rcVcopy(bmin, verts);
 	rcVcopy(bmax, verts);
