@@ -1,0 +1,18 @@
+TIKI
+setup
+{
+	path models/tikitests/fpsHands/
+	skelmodel fpsHands.md5mesh
+}
+animations 
+{
+	path models/tikitests/fpsHands/anims
+	
+	reload reload.md5anim
+	run run.md5anim
+	attack attack.md5anim
+	attack2 attack2.md5anim
+	raise raise.md5anim
+	holster holster.md5anim
+
+}

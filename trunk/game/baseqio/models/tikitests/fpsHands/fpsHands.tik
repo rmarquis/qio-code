@@ -1,0 +1,6 @@
+TIKI
+setup
+{
+	path models/tikitests/fpsHands/
+	skelmodel fpsHands.md5mesh
+}
