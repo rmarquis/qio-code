@@ -568,6 +568,26 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Shared"
+			>
+			<File
+				RelativePath="..\..\code\shared\autoCmd.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\autoCmd.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\autoCvar.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\autoCvar.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\..\code\rd\rd_api.cpp"
 			>
