@@ -359,6 +359,7 @@ public:
 
 	void getReferencedMatNames(class perStringCallbackListener_i *callback) const;
 
+	void iterateWorldSolidTriangles(class perTriCallback_i *cb);
 	bool getModelData(u32 modelNum, class staticModelCreatorAPI_i *out) const;
 	
 	void setSurfaceMaterial(u32 surfaceNum, class mtrAPI_i *material);

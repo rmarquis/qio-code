@@ -24,6 +24,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 // rd_api.cpp
 #include <api/iFaceMgrAPI.h>
 
+#include "demo/Sample.h"
+#include "demo/Sample_SoloMesh.h"
+#include "demo/MeshLoaderOBJ.h"
+#include "demo/InputGeom.h"
 //
 #include <api/vfsAPI.h>
 #include <api/coreAPI.h>
@@ -38,13 +42,104 @@ or simply visit <http://www.gnu.org/licenses/>.
 //#include <api/mtrAPI.h>
 //#include <api/mtrStageAPI.h>
 //#include <api/materialSystemAPI.h>
-class rdIMPL_c : public rdAPI_i {
-public:
-	virtual void init() {
 
+
+
+
+
+
+//
+//class rdWorldBase_c {
+//protected:
+//	class InputGeom* m_geom;
+//	class dtNavMesh* m_navMesh;
+//	class dtNavMeshQuery* m_navQuery;
+//	class dtCrowd* m_crowd;
+//
+//	unsigned char m_navMeshDrawFlags;
+//
+//	float m_cellSize;
+//	float m_cellHeight;
+//	float m_agentHeight;
+//	float m_agentRadius;
+//	float m_agentMaxClimb;
+//	float m_agentMaxSlope;
+//	float m_regionMinSize;
+//	float m_regionMergeSize;
+//	float m_edgeMaxLen;
+//	float m_edgeMaxError;
+//	float m_vertsPerPoly;
+//	float m_detailSampleDist;
+//	float m_detailSampleMaxError;
+//	int m_partitionType;
+//	
+//};
+//class rdWorldSimple_c : public rdWorldBase_c {
+//
+//	void cleanup();
+//	void buildRDWorld();
+//};
+//void rdWorldSimple_c::cleanup() {
+//
+//}
+//void rdWorldSimple_c::buildRDWorld() {
+//	if (!m_geom || !m_geom->getMesh())
+//	{
+//		g_core->RedWarning("buildNavigation: Input mesh is not specified.");
+//		return false;
+//	}
+//	
+//	cleanup();
+//	
+//	const float* bmin = m_geom->getNavMeshBoundsMin();
+//	const float* bmax = m_geom->getNavMeshBoundsMax();
+//	const float* verts = m_geom->getMesh()->getVerts();
+//	const int nverts = m_geom->getMesh()->getVertCount();
+//	const int* tris = m_geom->getMesh()->getTris();
+//	const int ntris = m_geom->getMesh()->getTriCount();
+//
+//}
+#include <windows.h>
+#include <gl/gl.h>
+class rdIMPL_c : public rdAPI_i {
+	Sample *s;
+	BuildContext *ctx;
+	float scale;
+	float scaleInv;
+public:
+	rdIMPL_c() {
+		s = 0;
+		ctx = 0;
+		scale = 0.05f;
+		scaleInv = 1.f / scale;
+	}
+	virtual void init() {
+		
+	}
+	virtual void doDebugDrawing3D() {
+		if(s) {
+			glPushMatrix();
+			glScalef(scaleInv,scaleInv,scaleInv);
+			glScalef(1,-1,1);
+			glRotatef(90,1,0,0);
+			s->handleRender();
+			glPopMatrix();
+		}
 	}
 	virtual void shutdown() {
 
+	}
+	virtual void onRenderWorldMapLoaded() {
+		rcMeshLoaderObj *obj = new rcMeshLoaderObj();
+		obj->setScale(scale);
+		rf->iterateWorldSolidTriangles(obj);
+		ctx = new BuildContext();
+		s = new Sample_SoloMesh();
+		s->setContext(ctx);
+		InputGeom *ig = new InputGeom();
+		ig->fromOBJ(ctx,obj);
+		s->handleMeshChanged(ig);
+		s->handleBuild();
 	}
 };
 

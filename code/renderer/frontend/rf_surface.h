@@ -57,6 +57,7 @@ public:
 
 	// call markAsUsed on every referenced material
 	void markMaterials();
+	void iterateTriangles(class perTriCallback_i *cb);
 
 	void setVerts(const class rVertexBuffer_c &v) {
 		verts = v;
@@ -328,6 +329,7 @@ public:
 		const char *num = name.c_str() + 5;
 		return atoi(num);
 	}
+	void iterateTriangles(class perTriCallback_i *cb);
 	void iterateMaterialNames(class perStringCallbackListener_i *cb) const;
 	void setVertexColorsRGB(const byte *p);
 	// staticModelCreatorAPI_i implementation

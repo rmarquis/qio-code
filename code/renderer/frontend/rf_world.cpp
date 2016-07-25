@@ -466,6 +466,11 @@ bool RF_CullBoundsByPortals(const aabb &absBB, const arraySTD_c<u32> &areaNums) 
 	return false;
 }
 
+void RF_IterateWorldSolidTriangles(class perTriCallback_i *cb) {
+	if(r_bspTree) {
+		r_bspTree->iterateWorldSolidTriangles(cb);
+	}
+}
 void RF_WorldDebugDrawing() {
 	if(r_bspTree) {
 		r_bspTree->doDebugDrawing();

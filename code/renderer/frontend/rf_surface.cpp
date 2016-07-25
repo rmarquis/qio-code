@@ -39,6 +39,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/texturedVertex.h>
 #include "rf_decalProjector.h"
 #include <shared/simpleTexturedPoly.h>
+#include <shared/perTriCallback.h>
 #include <api/colMeshBuilderAPI.h>
 #include "../pointLightSample.h"
 #include <shared/perStringCallback.h>
@@ -65,6 +66,14 @@ r_surface_c::r_surface_c() {
 r_surface_c::~r_surface_c() {
 	this->clear();
 }	
+void r_surface_c::iterateTriangles(class perTriCallback_i *cb) {
+	for(u32 i = 0; i < indices.getNumIndices(); i+=3) {
+		const vec3_c &a = verts[indices[i+0]].xyz;
+		const vec3_c &b = verts[indices[i+1]].xyz;
+		const vec3_c &c = verts[indices[i+2]].xyz;
+		cb->addTri(a,b,c);
+	}
+}
 // call markAsUsed on every referenced material
 void r_surface_c::markMaterials() {
 	if(mat) {
@@ -1244,6 +1253,11 @@ void r_model_c::setVertexColorsRGB(const byte *p) {
 	for(u32 i = 0; i < surfs.size(); i++) {
 		surfs[i].setVertexColorsRGB(p);
 		p += (3*surfs[i].getNumVerts());
+	}
+}
+void r_model_c::iterateTriangles(class perTriCallback_i *cb) {
+	for(u32 i = 0; i < surfs.size(); i++) {
+		surfs[i].iterateTriangles(cb);
 	}
 }
 void r_model_c::iterateMaterialNames(class perStringCallbackListener_i *cb) const {

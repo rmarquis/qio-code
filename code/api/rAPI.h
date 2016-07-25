@@ -77,7 +77,7 @@ public:
 
 	// misc functions	
 	virtual void clearEntities() = 0;
-	virtual void loadWorldMap(const char *mapName) = 0;
+	virtual bool loadWorldMap(const char *mapName) = 0;
 	virtual const char *getLoadedMapName() const = 0;
 	virtual class mtrAPI_i *registerMaterial(const char *matName) = 0;
 	virtual bool isMaterialOrImagePresent(const char *matName) = 0;
@@ -104,6 +104,7 @@ public:
 	// areaNum is needed only for .proc world maps
 	virtual void setWorldSurfaceMaterial(const char *matName, int surfNum, int areaNum = 0) = 0;
 
+	virtual void iterateWorldSolidTriangles(class perTriCallback_i *cb) const = 0;
 	// call markAsUsed for every referenced material
 	virtual void markUsedMaterials() = 0;
 

@@ -96,6 +96,7 @@ class InputGeom
 	int m_volumeCount;
 	///@}
 	
+	
 	bool loadMesh(class rcContext* ctx, const std::string& filepath);
 	bool loadGeomSet(class rcContext* ctx, const std::string& filepath);
 public:
@@ -103,6 +104,7 @@ public:
 	~InputGeom();
 	
 	
+	bool fromOBJ(class rcContext* ctx, rcMeshLoaderObj *obj);
 	bool load(class rcContext* ctx, const std::string& filepath);
 	bool saveGeomSet(const BuildSettings* settings);
 	

@@ -33,6 +33,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/gameAPI.h>
 #include <api/rAPI.h>
 #include <api/rbAPI.h>
+#include <api/rdAPI.h>
 #include <api/rEntityAPI.h>
 #include <api/mtrAPI.h>
 
@@ -76,6 +77,9 @@ void RF_DoDebugDrawing() {
 	// game module debug drawing (only for local servers)
 	if(g_game) {
 		RF_GameDebugDrawing();
+	}
+	if(rd) {
+		rd->doDebugDrawing3D();
 	}
 	// show crossair surface info (material name, etc)
 	if(r_showSurfaceInfo.getInt()) {
