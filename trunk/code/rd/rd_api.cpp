@@ -35,7 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rbAPI.h>
 #include <api/rdAPI.h>
 #include <api/cvarAPI.h>
-//#include <api/declManagerAPI.h>
+#include <api/clientAPI.h>
 #include <shared/autoCvar.h>
 //#include <api/materialSystemAPI.h>
 #include <shared/autoCmd.h>
@@ -43,7 +43,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 //#include <api/mtrStageAPI.h>
 //#include <api/materialSystemAPI.h>
 
-
+#include <shared/trace.h>
+#include <client/keyCodes.h>
+#include <math/matrix.h>
 
 
 
@@ -106,12 +108,17 @@ class rdIMPL_c : public rdAPI_i {
 	BuildContext *ctx;
 	float scale;
 	float scaleInv;
+	matrix_c rd2qio;
+	matrix_c qio2rd;
 public:
 	rdIMPL_c() {
 		s = 0;
 		ctx = 0;
 		scale = 0.05f;
 		scaleInv = 1.f / scale;
+		rd2qio.setupXRotation(90);
+		rd2qio.scale(scaleInv,scaleInv,-scaleInv);
+		qio2rd = rd2qio.getInversed();
 	}
 	virtual void init() {
 		AUTOCVAR_RegisterAutoCvars();
@@ -120,11 +127,23 @@ public:
 	virtual void doDebugDrawing3D() {
 		if(s) {
 			glPushMatrix();
-			glScalef(scaleInv,scaleInv,scaleInv);
-			glScalef(1,-1,1);
-			glRotatef(90,1,0,0);
+			//glRotatef(90,1,0,0);
+			//glScalef(scaleInv,scaleInv,-scaleInv);
+			glMultMatrixf(rd2qio);
 			s->handleRender();
 			glPopMatrix();
+			
+			bool lmb = g_client->Key_IsDown(K_MOUSE1);
+			bool rmb = g_client->Key_IsDown(K_MOUSE2);
+			if(lmb || rmb) {
+				trace_c tr;
+				rf->doCameraTrace(tr,true);
+
+				vec3_c sl, hl;
+				sl = qio2rd.transformPoint2(tr.getStartPos());
+				hl = qio2rd.transformPoint2(tr.getHitPos());
+				s->handleClick(sl,hl,rmb);
+			}
 		}
 	}
 	virtual void shutdown() {
@@ -135,6 +154,11 @@ public:
 		rcMeshLoaderObj *obj = new rcMeshLoaderObj();
 		obj->setScale(scale);
 		rf->iterateWorldSolidTriangles(obj);
+		if(obj->getTriCount() == 0) {
+			delete obj;
+			obj = 0;
+			return;
+		}
 		ctx = new BuildContext();
 		s = new Sample_SoloMesh();
 		s->setContext(ctx);
@@ -154,7 +178,7 @@ cvarsAPI_s *g_cvars = 0;
 coreAPI_s *g_core = 0;
 rAPI_i *rf = 0;
 rbAPI_i *rb = 0;
-//materialSystemAPI_i *g_ms = 0;
+clAPI_s *g_client = 0;
 //declManagerAPI_i *g_declMgr = 0;
 // exports
 static rdIMPL_c g_staticRDAPI;
@@ -176,7 +200,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_core,CORE_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&rf,RENDERER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&rb,RENDERER_BACKEND_API_IDENTSTR);
-//	g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_client,CLIENT_API_IDENTSTR);
 //	g_iFaceMan->registerIFaceUser(&g_declMgr,DECL_MANAGER_API_IDENTSTR);
 //
 //	g_declMgr->loadAllEntityDecls();

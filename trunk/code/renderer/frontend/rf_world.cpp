@@ -470,6 +470,9 @@ void RF_IterateWorldSolidTriangles(class perTriCallback_i *cb) {
 	if(r_bspTree) {
 		r_bspTree->iterateWorldSolidTriangles(cb);
 	}
+	if(r_worldModel) {
+		r_worldModel->iterateTriangles(cb);
+	}
 }
 void RF_WorldDebugDrawing() {
 	if(r_bspTree) {
