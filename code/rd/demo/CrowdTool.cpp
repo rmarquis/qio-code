@@ -17,10 +17,10 @@
 ////
 //
 //#define _USE_MATH_DEFINES
-//#include <math.h>
-//#include <stdio.h>
-//#include <string.h>
-//#include <float.h>
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+#include <float.h>
 //#include "SDL.h"
 //#include "SDL_opengl.h"
 //#ifdef __APPLE__
@@ -29,7 +29,7 @@
 //#	include <GL/glu.h>
 //#endif
 //#include "imgui.h"
-//#include "CrowdTool.h"
+#include "CrowdTool.h"
 //#include "InputGeom.h"
 //#include "Sample.h"
 //#include "DetourCrowd.h"
@@ -95,13 +95,13 @@
 //	bmax[2] = p[2] + r;
 //}
 //
-//CrowdToolState::CrowdToolState() :
-//	m_sample(0),
-//	m_nav(0),
-//	m_crowd(0),
-//	m_targetRef(0),
-//	m_run(true)
-//{
+CrowdToolState::CrowdToolState() :
+	m_sample(0),
+	m_nav(0),
+	m_crowd(0),
+	m_targetRef(0),
+	m_run(true)
+{
 //	m_toolParams.m_expandSelectedDebugDraw = true;
 //	m_toolParams.m_showCorners = false;
 //	m_toolParams.m_showCollisionSegments = false;
@@ -132,15 +132,15 @@
 //	memset(&m_agentDebug, 0, sizeof(m_agentDebug));
 //	m_agentDebug.idx = -1;
 //	m_agentDebug.vod = m_vod;
-//}
+}
 //
-//CrowdToolState::~CrowdToolState()
-//{
+CrowdToolState::~CrowdToolState()
+{
 //	dtFreeObstacleAvoidanceDebugData(m_vod);
-//}
+}
 //
-//void CrowdToolState::init(class Sample* sample)
-//{
+void CrowdToolState::init(class Sample* sample)
+{
 //	if (m_sample != sample)
 //	{
 //		m_sample = sample;
@@ -195,14 +195,14 @@
 //		
 //		crowd->setObstacleAvoidanceParams(3, &params);
 //	}
-//}
+}
 //
-//void CrowdToolState::reset()
-//{
-//}
+void CrowdToolState::reset()
+{
+}
 //
-//void CrowdToolState::handleRender()
-//{
+void CrowdToolState::handleRender()
+{
 //	DebugDrawGL dd;
 //	const float rad = m_sample->getAgentRadius();
 //	
@@ -518,11 +518,11 @@
 //	}
 //	
 //	dd.depthMask(true);
-//}
+}
 //
 //
-//void CrowdToolState::handleRenderOverlay(double* proj, double* model, int* view)
-//{
+void CrowdToolState::handleRenderOverlay(double* proj, double* model, int* view)
+{
 //	GLdouble x, y, z;
 //	
 //	// Draw start and end point labels
@@ -631,16 +631,16 @@
 //		drawGraph(&gp, &m_crowdSampleCount, 0, "Sample Count", duRGBA(96,96,96,128));
 //	}
 //	
-//}
+}
 //
-//void CrowdToolState::handleUpdate(const float dt)
-//{
+void CrowdToolState::handleUpdate(const float dt)
+{
 //	if (m_run)
 //		updateTick(dt);
-//}
+}
 //
-//void CrowdToolState::addAgent(const float* p)
-//{
+void CrowdToolState::addAgent(const float* p)
+{
 //	if (!m_sample) return;
 //	dtCrowd* crowd = m_sample->getCrowd();
 //	
@@ -678,10 +678,10 @@
 //			dtVcopy(&trail->trail[i*3], p);
 //		trail->htrail = 0;
 //	}
-//}
+}
 //
-//void CrowdToolState::removeAgent(const int idx)
-//{
+void CrowdToolState::removeAgent(const int idx)
+{
 //	if (!m_sample) return;
 //	dtCrowd* crowd = m_sample->getCrowd();
 //
@@ -689,12 +689,12 @@
 //	
 //	if (idx == m_agentDebug.idx)
 //		m_agentDebug.idx = -1;
-//}
+}
 //
-//void CrowdToolState::hilightAgent(const int idx)
-//{
+void CrowdToolState::hilightAgent(const int idx)
+{
 //	m_agentDebug.idx = idx;
-//}
+}
 //
 //static void calcVel(float* vel, const float* pos, const float* tgt, const float speed)
 //{
@@ -704,8 +704,8 @@
 //	dtVscale(vel, vel, speed);
 //}
 //
-//void CrowdToolState::setMoveTarget(const float* p, bool adjust)
-//{
+void CrowdToolState::setMoveTarget(const float* p, bool adjust)
+{
 //	if (!m_sample) return;
 //	
 //	// Find nearest point on navmesh and set move request to that location.
@@ -758,10 +758,10 @@
 //			}
 //		}
 //	}
-//}
+}
 //
-//int CrowdToolState::hitTestAgents(const float* s, const float* p)
-//{
+int CrowdToolState::hitTestAgents(const float* s, const float* p)
+{
 //	if (!m_sample) return -1;
 //	dtCrowd* crowd = m_sample->getCrowd();
 //	
@@ -786,10 +786,11 @@
 //	}
 //
 //	return isel;
-//}
+	return 0;
+}
 //
-//void CrowdToolState::updateAgentParams()
-//{
+void CrowdToolState::updateAgentParams()
+{
 //	if (!m_sample) return;
 //	dtCrowd* crowd = m_sample->getCrowd();
 //	if (!crowd) return;
@@ -824,10 +825,10 @@
 //		params.separationWeight = m_toolParams.m_separationWeight;
 //		crowd->updateAgentParameters(i, &params);
 //	}	
-//}
+}
 //
-//void CrowdToolState::updateTick(const float dt)
-//{
+void CrowdToolState::updateTick(const float dt)
+{
 //	if (!m_sample) return;
 //	dtNavMesh* nav = m_sample->getNavMesh();
 //	dtCrowd* crowd = m_sample->getCrowd();
@@ -855,20 +856,20 @@
 //	
 //	m_crowdSampleCount.addSample((float)crowd->getVelocitySampleCount());
 //	m_crowdTotalTime.addSample(getPerfTimeUsec(endTime - startTime) / 1000.0f);
-//}
+}
 //
 //
 //
+
+CrowdTool::CrowdTool() :
+	m_sample(0),
+	m_state(0),
+	m_mode(TOOLMODE_CREATE)
+{
+}
 //
-//CrowdTool::CrowdTool() :
-//	m_sample(0),
-//	m_state(0),
-//	m_mode(TOOLMODE_CREATE)
-//{
-//}
-//
-//void CrowdTool::init(Sample* sample)
-//{
+void CrowdTool::init(Sample* sample)
+{
 //	if (m_sample != sample)
 //	{
 //		m_sample = sample;
@@ -884,14 +885,14 @@
 //		sample->setToolState(type(), m_state);
 //	}
 //	m_state->init(sample);
-//}
+}
 //
-//void CrowdTool::reset()
-//{	
-//}
+void CrowdTool::reset()
+{	
+}
 //
-//void CrowdTool::handleMenu()
-//{
+void CrowdTool::handleMenu()
+{
 //	if (!m_state)
 //		return;
 //	CrowdToolParams* params = m_state->getToolParams();
@@ -989,10 +990,10 @@
 //			params->m_showDetailAll = !params->m_showDetailAll;
 //		imguiUnindent();
 //	}
-//}
+}
 //
-//void CrowdTool::handleClick(const float* s, const float* p, bool shift)
-//{
+void CrowdTool::handleClick(const float* s, const float* p, bool shift)
+{
 //	if (!m_sample) return;
 //	if (!m_state) return;
 //	InputGeom* geom = m_sample->getInputGeom();
@@ -1048,35 +1049,35 @@
 //		}
 //	}
 //
-//}
+}
 //
-//void CrowdTool::handleStep()
-//{
+void CrowdTool::handleStep()
+{
 //	if (!m_state) return;
 //	
 //	const float dt = 1.0f/20.0f;
 //	m_state->updateTick(dt);
 //
 //	m_state->setRunning(false);
-//}
+}
 //
-//void CrowdTool::handleToggle()
-//{
+void CrowdTool::handleToggle()
+{
 //	if (!m_state) return;
 //	m_state->setRunning(!m_state->isRunning());
-//}
+}
 //
-//void CrowdTool::handleUpdate(const float dt)
-//{
+void CrowdTool::handleUpdate(const float dt)
+{
 //	rcIgnoreUnused(dt);
-//}
+}
 //
-//void CrowdTool::handleRender()
-//{
-//}
+void CrowdTool::handleRender()
+{
+}
 //
-//void CrowdTool::handleRenderOverlay(double* proj, double* model, int* view)
-//{
+void CrowdTool::handleRenderOverlay(double* proj, double* model, int* view)
+{
 //	rcIgnoreUnused(model);
 //	rcIgnoreUnused(proj);
 //
@@ -1106,4 +1107,4 @@
 //		imguiDrawText(280, ty, IMGUI_ALIGN_LEFT, "- RUNNING -", imguiRGBA(255,32,16,255));	
 //	else 
 //		imguiDrawText(280, ty, IMGUI_ALIGN_LEFT, "- PAUSED -", imguiRGBA(255,255,255,128));	
-//}
+}

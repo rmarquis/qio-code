@@ -113,7 +113,7 @@ struct FastLZCompressor : public dtTileCacheCompressor
 	{
 		return (int)(bufferSize* 1.05f);
 	}
-	
+#if 0
 	virtual dtStatus compress(const unsigned char* buffer, const int bufferSize,
 							  unsigned char* compressed, const int /*maxCompressedSize*/, int* compressedSize)
 	{
@@ -127,6 +127,23 @@ struct FastLZCompressor : public dtTileCacheCompressor
 		*bufferSize = fastlz_decompress(compressed, compressedSize, buffer, maxBufferSize);
 		return *bufferSize < 0 ? DT_FAILURE : DT_SUCCESS;
 	}
+#else
+	virtual dtStatus compress(const unsigned char* buffer, const int bufferSize,
+							  unsigned char* compressed, const int /*maxCompressedSize*/, int* compressedSize)
+	{
+		*compressedSize = bufferSize;
+		memcpy(compressed,buffer,bufferSize);
+		return DT_SUCCESS;
+	}
+	
+	virtual dtStatus decompress(const unsigned char* compressed, const int compressedSize,
+								unsigned char* buffer, const int maxBufferSize, int* bufferSize)
+	{
+		*bufferSize = compressedSize;
+		memcpy(buffer,compressed,compressedSize);
+		return *bufferSize < 0 ? DT_FAILURE : DT_SUCCESS;
+	}
+#endif
 };
 
 struct LinearAllocator : public dtTileCacheAlloc
@@ -602,7 +619,7 @@ void drawDetailOverlay(const dtTileCache* tc, const int tx, const int ty, double
 		pos[1] = tile->header->bmin[1];
 		pos[2] = (tile->header->bmin[2]+tile->header->bmax[2])/2.0f;
 		
-		GLdouble x, y, z;
+	/*	GLdouble x, y, z;
 		if (gluProject((GLdouble)pos[0], (GLdouble)pos[1], (GLdouble)pos[2],
 					   model, proj, view, &x, &y, &z))
 		{
@@ -612,7 +629,7 @@ void drawDetailOverlay(const dtTileCache* tc, const int tx, const int ty, double
 			imguiDrawText((int)x, (int)y-45, IMGUI_ALIGN_CENTER, text, imguiRGBA(0,0,0,128));
 			snprintf(text,128,"Raw:%.1fkB", rawSize/1024.0f);
 			imguiDrawText((int)x, (int)y-65, IMGUI_ALIGN_CENTER, text, imguiRGBA(0,0,0,128));
-		}
+		}*/
 	}
 }
 		
