@@ -1,0 +1,6 @@
+TIKI
+setup
+{
+	path models/tikitests/3rdWeapon/
+	skelmodel 3rdWeapon.md5mesh
+}
