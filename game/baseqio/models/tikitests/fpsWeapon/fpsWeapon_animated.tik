@@ -1,0 +1,13 @@
+TIKI
+setup
+{
+	path models/tikitests/fpsWeapon/
+	skelmodel fpsWeapon.md5mesh
+}
+animations
+{
+	path models/tikitests/fpsWeapon/anims/
+	attack attack.md5anim
+	reload reload.md5anim
+	run run.md5anim
+}
