@@ -253,8 +253,15 @@ void skelAnimController_c::updateModelAnimation(const class skelModelAPI_i *skel
 			currentBonesArray.localBonesToAbsBones(skelModel->getBoneDefs());
 		} else {
 			// new player models also requires skelModel bones to be used here
-			//currentBonesArray.localBonesToAbsBones(anim->getBoneDefs());
-			currentBonesArray.localBonesToAbsBones(skelModel->getBoneDefs());
+#if 0
+			currentBonesArray.localBonesToAbsBones(anim->getBoneDefs());
+#else
+			if(skelModel->getNumBones()) {
+				currentBonesArray.localBonesToAbsBones(skelModel->getBoneDefs());
+			} else {
+				currentBonesArray.localBonesToAbsBones(anim->getBoneDefs());
+			}
+#endif
 		}
 		if(skelModel->hasCustomScaling()) {
 			currentBonesArray.scaleXYZ(skelModel->getScaleXYZ());

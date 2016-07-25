@@ -58,6 +58,10 @@ void boneOrArray_c::absBonesToLocalBones(const class boneDefArray_c *boneDefs, c
 	}
 }
 void boneOrArray_c::localBonesToAbsBones(const class boneDefArray_c *boneDefs) {
+	if(boneDefs == 0) 
+		return;
+	if(boneDefs->size() == 0)
+		return;
 	// TODO: validate the bones order and their names?
 
 	const boneDef_s *def = boneDefs->getArray();
