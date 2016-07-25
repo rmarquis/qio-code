@@ -160,6 +160,9 @@ rbAPI_i *rb = 0;
 static rdIMPL_c g_staticRDAPI;
 rdAPI_i *rd = &g_staticRDAPI;
 
+void RD_SetPointA_f() {
+}
+static aCmd_c rd_setPointA("rd_setPointA",RD_SetPointA_f);
 
 void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan = iFMA;
