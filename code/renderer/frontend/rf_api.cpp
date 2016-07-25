@@ -131,6 +131,9 @@ public:
 	virtual const class axis_c &getCameraAxis() const {
 		return camAxis;
 	}
+	virtual bool doCameraTrace(class trace_c &tr, bool bSkipPlayerModels) {
+		return RF_DoCameraTrace(tr,bSkipPlayerModels);
+	}
 	//// used while drawing world surfaces and particles
 	//virtual void setupWorldSpace() {
 	//	rb->setupWorldSpace();

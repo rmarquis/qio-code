@@ -70,6 +70,7 @@ public:
 	virtual void endFrame() = 0;
 
 	virtual bool rayTraceWorldMap(class trace_c &tr) = 0;
+	virtual bool doCameraTrace(class trace_c &tr, bool bSkipPlayerModels) = 0;
 
 	virtual void setAreaBits(const byte *bytes, u32 numBytes) = 0;
 	virtual void setSkyMaterial(const char *skyMaterialName) = 0;
