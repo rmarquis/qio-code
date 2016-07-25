@@ -1,0 +1,6 @@
+TIKI
+setup
+{
+	path models/tikitests/fpsWeapon/
+	skelmodel fpsWeapon.md5mesh
+}
