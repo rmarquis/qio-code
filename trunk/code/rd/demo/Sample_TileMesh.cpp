@@ -155,20 +155,20 @@ public:
 	
 	virtual void handleRenderOverlay(double* proj, double* model, int* view)
 	{
-		GLdouble x, y, z;
-		if (m_hitPosSet && gluProject((GLdouble)m_hitPos[0], (GLdouble)m_hitPos[1], (GLdouble)m_hitPos[2],
-									  model, proj, view, &x, &y, &z))
-		{
-			int tx=0, ty=0;
-			m_sample->getTilePos(m_hitPos, tx, ty);
-			char text[32];
-			snprintf(text,32,"(%d,%d)", tx,ty);
-			imguiDrawText((int)x, (int)y-25, IMGUI_ALIGN_CENTER, text, imguiRGBA(0,0,0,220));
-		}
-		
-		// Tool help
-		const int h = view[3];
-		imguiDrawText(280, h-40, IMGUI_ALIGN_LEFT, "LMB: Rebuild hit tile.  Shift+LMB: Clear hit tile.", imguiRGBA(255,255,255,192));	
+		//GLdouble x, y, z;
+		//if (m_hitPosSet && gluProject((GLdouble)m_hitPos[0], (GLdouble)m_hitPos[1], (GLdouble)m_hitPos[2],
+		//							  model, proj, view, &x, &y, &z))
+		//{
+		//	int tx=0, ty=0;
+		//	m_sample->getTilePos(m_hitPos, tx, ty);
+		//	char text[32];
+		//	snprintf(text,32,"(%d,%d)", tx,ty);
+		//	imguiDrawText((int)x, (int)y-25, IMGUI_ALIGN_CENTER, text, imguiRGBA(0,0,0,220));
+		//}
+		//
+		//// Tool help
+		//const int h = view[3];
+		//imguiDrawText(280, h-40, IMGUI_ALIGN_LEFT, "LMB: Rebuild hit tile.  Shift+LMB: Clear hit tile.", imguiRGBA(255,255,255,192));	
 	}
 };
 
@@ -671,20 +671,20 @@ void Sample_TileMesh::handleRender()
 
 void Sample_TileMesh::handleRenderOverlay(double* proj, double* model, int* view)
 {
-	GLdouble x, y, z;
-	
-	// Draw start and end point labels
-	if (m_tileBuildTime > 0.0f && gluProject((GLdouble)(m_lastBuiltTileBmin[0]+m_lastBuiltTileBmax[0])/2, (GLdouble)(m_lastBuiltTileBmin[1]+m_lastBuiltTileBmax[1])/2, (GLdouble)(m_lastBuiltTileBmin[2]+m_lastBuiltTileBmax[2])/2,
-											 model, proj, view, &x, &y, &z))
-	{
-		char text[32];
-		snprintf(text,32,"%.3fms / %dTris / %.1fkB", m_tileBuildTime, m_tileTriCount, m_tileMemUsage);
-		imguiDrawText((int)x, (int)y-25, IMGUI_ALIGN_CENTER, text, imguiRGBA(0,0,0,220));
-	}
-	
-	if (m_tool)
-		m_tool->handleRenderOverlay(proj, model, view);
-	renderOverlayToolStates(proj, model, view);
+	//GLdouble x, y, z;
+	//
+	//// Draw start and end point labels
+	//if (m_tileBuildTime > 0.0f && gluProject((GLdouble)(m_lastBuiltTileBmin[0]+m_lastBuiltTileBmax[0])/2, (GLdouble)(m_lastBuiltTileBmin[1]+m_lastBuiltTileBmax[1])/2, (GLdouble)(m_lastBuiltTileBmin[2]+m_lastBuiltTileBmax[2])/2,
+	//										 model, proj, view, &x, &y, &z))
+	//{
+	//	char text[32];
+	//	snprintf(text,32,"%.3fms / %dTris / %.1fkB", m_tileBuildTime, m_tileTriCount, m_tileMemUsage);
+	//	imguiDrawText((int)x, (int)y-25, IMGUI_ALIGN_CENTER, text, imguiRGBA(0,0,0,220));
+	//}
+	//
+	//if (m_tool)
+	//	m_tool->handleRenderOverlay(proj, model, view);
+	//renderOverlayToolStates(proj, model, view);
 }
 
 void Sample_TileMesh::handleMeshChanged(InputGeom* geom)

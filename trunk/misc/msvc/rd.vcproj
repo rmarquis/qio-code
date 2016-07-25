@@ -560,6 +560,14 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Header Files"
+			>
+			<File
+				RelativePath="..\..\code\api\rdAPI.h"
+				>
+			</File>
+		</Filter>
 		<File
 			RelativePath="..\..\code\rd\rd_api.cpp"
 			>

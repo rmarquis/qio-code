@@ -34,6 +34,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/moduleManagerAPI.h>
 #include <api/rAPI.h>
 #include <api/coreAPI.h>
+#include <api/rdAPI.h>
 #include <api/declManagerAPI.h>
 #include <api/materialSystemAPI.h>
 #include <api/modelLoaderDLLAPI.h>
@@ -1566,6 +1567,10 @@ bool Com_CanStartEngineWithoutTIKIModule() {
 	//return false;
 	return true; // TODO: a developer cvar?
 }
+bool Com_CanStartEngineWithoutRDModule() {
+	//return false;
+	return true; // TODO: a developer cvar?
+}
 static moduleAPI_i *com_cmLib = 0;
 void Com_InitCMDLL() {
 	com_cmLib = g_moduleMgr->load("cm");
@@ -1615,6 +1620,30 @@ void Com_ShutdownTIKIDLL() {
 		tiki->shutdown();
 	}
 	g_moduleMgr->unload(&com_tikiLib);
+}
+static moduleAPI_i *com_rdLib = 0;
+rdAPI_i *rd;
+void Com_InitRDDLL() {
+	com_rdLib = g_moduleMgr->load("rd");
+	if(com_rdLib == 0) {
+		if(Com_CanStartEngineWithoutRDModule()) {
+			Com_Printf("WARNING: Cannot load RD DLL\n");
+			return;
+		} else {
+			Com_Error(ERR_DROP,"Cannot load RD DLL");
+		}
+	}
+	g_iFaceMan->registerIFaceUser(&rd,RD_API_IDENTSTR);
+	rd->init();
+}
+void Com_ShutdownRDDLL() {
+	if(com_rdLib == 0) {
+		return;
+	}
+	if(rd) {
+		rd->shutdown();
+	}
+	g_moduleMgr->unload(&com_rdLib);
 }
 static moduleAPI_i *com_declMgrLib = 0;
 declManagerAPI_i *g_declMgr;
@@ -1751,6 +1780,7 @@ void Com_Init( char *commandLine ) {
 
 	Com_InitTIKIDLL();
 
+	Com_InitRDDLL();
 
 	// Add some commands here already so users can use them from config files
 	Cmd_AddCommand ("setenv", Com_Setenv_f);
