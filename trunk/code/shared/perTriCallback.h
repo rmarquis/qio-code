@@ -21,26 +21,7 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// rdAPI.h 
-
-#ifndef __RD_API_H__
-#define __RD_API_H__
-
-#include "iFaceBase.h"
-#include <shared/typedefs.h>
-
-#define RD_API_IDENTSTR "RDAPI0001"
-
-class rdAPI_i : public iFaceBase_i {
+class perTriCallback_i {
 public:
-	virtual void init() = 0;
-	virtual void shutdown() = 0;
-	virtual void doDebugDrawing3D() = 0;
-
-	// for testing
-	virtual void onRenderWorldMapLoaded() = 0;
+	virtual void addTri(const float *a, const float *b, const float *c) = 0;
 };
-
-extern rdAPI_i *rd;
-
-#endif // __RD_API_H__

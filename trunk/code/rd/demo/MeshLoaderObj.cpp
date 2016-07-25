@@ -31,6 +31,29 @@ rcMeshLoaderObj::rcMeshLoaderObj() :
 	m_vertCount(0),
 	m_triCount(0)
 {
+	capVerts = capTris = 0;
+}
+	
+void rcMeshLoaderObj::addTri(const float *a, const float *b, const float *c) {
+
+	bool swapYZ = true;
+	int v0, v1, v2;
+	if(swapYZ) {
+		v0 = m_vertCount;
+		addVertex(a[0],a[2],a[1],capVerts);
+		v1 = m_vertCount;
+		addVertex(b[0],b[2],b[1],capVerts);
+		v2 = m_vertCount;
+		addVertex(c[0],c[2],c[1],capVerts);
+	} else {
+		v0 = m_vertCount;
+		addVertex(a[0],a[1],a[2],capVerts);
+		v1 = m_vertCount;
+		addVertex(b[0],b[1],b[2],capVerts);
+		v2 = m_vertCount;
+		addVertex(c[0],c[1],c[2],capVerts);
+	}
+	addTriangle(v0,v1,v2,capTris);
 }
 
 rcMeshLoaderObj::~rcMeshLoaderObj()

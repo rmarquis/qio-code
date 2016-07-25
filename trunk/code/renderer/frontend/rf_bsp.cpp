@@ -3048,6 +3048,11 @@ void rBspTree_c::getReferencedMatNames(class perStringCallbackListener_i *callba
 		callback->perStringCallback(mat->getName());
 	}
 }
+void rBspTree_c::iterateWorldSolidTriangles(class perTriCallback_i *cb) {
+	r_model_c tmp;
+	getModelData(0,&tmp);
+	tmp.iterateTriangles(cb);
+}
 bool rBspTree_c::getModelData(u32 modelNum, class staticModelCreatorAPI_i *out) const {
 	if(modelNum >= models.size())
 		return true;

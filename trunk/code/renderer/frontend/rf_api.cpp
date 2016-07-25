@@ -34,6 +34,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rAPI.h>
 #include <api/fontAPI.h>
 #include <api/rbAPI.h>
+#include <api/rdAPI.h>
 #include <api/ddAPI.h>
 #include <api/clientAPI.h>
 #include <api/imgAPI.h>
@@ -185,10 +186,15 @@ public:
 	virtual void clearEntities() {
 		RFE_ClearEntities();
 	}
-	virtual void loadWorldMap(const char *mapName)  {
+	virtual bool loadWorldMap(const char *mapName)  {
 		g_core->Print(S_COLOR_RED"rAPIImpl_c::loadWorldMap: %s\n",mapName);
-		if(RF_LoadWorldMap(mapName) == false) {
-			RF_LoadWorldMapCubeMaps(mapName);
+		if(RF_LoadWorldMap(mapName)) {
+			g_core->RedWarning("rAPIImpl_c::loadWorldMap: FAILED TO LOAD %s\n",mapName);
+			return true; // map loading error
+		}
+		RF_LoadWorldMapCubeMaps(mapName);
+		if(rd) {
+			rd->onRenderWorldMapLoaded();
 		}
 	}
 	virtual const char *getLoadedMapName() const {
@@ -273,6 +279,9 @@ public:
 	// this will use the current camera settings
 	virtual void getLookatSurfaceInfo(struct rendererSurfaceRef_s &out) {
 		RF_GetLookatSurfaceInfo(out);
+	}
+	virtual void iterateWorldSolidTriangles(class perTriCallback_i *cb) const {
+		RF_IterateWorldSolidTriangles(cb);
 	}
 	virtual void setWorldSurfaceMaterial(const char *matName, int surfNum, int areaNum) {
 		RF_SetWorldSurfaceMaterial(areaNum,surfNum,matName);
@@ -456,6 +465,7 @@ gameAPI_s *g_game = 0;
 declManagerAPI_i *g_declMgr = 0;
 imgAPI_i *g_img = 0;
 tikiAPI_i *g_tikiMgr = 0;
+rdAPI_i *rd = 0;
 
 // exports
 static rAPIImpl_c g_staticRFAPI;
@@ -480,6 +490,7 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan->registerIFaceUser(&g_img,IMG_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_client,CLIENT_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_tikiMgr,TIKI_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&rd,RD_API_IDENTSTR);
 }
 
 qioModule_e IFM_GetCurModule() {

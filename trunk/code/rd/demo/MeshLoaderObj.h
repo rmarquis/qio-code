@@ -20,13 +20,17 @@
 #define MESHLOADER_OBJ
 
 #include <string>
+#include <shared/perTriCallback.h>
 
-class rcMeshLoaderObj
+class rcMeshLoaderObj : public perTriCallback_i
 {
+	int capVerts, capTris;
 public:
 	rcMeshLoaderObj();
 	~rcMeshLoaderObj();
 	
+	virtual void addTri(const float *a, const float *b, const float *c);
+
 	bool load(const std::string& fileName);
 
 	const float* getVerts() const { return m_verts; }
@@ -35,7 +39,9 @@ public:
 	int getVertCount() const { return m_vertCount; }
 	int getTriCount() const { return m_triCount; }
 	const std::string& getFileName() const { return m_filename; }
-
+	void setScale(float f) {
+		m_scale = f;
+	}
 private:
 	// Explicitly disabled copy constructor and copy assignment operator.
 	rcMeshLoaderObj(const rcMeshLoaderObj&);

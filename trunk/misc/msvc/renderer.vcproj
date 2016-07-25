@@ -874,6 +874,10 @@
 				RelativePath="..\..\code\api\rLightAPI.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\api\triCallback.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

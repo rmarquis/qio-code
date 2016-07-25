@@ -60,6 +60,7 @@ void RF_GetLookatSurfaceInfo(struct rendererSurfaceRef_s &out);
 void RF_SetWorldSurfaceMaterial(int areaNum, int surfaceNum, const char *matName);
 void RF_GetWorldBounds(class aabb &out);
 void RF_GetSunWorldBounds(class aabb &out);
+void RF_IterateWorldSolidTriangles(class perTriCallback_i *cb);
 
 #endif // __RF_BSP_H__
 
