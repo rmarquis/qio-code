@@ -21,19 +21,19 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// AI_Loper.h
-#ifndef __AI_LOPER_H__
-#define __AI_LOPER_H__
+// AI_WarZombie.h
+#ifndef __AI_WARZOMBIE_H__
+#define __AI_WARZOMBIE_H__
 
 #include "AI_RTCW_Base.h"
 
-class AI_Loper : public AI_RTCW_Base {
+class AI_WarZombie : public AI_RTCW_Base {
 public:
-	DECLARE_CLASS( AI_Loper );
+	DECLARE_CLASS( AI_WarZombie );
 
-	virtual bool isLoper() const {
+	virtual bool isWarZombie() const {
 		return true;
 	}
 };
 
-#endif // __AI_LOPER_H__
+#endif // __AI_WARZOMBIE_H__

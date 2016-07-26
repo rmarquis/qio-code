@@ -37,7 +37,7 @@ skelAnimController_c::skelAnimController_c() {
 	nextFlags = 0;
 }
 void skelAnimController_c::getSingleLoopAnimLerpValuesForTime(singleAnimLerp_s &out, const class skelAnimAPI_i *anim, float time) {
-	if(anim->getNumFrames() == 1) {
+	if(anim->getNumFrames() <= 1) {
 		out.from = 0;
 		out.to = 0;
 		out.frac = 0.f;

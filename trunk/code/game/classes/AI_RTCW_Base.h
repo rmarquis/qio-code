@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "ModelEntity.h"
 
 class AI_RTCW_Base : public ModelEntity {
+	str skin;
 public:
 	AI_RTCW_Base();
 
@@ -36,6 +37,20 @@ public:
 	virtual void postSpawn();
 
 	void setSkin(const char *skinName);
+
+	virtual bool isLoper() const {
+		return false;
+	}
+	virtual bool isZombie() const {
+		return false;
+	}
+	virtual bool isWarZombie() const {
+		return false;
+	}
+	virtual bool isSuperSoldier() const {
+		return false;
+	}
+
 
 
 	virtual void setKeyValue(const char *key, const char *value);

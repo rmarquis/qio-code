@@ -882,6 +882,30 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\code\game\classes\AI_SuperSoldier.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\AI_SuperSoldier.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\AI_WarZombie.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\AI_WarZombie.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\AI_Zombie.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\AI_Zombie.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\code\game\classes\FuncExplosive.cpp"
 					>
 				</File>

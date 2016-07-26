@@ -33,6 +33,8 @@ AI_RTCW_Base::AI_RTCW_Base() {
 
 }
 void AI_RTCW_Base::setSkin(const char *skinName) {
+	this->skin = skinName;
+
 	// "skin" "infantryss/assault1"
 	// modelName / skinName
 	str modelName = skinName;
@@ -48,7 +50,18 @@ void AI_RTCW_Base::setSkin(const char *skinName) {
 	//setAnimation(modelPath);
 	// This animation name is inside wolfanim.cfg
 	//setAnimation("alert_bk_1h");
-	setAnimation("alert_idle_1h");
+	if(isLoper()) {
+		setAnimation("base_frame");
+		setRenderModelAttachment(1,"tag_spinner","models/players/loper/spinner.mdc");
+	} else if(isZombie()) {
+		setAnimation("alert_idle");
+	} else if(isWarZombie()) {
+		setAnimation("alert_idle");
+	} else if(isSuperSoldier()) {
+		setAnimation("alert_idle");
+	} else {
+		setAnimation("alert_idle_1h");
+	}
 	
 	setRenderModelAttachment(0,"tag_head",headPath);
 	const char *skin = strchr(skinName,'/');
@@ -67,6 +80,18 @@ void AI_RTCW_Base::setKeyValue(const char *key, const char *value) {
 	}
 }
 void AI_RTCW_Base::postSpawn() {
+	if(skin.length()==0) {
+		// default skin
+		if(isSuperSoldier()) {
+			setSkin("supersoldier/default");
+		} else if(isLoper()) {
+			setSkin("loper/default");
+		} else if(isZombie()) {
+			setSkin("zombie/default");
+		} else if(isWarZombie()) {
+			setSkin("warzombie/default");
+		}
+	}
 	if(cmod) {
 	}
 }

@@ -752,8 +752,11 @@ SET ( GAME_CLASSES_QUAKE3_SOURCES
 
 SET ( GAME_CLASSES_RTCW_HEADERS
 	${MOUNT_DIR}/game/classes/AI_Loper.h
+	${MOUNT_DIR}/game/classes/AI_Zombie.h
+	${MOUNT_DIR}/game/classes/AI_WarZombie.h
 	${MOUNT_DIR}/game/classes/AI_RTCW_Base.h
 	${MOUNT_DIR}/game/classes/AI_Soldier.h
+	${MOUNT_DIR}/game/classes/AI_SuperSoldier.h
 	${MOUNT_DIR}/game/classes/FuncInvisibleUser.h
 	${MOUNT_DIR}/game/classes/TargetScriptTrigger.h
 	${MOUNT_DIR}/game/classes/FuncExplosive.h
@@ -761,8 +764,11 @@ SET ( GAME_CLASSES_RTCW_HEADERS
 
 SET ( GAME_CLASSES_RTCW_SOURCES
 	${MOUNT_DIR}/game/classes/AI_Loper.cpp
+	${MOUNT_DIR}/game/classes/AI_Zombie.cpp
+	${MOUNT_DIR}/game/classes/AI_WarZombie.cpp
 	${MOUNT_DIR}/game/classes/AI_RTCW_Base.cpp
 	${MOUNT_DIR}/game/classes/AI_Soldier.cpp
+	${MOUNT_DIR}/game/classes/AI_SuperSoldier.cpp
 	${MOUNT_DIR}/game/classes/FuncInvisibleUser.cpp
 	${MOUNT_DIR}/game/classes/TargetScriptTrigger.cpp
 	${MOUNT_DIR}/game/classes/FuncExplosive.cpp
