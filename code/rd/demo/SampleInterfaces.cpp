@@ -9,6 +9,7 @@
 #include "PerfTimer.h"
 #include "SDL.h"
 #include "SDL_opengl.h"
+#include <api/coreAPI.h>
 
 #ifdef WIN32
 #	define snprintf _snprintf
@@ -50,6 +51,8 @@ void BuildContext::doLog(const rcLogCategory category, const char* msg, const in
 	text[count-1] = '\0';
 	m_textPoolSize += 1 + count;
 	m_messages[m_messageCount++] = dst;
+
+	g_core->Print("%s\n",msg);
 }
 
 void BuildContext::doResetTimers()
