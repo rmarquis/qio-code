@@ -882,6 +882,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\code\game\classes\FuncExplosive.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\FuncExplosive.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\code\game\classes\FuncInvisibleUser.cpp"
 					>
 				</File>
