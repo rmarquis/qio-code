@@ -943,6 +943,7 @@ public:
 		lastLightmap = 0;
 		lastDeluxemap = 0;
 		lastBlendMap = 0;
+		bindShader(0);
 	}
 	virtual void beginDrawingSky() {
 		bDrawingSky = true;

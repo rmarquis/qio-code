@@ -587,6 +587,22 @@
 				RelativePath="..\..\code\shared\autoCvar.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\code\shared\collisionUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\collisionUtils.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\trace.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\shared\trace.h"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath="..\..\code\rd\rd_api.cpp"

@@ -47,7 +47,20 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <client/keyCodes.h>
 #include <math/matrix.h>
 
-
+static aCvar_c rd_build_cellSize("rd_build_cellSize","0.3f");
+static aCvar_c rd_build_cellHeight("rd_build_cellHeight","0.2f");
+static aCvar_c rd_build_agentHeight("rd_build_agentHeight","2.0f");
+static aCvar_c rd_build_agentRadius("rd_build_agentRadius","0.6f");
+static aCvar_c rd_build_agentMaxClimb("rd_build_agentMaxClimb","0.9f");
+static aCvar_c rd_build_agentMaxSlope("rd_build_agentMaxSlope","45.0f");
+static aCvar_c rd_build_regionMinSize("rd_build_regionMinSize","8");
+static aCvar_c rd_build_regionMergeSize("rd_build_regionMergeSize","20");
+static aCvar_c rd_build_edgeMaxLen("rd_build_edgeMaxLen","12.0f");
+static aCvar_c rd_build_edgeMaxError("rd_build_edgeMaxError","1.3f");
+static aCvar_c rd_build_vertsPerPoly("rd_build_vertsPerPoly","6.0f");
+static aCvar_c rd_build_detailSampleDist("rd_build_detailSampleDist","6.0f");
+static aCvar_c rd_build_detailSampleMaxError("rd_build_detailSampleMaxError","1.0f");
+	
 
 
 //
@@ -110,6 +123,7 @@ class rdIMPL_c : public rdAPI_i {
 	float scaleInv;
 	matrix_c rd2qio;
 	matrix_c qio2rd;
+
 public:
 	rdIMPL_c() {
 		s = 0;
@@ -151,6 +165,9 @@ public:
 		AUTOCMD_UnregisterAutoConsoleCommands();
 	}
 	virtual void onRenderWorldMapLoaded() {
+		buildNavMesh();
+	}
+	void buildNavMesh() {
 		rcMeshLoaderObj *obj = new rcMeshLoaderObj();
 		obj->setScale(scale);
 		rf->iterateWorldSolidTriangles(obj);
@@ -161,6 +178,19 @@ public:
 		}
 		ctx = new BuildContext();
 		s = new Sample_SoloMesh();
+		s->setAgentHeight(rd_build_agentHeight.getFloat());
+		s->setAgentMaxClimb(rd_build_agentMaxClimb.getFloat());
+		s->setAgentMaxSlope(rd_build_agentMaxSlope.getFloat());
+		s->setAgentRadius(rd_build_agentRadius.getFloat());
+		s->setCellHeight(rd_build_cellHeight.getFloat());
+		s->setCellSize(rd_build_cellSize.getFloat());
+		s->setDetailSampleDist(rd_build_detailSampleDist.getFloat());
+		s->setDetailSampleMaxError(rd_build_detailSampleMaxError.getFloat());
+		s->setEdgeMaxError(rd_build_edgeMaxError.getFloat());
+		s->setEdgeMaxLen(rd_build_edgeMaxLen.getFloat());
+		s->setRegionMergeSize(rd_build_regionMergeSize.getFloat());
+		s->setRegionMinSize(rd_build_regionMinSize.getFloat());
+
 		s->setContext(ctx);
 		InputGeom *ig = new InputGeom();
 		ig->fromOBJ(ctx,obj);
@@ -186,7 +216,11 @@ rdAPI_i *rd = &g_staticRDAPI;
 
 void RD_SetPointA_f() {
 }
+void RD_Build_f() {
+	g_staticRDAPI.buildNavMesh();
+}
 static aCmd_c rd_setPointA("rd_setPointA",RD_SetPointA_f);
+static aCmd_c rd_build("rd_build",RD_Build_f);
 
 void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan = iFMA;

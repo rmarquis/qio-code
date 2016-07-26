@@ -163,6 +163,45 @@ public:
 	void resetCommonSettings();
 	void handleCommonSettings();
 
+	void setCellSize(float f) {
+		m_cellSize = f;
+	}
+	void setCellHeight(float f) {
+		m_cellHeight = f;
+	}
+	void setAgentHeight(float f) {
+		m_agentHeight = f;
+	}
+	void setAgentRadius(float f) {
+		m_agentRadius = f;
+	}
+	void setAgentMaxClimb(float f) {
+		m_agentMaxClimb = f;
+	}
+	void setAgentMaxSlope(float f) {
+		m_agentMaxSlope = f;
+	}
+	void setRegionMinSize(float f) {
+		m_regionMinSize = f;
+	}
+	void setRegionMergeSize(float f) {
+		m_regionMergeSize = f;
+	}
+	void setEdgeMaxLen(float f) {
+		m_edgeMaxLen = f;
+	}
+	void setEdgeMaxError(float f) {
+		m_edgeMaxError = f;
+	}
+	void setVertsPerPoly(float f) {
+		m_vertsPerPoly = f;
+	}
+	void setDetailSampleDist(float f) {
+		m_detailSampleDist = f;
+	}
+	void setDetailSampleMaxError(float f) {
+		m_detailSampleMaxError = f;
+	}
 private:
 	// Explicitly disabled copy constructor and copy assignment operator.
 	Sample(const Sample&);
