@@ -788,7 +788,11 @@ void Player::runPlayerAnimation_stateMachine() {
 		//	break;
 		//}
 	}
-	stMoveType = st_torso->getStateMoveType(st_curStateTorso);
+	if(st_torso) 
+		stMoveType = st_torso->getStateMoveType(st_curStateTorso);
+	else
+		stMoveType = EMT_LEGS;
+
 	if(stMoveType == EMT_LEGS) {
 		// legs move type allows us to use animation from legs state
 		const char *anim = st_legs->getStateLegsAnim(st_curStateLegs,st_handler);
@@ -802,9 +806,15 @@ void Player::runPlayerAnimation_stateMachine() {
 			anim = g_playerForceAnimation.getStr();
 		}
 		this->setAnimation(anim);
-		if(bChanged[1]) {
-			const char *torsoAnim = st_torso->getStateTorsoAnim(st_curStateTorso,st_handler);
-			this->setTorsoAnimation(torsoAnim);
+		if(st_torso == 0) {
+			this->setTorsoAnimation(0);
+		} else {
+			if(bChanged[1]) {
+				if(st_torso) {
+					const char *torsoAnim = st_torso->getStateTorsoAnim(st_curStateTorso,st_handler);
+					this->setTorsoAnimation(torsoAnim);
+				}
+			}
 		}
 	} else {
 		const char *torsoAnim = st_torso->getStateLegsAnim(st_curStateTorso,st_handler);

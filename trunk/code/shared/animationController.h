@@ -50,7 +50,7 @@ public:
 	void setNextAnim(const class skelAnimAPI_i *newAnim, const class skelModelAPI_i *skelModel, int curGlobalTimeMSec, int newFlags);
 	void runAnimController(int curGlobalTimeMSec);
 	void updateModelAnimationLocal(const class skelModelAPI_i *skelModel, boneOrArray_c &outLocalBones);
-	void updateModelAnimation(const class skelModelAPI_i *skelModel, bool transformToABS);
+	void updateModelAnimation(const class skelModelAPI_i *skelModel, bool transformToABS, const matrix_c *worldBoneMat);
 	const boneOrArray_c &getCurBones() const;
 	const skelAnimAPI_i *getAnim() const {
 		return anim;

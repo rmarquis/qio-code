@@ -115,6 +115,8 @@ rEntityImpl_c::rEntityImpl_c() {
 	bDontUpdateAnimation = false;
 	scale.set(1,1,1);
 	kfFrameNum = -1;
+	worldBoneMat.identity();
+	worldBoneMat.setupZRotation(90.f);
 }
 rEntityImpl_c::~rEntityImpl_c() {
 	RFL_RemoveAllReferencesToEntity(this);
@@ -462,6 +464,15 @@ void rEntityImpl_c::setTIKIModelTorsoAnimLocalIndex(int localAnimIndex, int newF
 		return;
 	}
 	const class skelAnimAPI_i *a = model->getTIKI()->getSkelAnim(localAnimIndex);
+	if(rf_tiki_verboseSetTIKIModelAnimLocalIndex.getInt()) {
+		if(a) {
+			g_core->Print("rEntityImpl_c::setTIKIModelTorsoAnimLocalIndex: index %i returned %s anim from %s\n",
+				localAnimIndex,a->getName(),model->getName());
+		} else {
+			g_core->Print("rEntityImpl_c::setTIKIModelTorsoAnimLocalIndex: index %i returned NULL anim from %s\n",
+				localAnimIndex,model->getName());
+		}
+	}
 	this->setTorsoAnim(a,newFlags);
 }
 void rEntityImpl_c::setDeclModelAnimLocalIndex(int localAnimIndex, int newFlags) {
@@ -782,9 +793,9 @@ void rEntityImpl_c::updateAnimatedEntity() {
 			skelAnimCtrl->runAnimController(rf_curTimeMsec);
 			if(skelAnimCtrlTorso && skelAnimCtrlTorso->getAnim()) {
 				skelAnimCtrlTorso->runAnimController(rf_curTimeMsec);
-				skelAnimCtrlTorso->updateModelAnimation(skelModel,false);
+				skelAnimCtrlTorso->updateModelAnimation(skelModel,false,&worldBoneMat);
 				if(skelAnimCtrlTorso->getAnim()) {
-					skelAnimCtrl->updateModelAnimation(skelModel,false);
+					skelAnimCtrl->updateModelAnimation(skelModel,false,&worldBoneMat);
 					arraySTD_c<u32> torsoBones;
 					torsoBones.reserve(skelModel->getNumBones()*2);
 					skelAnimCtrlTorso->getAnim()->addChildrenOf(torsoBones,"hip");
@@ -797,13 +808,13 @@ void rEntityImpl_c::updateAnimatedEntity() {
 					*finalBones = skelAnimCtrl->getCurBones();
 					finalBones->setBones(skelAnimCtrlTorso->getCurBones(),torsoBones);
 					// transform to abs
-					finalBones->localBonesToAbsBones(skelModel->getBoneDefs());
+					finalBones->localBonesToAbsBones(skelModel->getBoneDefs(),&worldBoneMat);
 					// V: update vertex positions, normals, tangents and binormals (TBN approx)
 					instance->updateSkelModelInstance(skelModel,*finalBones);
 					// append .md3/.mdc attachments at the tags
 					updateInstanceAttachments();
 				} else {
-					skelAnimCtrl->updateModelAnimation(skelModel,true);
+					skelAnimCtrl->updateModelAnimation(skelModel,true,&worldBoneMat);
 					if(finalBones) {
 						delete finalBones;
 						finalBones = 0;
@@ -813,7 +824,7 @@ void rEntityImpl_c::updateAnimatedEntity() {
 					updateInstanceAttachments();	
 				}
 			} else {
-				skelAnimCtrl->updateModelAnimation(skelModel,true);
+				skelAnimCtrl->updateModelAnimation(skelModel,true,&worldBoneMat);
 				if(finalBones) {
 					delete finalBones;
 					finalBones = 0;
@@ -853,7 +864,7 @@ void rEntityImpl_c::updateAnimatedEntity() {
 				sl.frac = sl.from = sl.to = 0;
 				finalBones->resize(skelModel->getNumBones());
 				anim->buildLoopAnimLerpFrameBonesLocal(sl,*finalBones,skelModel);
-				finalBones->localBonesToAbsBones(skelModel->getBoneDefs());
+				finalBones->localBonesToAbsBones(skelModel->getBoneDefs(),&worldBoneMat);
 				// V: update vertex positions, normals, tangents and binormals (TBN approx)
 				instance->updateSkelModelInstance(skelModel,*finalBones);	
 				updateInstanceAttachments();	

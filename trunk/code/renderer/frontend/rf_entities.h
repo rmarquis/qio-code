@@ -57,6 +57,9 @@ class rEntityImpl_c : public rEntityAPI_i {
 	bool bIsPlayerModel;
 	rfSurfsFlagsArray_t surfaceFlags; // surfaceFlags.size() == this->getNumSurfaces()
 	str skinName;
+	// for extra models rotation
+	// Not really a worldbone right now, usually it's an identity
+	matrix_c worldBoneMat;
 	// the skin definition itself
 	//class rSkinRemap_c *skin; 
 	// model materials after applying the skin

@@ -1,0 +1,22 @@
+TIKI
+setup
+{
+	scale 0.52
+	path models/player/police1/
+	skelmodel body_lower.md5mesh
+	skelmodel body_upper.md5mesh
+	skelmodel head.md5mesh
+	// The materials will be automatically assigned,
+	// but you can of course reassign them 
+	// by text-editing .md5mesh files
+	// or just here like in FAKK/MoH/EF TIKIs.
+}
+init
+{
+	server
+	{
+		attachmodel tikitests\3rdWeapon\3rdWeapon.tik t_weapon_r
+	}
+}
+// use shared animations set
+$include models/player/shared/qio_test_human.tik

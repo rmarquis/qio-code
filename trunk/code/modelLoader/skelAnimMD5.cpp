@@ -347,7 +347,7 @@ void skelAnimMD5_c::buildFrameBonesLocal(u32 frameNum, class boneOrArray_c &out,
 }
 void skelAnimMD5_c::buildFrameBonesABS(u32 frameNum, class boneOrArray_c &out) const {
 	buildFrameBonesLocal(frameNum,out);
-	out.localBonesToAbsBones(&this->bones);
+	out.localBonesToAbsBones(&this->bones,0);
 }	
 bool skelAnimMD5_c::convertToMD5Anim(const char *outPath) {
 	// it is actually a md5 anim, so just save

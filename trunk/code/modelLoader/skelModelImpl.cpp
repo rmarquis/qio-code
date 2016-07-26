@@ -665,7 +665,7 @@ bool skelModelIMPL_c::loadSMD(const char *fname) {
 				}
 			}
 			baseFrameABS = baseFrameRelative;
-			baseFrameABS.localBonesToAbsBones(&bones);
+			baseFrameABS.localBonesToAbsBones(&bones,0);
 			baseFrameInv = baseFrameABS;
 			baseFrameInv.inverse();
 		} else if(p.atWord("triangles")) {
@@ -1467,7 +1467,7 @@ bool skelModelIMPL_c::loadPSK(const char *fname) {
 		baseFrameRelative[i].boneName = bones[i].nameIndex;
 	}
 	baseFrameABS = baseFrameRelative;
-	baseFrameABS.localBonesToAbsBones(&bones);
+	baseFrameABS.localBonesToAbsBones(&bones,0);
 	boneOrArray_c baseFrameABSInverse = baseFrameABS.getInversed();
 	
 	s = s->getNextHeader();

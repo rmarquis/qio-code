@@ -57,7 +57,7 @@ void boneOrArray_c::absBonesToLocalBones(const class boneDefArray_c *boneDefs, c
 		}
 	}
 }
-void boneOrArray_c::localBonesToAbsBones(const class boneDefArray_c *boneDefs) {
+void boneOrArray_c::localBonesToAbsBones(const class boneDefArray_c *boneDefs, const matrix_c *worldBoneMat) {
 	if(boneDefs == 0) 
 		return;
 	if(boneDefs->size() == 0)
@@ -68,7 +68,11 @@ void boneOrArray_c::localBonesToAbsBones(const class boneDefArray_c *boneDefs) {
 	boneOr_s *or = this->getArray();
 	for(u32 i = 0; i < size(); i++, or++, def++) {
 		if(def->parentIndex == -1) {
-			// do nothing
+			if(worldBoneMat == 0) {
+				// do nothing
+			} else {
+				or->mat = (*worldBoneMat) * or->mat;
+			}
 		} else {
 			matrix_c parent = (*this)[def->parentIndex].mat;
 			or->mat = parent * or->mat;
