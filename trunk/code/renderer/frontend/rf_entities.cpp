@@ -116,7 +116,6 @@ rEntityImpl_c::rEntityImpl_c() {
 	scale.set(1,1,1);
 	kfFrameNum = -1;
 	worldBoneMat.identity();
-	worldBoneMat.setupZRotation(90.f);
 }
 rEntityImpl_c::~rEntityImpl_c() {
 	RFL_RemoveAllReferencesToEntity(this);
@@ -372,6 +371,12 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 	model = newModel;
 	if(model->isTIKI() && instance) {
 		model->getTIKI()->applyMaterialRemapsTo(instance);
+	}
+	if(model->isTIKI()) {
+		const vec3_c &r = model->getTIKI()->getBaseRotation();
+		worldBoneMat.fromAngles(r);
+	} else {
+		worldBoneMat.identity();
 	}
 	recalcABSBounds();
 	updateModelSkin();
