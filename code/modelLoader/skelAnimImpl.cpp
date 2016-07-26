@@ -858,9 +858,9 @@ bool skelAnimGeneric_c::convertToMD5Anim(const char *outPath) {
 		copy.animFlags = this->animFlags;
 		copy.baseFrame = this->baseFrame;
 		copy.bones = this->bones;
-		copy.frameRate = this->frameRate;
-		copy.frameTime = this->frameTime;
-		copy.totalTime = this->totalTime;
+		copy.frameRate = sad.frameRate;
+		copy.frameTime = 1.f / sad.frameRate;
+		copy.totalTime = copy.frameTime * sad.numFrames;;
 		for(u32 j = 0; j < sad.numFrames; j++) {
 			copy.frames.push_back(frames[j+sad.firstFrame]);
 		}
