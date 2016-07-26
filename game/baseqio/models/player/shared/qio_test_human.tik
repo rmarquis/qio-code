@@ -1,0 +1,80 @@
+
+
+animations
+{
+	// m249 third person animations (for full player body)
+	path models/player/shared/m249/
+	
+	m249_attack_h attack_h.md5anim
+	m249_attack_h_s attack_h_s.md5anim
+	m249_attack_l attack_l.md5anim
+	m249_attack_l_s attack_l_s.md5anim
+	m249_hold_f hold_f.md5anim
+	m249_hold_s hold_s.md5anim
+	m249_hold_sit_f hold_sit_f.md5anim
+	m249_hold_sit_s hold_sit_s.md5anim
+	m249_jump_bg jump_bg.md5anim
+	m249_jump_ed jump_ed.md5anim
+	m249_jump_id jump_id.md5anim
+	m249_pose pose.md5anim
+	m249_pose_bend_f pose_bend_f.md5anim
+	m249_pose_bend_l pose_bend_l.md5anim
+	m249_pose_l pose_l.md5anim
+	m249_pose_l_s pose_l_s.md5anim
+	m249_pose_s pose_s.md5anim
+	m249_reload reload.md5anim
+	m249_run_b run_b.md5anim
+	m249_run_f run_f.md5anim
+	m249_run_f2 run_f2.md5anim
+	m249_run_l run_l.md5anim
+	m249_run_r run_r.md5anim
+	m249_select select.md5anim
+	m249_sit_b sit_b.md5anim
+	m249_sit_f sit_f.md5anim
+	m249_sit_l sit_l.md5anim
+	m249_sit_r sit_r.md5anim
+	m249_unselect unselect.md5anim
+	m249_walk_b walk_b.md5anim
+	m249_walk_f walk_f.md5anim
+	m249_walk_l walk_l.md5anim
+	m249_walk_r walk_r.md5anim
+	
+	
+	// TODO - UNARMED, let's stub it for now
+	path models/player/shared/m249/
+	
+	unarmed_attack_h attack_h.md5anim
+	unarmed_attack_h_s attack_h_s.md5anim
+	unarmed_attack_l attack_l.md5anim
+	unarmed_attack_l_s attack_l_s.md5anim
+	unarmed_hold_f hold_f.md5anim
+	unarmed_hold_s hold_s.md5anim
+	unarmed_hold_sit_f hold_sit_f.md5anim
+	unarmed_hold_sit_s hold_sit_s.md5anim
+	unarmed_jump_bg jump_bg.md5anim
+	unarmed_jump_ed jump_ed.md5anim
+	unarmed_jump_id jump_id.md5anim
+	unarmed_pose pose.md5anim
+	unarmed_pose_bend_f pose_bend_f.md5anim
+	unarmed_pose_bend_l pose_bend_l.md5anim
+	unarmed_pose_l pose_l.md5anim
+	unarmed_pose_l_s pose_l_s.md5anim
+	unarmed_pose_s pose_s.md5anim
+	unarmed_reload reload.md5anim
+	unarmed_run_b run_b.md5anim
+	unarmed_run_f run_f.md5anim
+	unarmed_run_f2 run_f2.md5anim
+	unarmed_run_l run_l.md5anim
+	unarmed_run_r run_r.md5anim
+	unarmed_select select.md5anim
+	unarmed_sit_b sit_b.md5anim
+	unarmed_sit_f sit_f.md5anim
+	unarmed_sit_l sit_l.md5anim
+	unarmed_sit_r sit_r.md5anim
+	unarmed_unselect unselect.md5anim
+	unarmed_walk_b walk_b.md5anim
+	unarmed_walk_f walk_f.md5anim
+	unarmed_walk_l walk_l.md5anim
+	unarmed_walk_r walk_r.md5anim
+	
+}

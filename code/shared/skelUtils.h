@@ -47,7 +47,7 @@ struct boneOr_s {
 class boneOrArray_c :  public arraySTD_c<boneOr_s> {
 public:
 	// concat bone transforms
-	void localBonesToAbsBones(const class boneDefArray_c *boneDefs);
+	void localBonesToAbsBones(const class boneDefArray_c *boneDefs, const matrix_c *worldBoneMat);
 	void absBonesToLocalBones(const class boneDefArray_c *boneDefs, const boneOrArray_c *absBones);
 	void setBlendResult(const boneOrArray_c &from, const boneOrArray_c &to, float frac);	
 	void setBlendResult(const boneOrArray_c &from, const boneOrArray_c &to, float frac, const arraySTD_c<u32> &bonesToBlend);	

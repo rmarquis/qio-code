@@ -623,7 +623,7 @@ bool skelAnimGeneric_c::loadPSKAnim(const char *fname) {
 		baseFrameRelative[i].boneName = bones[i].nameIndex;
 	}
 	baseFrameABS = baseFrameRelative;
-	baseFrameABS.localBonesToAbsBones(&bones);
+	baseFrameABS.localBonesToAbsBones(&bones,0);
 	boneOrArray_c baseFrameABSInverse = baseFrameABS.getInversed();
 	
 	// just set a single frame with baseframe

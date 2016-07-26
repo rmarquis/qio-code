@@ -239,7 +239,7 @@ void skelAnimController_c::updateModelAnimationLocal(const class skelModelAPI_i 
 		}
 	}
 }
-void skelAnimController_c::updateModelAnimation(const class skelModelAPI_i *skelModel, bool transformToABS) {
+void skelAnimController_c::updateModelAnimation(const class skelModelAPI_i *skelModel, bool transformToABS, const matrix_c *worldBoneMat) {
 	if(anim == 0)
 		return;
 	// create bone matrices (relative to their parents)
@@ -250,16 +250,16 @@ void skelAnimController_c::updateModelAnimation(const class skelModelAPI_i *skel
 		// convert relative bones matrices to absolute bone matrices
 		if(skelModel->getNumBones() && skelModel->getNumBones() != anim->getNumBones()) {
 			// SMD case...
-			currentBonesArray.localBonesToAbsBones(skelModel->getBoneDefs());
+			currentBonesArray.localBonesToAbsBones(skelModel->getBoneDefs(),worldBoneMat);
 		} else {
 			// new player models also requires skelModel bones to be used here
 #if 0
 			currentBonesArray.localBonesToAbsBones(anim->getBoneDefs());
 #else
 			if(skelModel->getNumBones()) {
-				currentBonesArray.localBonesToAbsBones(skelModel->getBoneDefs());
+				currentBonesArray.localBonesToAbsBones(skelModel->getBoneDefs(),worldBoneMat);
 			} else {
-				currentBonesArray.localBonesToAbsBones(anim->getBoneDefs());
+				currentBonesArray.localBonesToAbsBones(anim->getBoneDefs(),worldBoneMat);
 			}
 #endif
 		}
