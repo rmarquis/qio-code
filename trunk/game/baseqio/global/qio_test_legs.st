@@ -12,6 +12,8 @@ state STAND
 	}
 	states
 	{
+		JUMP_STANDING		: +JUMP ONGROUND
+		
 		RUN_FORWARD			: FORWARD RUN
 		RUN_BACKWARD		: BACKWARD  RUN
 		RUN_LEFT			: STRAFE_LEFT RUN
@@ -38,6 +40,8 @@ state RUN_FORWARD
 
 	states
 	{
+		JUMP_STANDING		: +JUMP ONGROUND
+		
 		STAND				: !HAS_VELOCITY
 		
 		WALK_FORWARD		: !RUN FORWARD
@@ -62,6 +66,8 @@ state RUN_BACKWARD
 
 	states
 	{
+		JUMP_STANDING		: +JUMP ONGROUND
+		
 		STAND				: !HAS_VELOCITY
 
 		WALK_FORWARD		: !RUN FORWARD
@@ -85,6 +91,8 @@ state RUN_LEFT
 
 	states
 	{
+		JUMP_STANDING		: +JUMP ONGROUND
+		
 		STAND				: !HAS_VELOCITY
 
 		WALK_FORWARD		: !RUN FORWARD
@@ -108,6 +116,8 @@ state RUN_RIGHT
 
 	states
 	{
+		JUMP_STANDING		: +JUMP ONGROUND
+		
 		STAND				: !HAS_VELOCITY
 		
 		WALK_FORWARD		: !RUN FORWARD
@@ -133,6 +143,8 @@ state WALK_FORWARD
 
 	states
 	{
+		JUMP_STANDING		: +JUMP ONGROUND
+		
 		STAND				: !HAS_VELOCITY
 		
 		RUN_FORWARD			: RUN FORWARD
@@ -156,6 +168,8 @@ state WALK_BACKWARD
 
 	states
 	{
+		JUMP_STANDING		: +JUMP ONGROUND
+		
 		STAND				: !HAS_VELOCITY
 		
 		RUN_FORWARD			: RUN FORWARD
@@ -180,6 +194,8 @@ state WALK_LEFT
 
 	states
 	{
+		JUMP_STANDING		: +JUMP ONGROUND
+		
 		STAND				: !HAS_VELOCITY
 		
 		RUN_FORWARD			: RUN FORWARD
@@ -203,6 +219,8 @@ state WALK_RIGHT
 
 	states
 	{
+		JUMP_STANDING		: +JUMP ONGROUND
+		
 		STAND				: !HAS_VELOCITY
 		
 		RUN_FORWARD			: RUN FORWARD
@@ -213,5 +231,52 @@ state WALK_RIGHT
 		WALK_FORWARD		: FORWARD
 		WALK_BACKWARD		: BACKWARD
 		WALK_LEFT			: STRAFE_LEFT !FORWARD !BACKWARD
+	}
+}
+
+state JUMP_STANDING
+{
+/*	entrycommands
+	{
+		commanddelay 0.05 jump 56
+	}*/
+	legs
+	{
+		m249_jump_bg :  IS_WEAPON_ACTIVE "mainhand" "m249"
+		unarmed_jump_bg : default
+	}
+	
+	entrycommands
+	{
+		jump 56
+	}
+	states
+	{
+		FALL					: ANIMDONE_LEGS
+	}
+}
+state FALL
+{
+	legs
+	{
+		m249_jump_id :  IS_WEAPON_ACTIVE "mainhand" "m249"
+		unarmed_jump_id : default
+	}
+
+	states
+	{
+		LAND			: ONGROUND
+	}
+}
+state LAND
+{
+	legs
+	{
+		m249_jump_ed :  IS_WEAPON_ACTIVE "mainhand" "m249"
+		unarmed_jump_ed : default
+	}
+	states
+	{
+		STAND				: ANIMDONE_LEGS
 	}
 }

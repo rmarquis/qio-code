@@ -782,6 +782,8 @@ void Player::runPlayerAnimation_stateMachine() {
 				// leaving state, so execute exit commnads
 				st->iterateStateExitCommands(state->c_str(),this);
 				*state = next;
+				// entering state, so execute entry commnads
+				st->iterateStateEntryCommands(state->c_str(),this);
 				bChanged[i] = true;
 		//		continue;
 			}
