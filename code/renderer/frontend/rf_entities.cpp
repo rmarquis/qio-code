@@ -66,6 +66,8 @@ static aCvar_c rf_dontUpdateRagdollAnimations("rf_dontUpdateRagdollAnimations","
 // TIKI debugging
 static aCvar_c rf_tiki_verboseSetTIKIModelAnimLocalIndex("rf_tiki_verboseSetTIKIModelAnimLocalIndex","0");
 static aCvar_c rf_printAnimatedEntityUpdatesSkippedByDontUpdateFlag("rf_printAnimatedEntityUpdatesSkippedByDontUpdateFlag","0");
+static aCvar_c rf_wolf_verboseSetAnim("rf_wolf_verboseSetAnim","0");
+
 
 class q3AnimCtrl_c {
 	kfAnimCtrl_s legs;
@@ -395,11 +397,19 @@ void rEntityImpl_c::setAnim(const char *animName, int newFlags) {
 	if(this->model->hasWolfAnimConfig()) {
 		//str animName = this->model->getName();
 		const class skelAnimAPI_i *anim = this->model->findSkelAnim(animName);
+		if(rf_wolf_verboseSetAnim.getInt()) {
+			g_core->Print("rEntityImpl_c::setAnim[WolfAnim]: model %s anim %s ptr %i\n",
+				getModelName(),animName,anim);
+		}
 		return setAnim(anim,newFlags);
 	}
 	if(this->model->hasCharacterFile()) {
 		//str animName = this->model->getName();
 		const class skelAnimAPI_i *anim = this->model->findSkelAnim(animName);
+		if(rf_wolf_verboseSetAnim.getInt()) {
+			g_core->Print("rEntityImpl_c::setAnim[CharacterFile]: model %s anim %s ptr %i\n",
+				getModelName(),animName,anim);
+		}
 		return setAnim(anim,newFlags);
 	}
 	if(this->model->isTIKI()) {

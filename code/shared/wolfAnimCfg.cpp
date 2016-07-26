@@ -59,9 +59,18 @@ bool wolfAnimCfg_c::parse(const char *fileName) {
 			nextAnim.loopingFrames = p.getInteger();
 			nextAnim.FPS = p.getFloat();
 			nextAnim.moveSpeed = p.getFloat();
+			// there is also optional "transition" token
+			if(p.isAtEOL() == false) {
+				// 0?
+				nextAnim.transition = p.getInteger();
+			} else {
+				nextAnim.transition = -1; // default value?
+			}
 			nextAnim.calcFrameTimeFromFPS();
 			nextAnim.calcTotalTimeFromFrameTime();	
+			g_core->Print("wolfAnimCfg_c::parse: anim %i is %s\n",anims.size(),nextAnim.name.c_str());
 		}
 	}
+	g_core->Print("wolfAnimCfg_c::parse: %i animations loaded\n",anims.size());
 	return false; // no error
 }
