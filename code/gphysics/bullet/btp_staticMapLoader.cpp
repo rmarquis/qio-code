@@ -44,8 +44,15 @@ static void BT_AddBrushPlane(const float q3Plane[4]) {
 	planeEq[3] = -q3Plane[3];
 	planeEquations.push_back(planeEq);
 }
+bool BT_NeedsContentFlags(u32 flags) {
+	if(flags & 0x10000)
+		return true;
+	if(flags & 1)
+		return true;
+	return false;
+}
 void BT_ConvertWorldBrush(u32 brushNum, u32 contentFlags) {
-	if((contentFlags & 1) == 0)
+	if(BT_NeedsContentFlags(contentFlags)==false)
 		return;
 	planeEquations.clear();
 	g_bspPhysicsLoader->iterateBrushPlanes(brushNum,BT_AddBrushPlane);
@@ -56,7 +63,7 @@ void BT_ConvertWorldBrush(u32 brushNum, u32 contentFlags) {
 	g_staticMap->createWorldBrush(vertices);
 }
 void BT_ConvertWorldPoly(u32 surfNum, u32 contentFlags) {
-	if((contentFlags & 1) == 0)
+	if(BT_NeedsContentFlags(contentFlags)==false)
 		return;
 #if 0
 	cmSurface_c *newSF = new cmSurface_c;
@@ -69,7 +76,7 @@ void BT_ConvertWorldPoly(u32 surfNum, u32 contentFlags) {
 #endif
 }
 void BT_ConvertWorldBezierPatch(u32 surfNum, u32 contentFlags) {
-	if((contentFlags & 1) == 0)
+	if(BT_NeedsContentFlags(contentFlags)==false)
 		return;
 	cmSurface_c newSF;
 	// convert bezier patches to trimesh data
