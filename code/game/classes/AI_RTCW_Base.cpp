@@ -89,7 +89,7 @@ void AI_RTCW_Base::postSpawn() {
 		} else if(isZombie()) {
 			setSkin("zombie/default");
 		} else if(isWarZombie()) {
-			setSkin("warzombie/default");
+			setSkin("warrior/default");
 		}
 	}
 	if(cmod) {
