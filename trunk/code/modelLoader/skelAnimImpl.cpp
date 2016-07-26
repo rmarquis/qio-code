@@ -62,10 +62,12 @@ bool skelAnimGeneric_c::loadMDXAnim(const char *fname) {
 	const mdxHeader_t *h = (const mdxHeader_t *)fileData;
 	if(h->ident != MDX_IDENT) {
 		g_core->RedWarning("MDX file %s header has bad ident\n",fname);
+		g_vfs->FS_FreeFile(fileData);
 		return true;
 	}
 	if(h->version != MDX_VERSION) {
 		g_core->RedWarning("MDX file %s has bad version %i, should be %i\n",fname,h->version,MDX_VERSION);
+		g_vfs->FS_FreeFile(fileData);
 		return true;
 	}
 
@@ -153,6 +155,7 @@ bool skelAnimGeneric_c::loadMDXAnim(const char *fname) {
 	}
 	this->totalTime = this->frameTime * this->frames.size();
 	this->frameRate = 1.f / this->frameTime;
+	g_vfs->FS_FreeFile(fileData);
 	return false;
 }
 
@@ -172,10 +175,12 @@ bool skelAnimGeneric_c::loadMDSAnim(const char *fname) {
 	const mdsHeader_t *h = (const mdsHeader_t *)fileData;
 	if(h->ident != MDS_IDENT) {
 		g_core->RedWarning("MDS file %s header has bad ident\n",fname);
+		g_vfs->FS_FreeFile(fileData);
 		return true;
 	}
 	if(h->version != MDS_VERSION) {
 		g_core->RedWarning("MDS file %s has bad version %i, should be %i\n",fname,h->version,MDX_VERSION);
+		g_vfs->FS_FreeFile(fileData);
 		return true;
 	}
 
@@ -263,6 +268,7 @@ bool skelAnimGeneric_c::loadMDSAnim(const char *fname) {
 	}
 	this->totalTime = this->frameTime * this->frames.size();
 	this->frameRate = 1.f / this->frameTime;
+	g_vfs->FS_FreeFile(fileData);
 	return false;
 }
 
@@ -364,6 +370,7 @@ bool skelAnimGeneric_c::loadPSAAnim(const char *fname) {
 	const axChunkHeader_t *h = (const axChunkHeader_t*)fileData;
 	if(h->hasIdent(PSA_IDENT_HEADER)==false) {
 		g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: psa file %s has wrong ident %s, should be %s\n",fname,h->ident,PSA_IDENT_HEADER);
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	const axChunkHeader_t *s;
@@ -373,6 +380,7 @@ bool skelAnimGeneric_c::loadPSAAnim(const char *fname) {
 	s = h->getNextHeader();
 	if(s->hasIdent(PSA_IDENT_BONENAMES)==false) {
 		g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: psa file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSA_IDENT_BONENAMES);
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	if(s->dataSize != sizeof(axReferenceBone_t)) {
@@ -395,10 +403,12 @@ bool skelAnimGeneric_c::loadPSAAnim(const char *fname) {
 	s = s->getNextHeader();
 	if(s->hasIdent(PSA_IDENT_INFO)==false) {
 		g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: psa file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSA_IDENT_INFO);
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	if(s->dataSize != sizeof(axAnimationInfo_s)) {
 		g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: psa file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axAnimationInfo_s));
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	const axChunkHeader_t *animsSection = s;
@@ -415,10 +425,12 @@ bool skelAnimGeneric_c::loadPSAAnim(const char *fname) {
 	s = s->getNextHeader();
 	if(s->hasIdent(PSA_IDENT_KEYS)==false) {
 		g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: psa file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSA_IDENT_KEYS);
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	if(s->dataSize != sizeof(axAnimationKey_t)) {
 		g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: psa file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axAnimationKey_t));
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	//const char *subAnimName = 0;
@@ -471,11 +483,13 @@ bool skelAnimGeneric_c::loadPSAAnim(const char *fname) {
 		// do the sanity check
 		if(ai->numBones != numBones) {
 			g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: numBones mismatch ! (%i %i)\n",ai->numBones,numBones);
+			g_vfs->FS_FreeFile(fileData);
 			return true; // ..error ? Should never happen
 		}	
 		for(u32 j = 0; j < ai->numRawFrames; j++, inputFrameIndex++, outputFrameIndex++) {
 			if(outputFrameIndex >= frames.size()) {
 				g_core->RedWarning("skelAnimGeneric_c::loadPSAAnim: invalid outputFrameIndex\n");
+				g_vfs->FS_FreeFile(fileData);
 				return true;
 			}
 			skelFrame_c *f = &frames[outputFrameIndex];
@@ -492,6 +506,7 @@ bool skelAnimGeneric_c::loadPSAAnim(const char *fname) {
 			}
 		}
 	}
+	g_vfs->FS_FreeFile(fileData);
 	return false;
 }
 //
@@ -508,6 +523,7 @@ bool skelAnimGeneric_c::loadPSKAnim(const char *fname) {
 	const axChunkHeader_t *h = (const axChunkHeader_t*)fileData;
 	if(h->hasIdent(PSK_IDENT_HEADER)==false) {
 		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong ident %s, should be %s\n",fname,h->ident,PSK_IDENT_HEADER);
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	const axChunkHeader_t *s;
@@ -515,10 +531,12 @@ bool skelAnimGeneric_c::loadPSKAnim(const char *fname) {
 	s = h->getNextHeader();
 	if(s->hasIdent(PSK_IDENT_POINTS)==false) {
 		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSK_IDENT_POINTS);
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	if(s->dataSize != sizeof(axPoint_t)) {
 		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axPoint_t));
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	const axChunkHeader_t *pSection = s;
@@ -526,10 +544,12 @@ bool skelAnimGeneric_c::loadPSKAnim(const char *fname) {
 	s = s->getNextHeader();
 	if(s->hasIdent(PSK_IDENT_VERTS)==false) {
 		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSK_IDENT_VERTS);
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	if(s->dataSize != sizeof(axVertex_t)) {
 		g_core->RedWarning("skelAnimGeneric_c::loadPSKAnim: psk file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axVertex_t));
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	const axChunkHeader_t *vertSection = s;
@@ -614,6 +634,7 @@ bool skelAnimGeneric_c::loadPSKAnim(const char *fname) {
 	this->totalTime = this->frameTime * this->frames.size();
 	this->frameRate = 1.f / this->frameTime;
 
+	g_vfs->FS_FreeFile(fileData);
 	return false;
 }
 //
@@ -631,11 +652,13 @@ bool skelAnimGeneric_c::loadSKAAnim(const char *fname) {
 	
 	if(h->ident != SKA_IDENT) {
 		g_core->RedWarning("ska file %s header has bad ident\n",fname);
+		g_vfs->FS_FreeFile(fileData);
 		return true;
 	}
 
 	if(h->version != SKA_VERSION && h->version != SKB_VERSION_EF2) {
 		g_core->RedWarning("ska file %s header has bad version %i - should be %i or %i\n",fname,h->version,SKA_VERSION, SKB_VERSION_EF2);
+		g_vfs->FS_FreeFile(fileData);
 		return true;
 	}
 
@@ -696,6 +719,7 @@ bool skelAnimGeneric_c::loadSKAAnim(const char *fname) {
 
 	this->totalTime = this->frameTime * this->frames.size();
 	this->frameRate = 1.f / this->frameTime;
+	g_vfs->FS_FreeFile(fileData);
 	return false;
 }
 int skelAnimGeneric_c::registerBone(const char *boneName) {

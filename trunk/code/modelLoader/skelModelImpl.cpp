@@ -915,11 +915,13 @@ bool skelModelIMPL_c::loadSKB(const char *fname) {
 	
 	if(h->ident != SKB_IDENT) {
 		g_core->RedWarning("SKB file %s header has bad ident\n",fname);
+		g_vfs->FS_FreeFile(fileData);
 		return true;
 	}
 
 	if(h->version != SKB_VERSION && h->version != SKB_VERSION_EF2) {
 		g_core->RedWarning("SKB file %s header has bad version %i - should be %i or %i\n",fname,h->version,SKB_VERSION,SKB_VERSION_EF2);
+		g_vfs->FS_FreeFile(fileData);
 		return true;
 	}
 
@@ -940,6 +942,7 @@ bool skelModelIMPL_c::loadSKB(const char *fname) {
 		skelSurfIMPL_c *os = &this->surfs[i];
 		if(is->ident != SKB_IDENT) {
 			g_core->RedWarning("skb file %s surface %i (%s) has bad ident.\n",fname,i,is->name);
+			g_vfs->FS_FreeFile(fileData);
 			return true;
 		}
 
@@ -1003,6 +1006,7 @@ bool skelModelIMPL_c::loadSKB(const char *fname) {
 
 	//	}
 	//}
+	g_vfs->FS_FreeFile(fileData);
 
 	return false;
 }
@@ -1020,11 +1024,13 @@ bool skelModelIMPL_c::loadSKD(const char *fname) {
 	
 	if(h->ident != SKD_IDENT) {
 		g_core->RedWarning("SKD file %s header has bad ident\n",fname);
+		g_vfs->FS_FreeFile(fileData);
 		return true;
 	}
 
 	if(h->version != SKD_VERSION && h->version != SKD_VERSION_SH) {
 		g_core->RedWarning("SKD file %s header has bad version %i - should be %i or %i\n",fname,h->version,SKD_VERSION,SKD_VERSION_SH);
+		g_vfs->FS_FreeFile(fileData);
 		return true;
 	}
 
@@ -1044,6 +1050,7 @@ bool skelModelIMPL_c::loadSKD(const char *fname) {
 		skelSurfIMPL_c *os = &this->surfs[i];
 		if(is->ident != SKD_SURFACE_IDENT) {
 			g_core->RedWarning("skd file %s surface %i (%s) has bad ident.\n",fname,i,is->name);
+			g_vfs->FS_FreeFile(fileData);
 			return true;
 		}
 
@@ -1107,6 +1114,7 @@ bool skelModelIMPL_c::loadSKD(const char *fname) {
 
 	//	}
 	//}
+	g_vfs->FS_FreeFile(fileData);
 
 	return false;
 }
@@ -1121,11 +1129,13 @@ bool skelModelIMPL_c::loadMDS(const char *fname) {
 	}
 	const mdsHeader_t *h = (const mdsHeader_t *)fileData;
 	if(h->ident != MDS_IDENT) {
-		g_core->RedWarning("MDM file %s header has bad ident\n",fname);
+		g_core->RedWarning("MDS file %s header has bad ident\n",fname);
+		g_vfs->FS_FreeFile(fileData);
 		return true;
 	}
 	if(h->version != MDS_VERSION) {
-		g_core->RedWarning("MDM file %s has bad version %i, should be %i\n",fname,h->version,MDM_VERSION);
+		g_core->RedWarning("MDS file %s has bad version %i, should be %i\n",fname,h->version,MDS_VERSION);
+		g_vfs->FS_FreeFile(fileData);
 		return true;
 	}
 
@@ -1232,6 +1242,7 @@ bool skelModelIMPL_c::loadMDS(const char *fname) {
 		///g_core->Print("ABS : Vec %i - parent %i - %f %f %f\n",j,bones[j].parentIndex,point[0],point[1],point[2]);
 
 	}
+	g_vfs->FS_FreeFile(fileData);
 
 	// hack?
 	bones.clear();
@@ -1249,10 +1260,12 @@ bool skelModelIMPL_c::loadMDM(const char *fname) {
 	const mdmHeader_t *h = (const mdmHeader_t *)fileData;
 	if(h->ident != MDM_IDENT) {
 		g_core->RedWarning("MDM file %s header has bad ident\n",fname);
+		g_vfs->FS_FreeFile(fileData);
 		return true;
 	}
 	if(h->version != MDM_VERSION) {
 		g_core->RedWarning("MDM file %s has bad version %i, should be %i\n",fname,h->version,MDM_VERSION);
+		g_vfs->FS_FreeFile(fileData);
 		return true;
 	}
 
@@ -1307,9 +1320,7 @@ bool skelModelIMPL_c::loadMDM(const char *fname) {
 	//}
 
 	this->name = fname;
-
-	return false; // no error
-
+	g_vfs->FS_FreeFile(fileData);
 	return false;
 }
 bool skelModelIMPL_c::loadPSK(const char *fname) {	
@@ -1325,6 +1336,7 @@ bool skelModelIMPL_c::loadPSK(const char *fname) {
 	const axChunkHeader_t *h = (const axChunkHeader_t*)fileData;
 	if(h->hasIdent(PSK_IDENT_HEADER)==false) {
 		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong ident %s, should be %s\n",fname,h->ident,PSK_IDENT_HEADER);
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	const axChunkHeader_t *s;
@@ -1332,10 +1344,12 @@ bool skelModelIMPL_c::loadPSK(const char *fname) {
 	s = h->getNextHeader();
 	if(s->hasIdent(PSK_IDENT_POINTS)==false) {
 		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSK_IDENT_POINTS);
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	if(s->dataSize != sizeof(axPoint_t)) {
 		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axPoint_t));
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	const axChunkHeader_t *pSection = s;
@@ -1350,10 +1364,12 @@ bool skelModelIMPL_c::loadPSK(const char *fname) {
 	s = s->getNextHeader();
 	if(s->hasIdent(PSK_IDENT_VERTS)==false) {
 		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section ident %s, should be %s\n",fname,s->ident,PSK_IDENT_VERTS);
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	if(s->dataSize != sizeof(axVertex_t)) {
 		g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has wrong internal section dataSize %i, should be %i\n",fname,s->dataSize,sizeof(axVertex_t));
+		g_vfs->FS_FreeFile(fileData);
 		return true; // error
 	}
 	const axChunkHeader_t *vertSection = s;
@@ -1363,6 +1379,7 @@ bool skelModelIMPL_c::loadPSK(const char *fname) {
 		const axVertex_t *vi = s->getVertex(i);
 		if(vi->pointIndex < 0 || vi->pointIndex >= numPoints) {
 			g_core->RedWarning("skelModelIMPL_c::loadPSK: psk file %s has vertex with point index %i out of range <0,%i)\n",fname,vi->pointIndex,numPoints);
+			g_vfs->FS_FreeFile(fileData);
 			return true; // error
 		}
 	}
