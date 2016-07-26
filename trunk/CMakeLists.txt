@@ -756,6 +756,7 @@ SET ( GAME_CLASSES_RTCW_HEADERS
 	${MOUNT_DIR}/game/classes/AI_Soldier.h
 	${MOUNT_DIR}/game/classes/FuncInvisibleUser.h
 	${MOUNT_DIR}/game/classes/TargetScriptTrigger.h
+	${MOUNT_DIR}/game/classes/FuncExplosive.h
 )
 
 SET ( GAME_CLASSES_RTCW_SOURCES
@@ -764,6 +765,7 @@ SET ( GAME_CLASSES_RTCW_SOURCES
 	${MOUNT_DIR}/game/classes/AI_Soldier.cpp
 	${MOUNT_DIR}/game/classes/FuncInvisibleUser.cpp
 	${MOUNT_DIR}/game/classes/TargetScriptTrigger.cpp
+	${MOUNT_DIR}/game/classes/FuncExplosive.cpp
 )
 
 SET ( GAME_CLASSES_FAKK_HEADERS
