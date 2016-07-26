@@ -2,6 +2,8 @@ TIKI
 setup
 {
 	scale 0.52
+	baseRotation 0 90 0
+	
 	path models/player/police1/
 	skelmodel body_lower.md5mesh
 	skelmodel body_upper.md5mesh
