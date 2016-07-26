@@ -659,17 +659,7 @@ void ClientCommand( int clientNum ) {
 		e->setRenderModelAttachment(1,"tag_head","models/players/infantryss/head.mdc");
 		e->setRenderModelAttachment(0,"tag_weapon","models/weapons2/mp40/mp40.mdc");
 		e->setRenderModelSkin("default");
-	} else if(!_stricmp(cmd,"char_test1")) {
-		// V: ET character
-		str afName = g_core->Argv(1);
-		vec3_c p = pl->getOrigin();
-		p.z += pl->getViewHeight();
-		p += pl->getForward() * 64.f;
-		ModelEntity *e = new ModelEntity;
-		e->setOrigin(p);
-		e->setRenderModel("characters/temperate/axis/cvops.char");
-		e->setAnimation("stand_panzer");
-	} else if(!_stricmp(cmd,"mds_test2")) {
+	} else if(!_stricmp(cmd,"mds_test3")) {
 		// V: simple RTCW skeletal model test
 		// NOTE: mdm models has no bone data in file
 		str afName = g_core->Argv(1);
@@ -681,7 +671,7 @@ void ClientCommand( int clientNum ) {
 		e->setRenderModel("models/players/venom/body.mds");
 		e->setAnimation("models/players/venom/body.mds");
 		e->setRenderModelSkin("default");
-	} else if(!_stricmp(cmd,"mds_test3")) {
+	} else if(!_stricmp(cmd,"mds_test4")) {
 		// V: simple RTCW skeletal model test
 		// NOTE: mdm models has no bone data in file
 		str afName = g_core->Argv(1);
@@ -694,6 +684,30 @@ void ClientCommand( int clientNum ) {
 		e->setAnimation("models/players/infantryss/body.mds");
 		e->setRenderModelAttachment(0,"tag_head","models/players/infantryss/head.mdc");
 		e->setRenderModelSkin("default");
+	} else if(!_stricmp(cmd,"mds_test5")) {
+		// V: simple RTCW skeletal model test
+		// NOTE: mdm models has no bone data in file
+		str afName = g_core->Argv(1);
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		ModelEntity *e = new ModelEntity;
+		e->setOrigin(p);
+		e->setRenderModel("models/players/infantryss/body.mds");
+		e->setAnimation("firing_machinegun");
+		e->setRenderModelAttachment(1,"tag_head","models/players/infantryss/head.mdc");
+		e->setRenderModelAttachment(0,"tag_weapon","models/weapons2/mp40/mp40.mdc");
+		e->setRenderModelSkin("default");
+	} else if(!_stricmp(cmd,"char_test1")) {
+		// V: ET character
+		str afName = g_core->Argv(1);
+		vec3_c p = pl->getOrigin();
+		p.z += pl->getViewHeight();
+		p += pl->getForward() * 64.f;
+		ModelEntity *e = new ModelEntity;
+		e->setOrigin(p);
+		e->setRenderModel("characters/temperate/axis/cvops.char");
+		e->setAnimation("stand_panzer");
 	} else if(!_stricmp(cmd,"smd_test1")) {
 		str afName = g_core->Argv(1);
 		vec3_c p = pl->getOrigin();

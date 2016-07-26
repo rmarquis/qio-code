@@ -40,6 +40,8 @@ struct wolfAnimDef_s {
 	float totalTime;
 	// ADDED for RTCW
 	float moveSpeed;
+	// optional last token in wolfAnim.cfg in RTCW
+	int transition;
 
 	inline void calcFrameTimeFromFPS() {
 		frameTime = 1.f / FPS;
