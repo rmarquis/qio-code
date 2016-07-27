@@ -95,6 +95,14 @@ public:
 	vec3_c(const char *text) {
 		this->fromString(text);
 	}
+	void capEachComponent(float maxVal) {
+		if(x > maxVal)
+			x = maxVal;
+		if(y > maxVal)
+			y = maxVal;
+		if(z > maxVal)
+			z = maxVal;
+	}
 	static float lerpDegrees(float from, float to, float frac) {
 		float	a;
 		if (to - from > 180) {

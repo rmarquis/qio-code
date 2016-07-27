@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // rf_lightGrid.cpp - precomputed lighting grid class
 #include "rf_lightGrid.h"
+#include "rf_local.h"
 #include <api/coreAPI.h>
 #include "../pointLightSample.h"
 
@@ -133,6 +134,12 @@ void q3BSPLightGrid_c::setupPointLighting(const vec3_c &origin, struct pointLigh
 		out.ambientLight *= totalFactor;
 		out.directedLight *= totalFactor;
 	}
+	if(0) {
+		out.ambientLight.set(0,0,255.f);
+		out.directedLight.set(255.f,0,0);
+	}
+	RF_AdjustColorRGB(out.ambientLight);
+	RF_AdjustColorRGB(out.directedLight);
 	out.lightDir.normalize();
 }
 

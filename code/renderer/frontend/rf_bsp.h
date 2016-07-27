@@ -299,6 +299,7 @@ class rBspTree_c {
 
 	void ensureSurfaceLocalVertsAllocated(bspTriSurf_s *stSF);
 
+
 	// for debugging
 	void writeBSPDataToOBJ(const char *fname) const;
 public:
