@@ -42,6 +42,7 @@ struct svAPI_s : public iFaceBase_i {
 	void (*GetUserinfo)( int num, char *buffer, int bufferSize );
 	void (*SetUserinfo)( int num, const char *buffer );
 	void (*GetUsercmd)( int clientNum, struct userCmd_s *cmd );
+	bool (*isWorldTypeBSP)();
 
 	void (*linkEntity)(edict_s *ed);
 	void (*unlinkEntity)(edict_s *ed);

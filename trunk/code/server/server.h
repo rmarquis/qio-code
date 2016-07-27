@@ -385,6 +385,7 @@ void SV_GetUsercmd( int clientNum, userCmd_s *cmd );
 void SV_LinkEntity(edict_s *ed);
 void SV_UnlinkEntity(edict_s *ed);
 void SV_AdjustAreaPortalState(int area0, int area1, bool open);
+bool SV_IsWorldTypeBSP();
 
 //============================================================
 

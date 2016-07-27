@@ -227,8 +227,18 @@ void G_SpawnMapEntities(const char *mapName) {
 	if(g_loadingScreen) { // update loading screen (if its present)
 		g_loadingScreen->addLoadingString("- %i entdefs.\nSpawning...",g_entDefs.size());
 	}
+	bool bIsWorldBSP = g_server->isWorldTypeBSP();
 	for(u32 i = 0; i < g_entDefs.size(); i++) {
 		entDef_c *entDef = g_entDefs[i];
+		// misc_model entities are tesselated into bsp surfaces during map compilation,
+		// but bsp files still contain misc_model entries,
+		// so don't spawn misc_models, but only if worldtype is BSP
+		// (we also support direct .map loading)
+		if(bIsWorldBSP) {
+			if(entDef->hasClassName("misc_model")) {
+				continue;
+			}
+		}
 		G_SpawnEntDef(entDef);
 	}
 	// perform a final fixups on entities
