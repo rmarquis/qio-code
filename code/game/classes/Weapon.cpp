@@ -57,6 +57,7 @@ Weapon::Weapon() {
 	maxSpread = 1.f;
 	weaponHand = WH_DUALHAND;
 	bLoopFire = false;
+	dualAttachToTag = "tag_weapon_right";
 }
 Weapon::~Weapon() {
 
@@ -180,7 +181,9 @@ void Weapon::setKeyValue(const char *key, const char *value) {
 		bLoopFire = true;
 	} else if(!_stricmp(key,"coolitem")) {
 		// FAKK-only, ignore
-
+	} else if(!_stricmp(key,"dualAttachToTag")) {
+		// FAKK
+		dualAttachToTag = value;
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}

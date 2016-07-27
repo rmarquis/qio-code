@@ -806,6 +806,11 @@ void rEntityImpl_c::updateAnimatedEntity() {
 					skelAnimCtrlTorso->getAnim()->addChildrenOf(torsoBones,"hip");
 					if(torsoBones.size() == 0) {
 						skelModel->addTorsoBoneIndices(torsoBones);
+					} 
+					// tmp hack
+					if(torsoBones.size() == skelModel->getNumBones()) {
+						torsoBones.clear();
+						skelModel->addChildrenOf(torsoBones,"Bip01-Spine2");					
 					}
 					if(finalBones == 0) {
 						finalBones = new boneOrArray_c;
@@ -814,6 +819,10 @@ void rEntityImpl_c::updateAnimatedEntity() {
 					finalBones->setBones(skelAnimCtrlTorso->getCurBones(),torsoBones);
 					// transform to abs
 					finalBones->localBonesToAbsBones(skelModel->getBoneDefs(),&worldBoneMat);
+					// scaling
+					if(skelModel->hasCustomScaling()) {
+						finalBones->scaleXYZ(skelModel->getScaleXYZ());
+					}
 					// V: update vertex positions, normals, tangents and binormals (TBN approx)
 					instance->updateSkelModelInstance(skelModel,*finalBones);
 					// append .md3/.mdc attachments at the tags

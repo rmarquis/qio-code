@@ -198,6 +198,7 @@ void ClientSpawn(edict_s *ent) {
 	} else if(g_vfs->FS_FileExists("models/player/police1.tik")) {
 		pl->setPlayerModel("models/player/police1.tik");
 		pl->loadStateMachineLegs("global/qio_test_legs.st");
+		pl->loadStateMachineTorso("global/qio_test_torso.st");
 	} else {
 		// Qio player model
 		pl->setPlayerModel("models/player/shina/body.md5mesh");

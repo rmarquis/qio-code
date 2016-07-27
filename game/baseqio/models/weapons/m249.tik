@@ -1,0 +1,21 @@
+TIKI
+setup
+{
+	scale 0.52
+	baseRotation 0 90 0
+	
+	path models/weapons/m249/
+	skelmodel m249.md5mesh
+}
+init
+{
+	server
+	{
+		classname Weapon
+		name "m249"
+		// must be a valid bone of player model
+		dualattachtotag t_weapon_r
+		hand dual
+		
+	}
+}

@@ -41,7 +41,7 @@ animations
 	
 	
 	// TODO - UNARMED, let's stub it for now
-	path models/player/shared/m249/
+	path models/player/shared/unarmed/
 	
 	unarmed_attack_h attack_h.md5anim
 	unarmed_attack_h_s attack_h_s.md5anim

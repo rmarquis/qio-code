@@ -7,7 +7,7 @@ state STAND
 	}
 	legs
 	{
-		m249_hold_f :  IS_WEAPON_ACTIVE "mainhand" "m249"
+		m249_hold_f :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		unarmed_hold_f : default
 	}
 	states
@@ -34,7 +34,7 @@ state RUN_FORWARD
 {
 	legs
 	{
-		m249_run_f :  IS_WEAPON_ACTIVE "mainhand" "m249"
+		m249_run_f :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		unarmed_run_f : default
 	}
 
@@ -60,7 +60,7 @@ state RUN_BACKWARD
 {
 	legs
 	{
-		m249_run_b :  IS_WEAPON_ACTIVE "mainhand" "m249"
+		m249_run_b :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		unarmed_run_b : default
 	}
 
@@ -85,7 +85,7 @@ state RUN_LEFT
 {
 	legs
 	{
-		m249_run_l :  IS_WEAPON_ACTIVE "mainhand" "m249"
+		m249_run_l :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		unarmed_run_l : default
 	}
 
@@ -110,7 +110,7 @@ state RUN_RIGHT
 {
 	legs
 	{
-		m249_run_r :  IS_WEAPON_ACTIVE "mainhand" "m249"
+		m249_run_r :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		unarmed_run_r : default
 	}
 
@@ -137,7 +137,7 @@ state WALK_FORWARD
 {
 	legs
 	{
-		m249_walk_f :  IS_WEAPON_ACTIVE "mainhand" "m249"
+		m249_walk_f :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		unarmed_walk_f : default
 	}
 
@@ -162,7 +162,7 @@ state WALK_BACKWARD
 {
 	legs
 	{
-		m249_walk_b :  IS_WEAPON_ACTIVE "mainhand" "m249"
+		m249_walk_b :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		unarmed_walk_b : default
 	}
 
@@ -188,7 +188,7 @@ state WALK_LEFT
 {
 	legs
 	{
-		m249_walk_l :  IS_WEAPON_ACTIVE "mainhand" "m249"
+		m249_walk_l :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		unarmed_walk_l : default
 	}
 
@@ -213,7 +213,7 @@ state WALK_RIGHT
 {
 	legs
 	{
-		m249_walk_r :  IS_WEAPON_ACTIVE "mainhand" "m249"
+		m249_walk_r :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		unarmed_walk_r : default
 	}
 
@@ -242,7 +242,7 @@ state JUMP_STANDING
 	}*/
 	legs
 	{
-		m249_jump_bg :  IS_WEAPON_ACTIVE "mainhand" "m249"
+		m249_jump_bg :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		unarmed_jump_bg : default
 	}
 	
@@ -259,7 +259,7 @@ state FALL
 {
 	legs
 	{
-		m249_jump_id :  IS_WEAPON_ACTIVE "mainhand" "m249"
+		m249_jump_id :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		unarmed_jump_id : default
 	}
 
@@ -272,7 +272,7 @@ state LAND
 {
 	legs
 	{
-		m249_jump_ed :  IS_WEAPON_ACTIVE "mainhand" "m249"
+		m249_jump_ed :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		unarmed_jump_ed : default
 	}
 	states
