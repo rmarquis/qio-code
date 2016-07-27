@@ -81,6 +81,7 @@ class Weapon : public ModelEntity {
 	// --- for TIKI weapons
 	// Loop firing after "fire" event until "stopfire" is cast
 	bool bLoopFire;
+	str dualAttachToTag;
 protected:
 	safePtr_c<Player> owner;
 
@@ -95,6 +96,9 @@ public:
 
 	bool getBLoopFire() const {
 			return bLoopFire;
+	}
+	const char *getDualAttachToTag() const {
+		return dualAttachToTag;
 	}
 	u32 getRaiseTime() const {
 		return raiseTime;

@@ -144,6 +144,21 @@ skelModelIMPL_c::~skelModelIMPL_c() {
 	surfs.clear();
 	g_core->Print("Freeing skelModel %s\n",this->name.c_str());
 }
+void skelModelIMPL_c::addChildrenOf(arraySTD_c<u32> &list, const char *baseBoneName) const {
+	int baseBoneIndex = getLocalBoneIndexForBoneName(baseBoneName);
+	if(baseBoneIndex == -1)
+		return;
+	for(u32 i = 0; i < bones.size(); i++) {
+		int p = i;
+		while(p != -1) {
+			if(p == baseBoneIndex) {
+				list.add_unique(i);
+				break;
+			}
+			p = bones[p].parentIndex;
+		}
+	}
+}
 void skelModelIMPL_c::addTorsoBoneIndices(arraySTD_c<u32> &out) const {
 	for(u32 i = 0; i < bones.size(); i++) {
 		if(bones[i].flags==0) {

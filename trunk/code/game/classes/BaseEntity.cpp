@@ -286,6 +286,8 @@ void BaseEntity::setKeyValue(const char *key, const char *value) {
 			this->setOrigin(e->getOrigin());
 		} 
 #endif
+	} else if(!_stricmp(key,"printMsg")) {
+		g_core->Print("%s\n",value);
 	} else {
 
 	}

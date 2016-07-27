@@ -324,7 +324,7 @@ void Player::activateNewWeapon() {
 	} else if(nextWeaponHand == WH_DUALHAND) {
 		curWeapon = nextWeapon;
 		curWeapon->showEntity();
-		curWeapon->setParent(this,"tag_weapon_right");
+		curWeapon->setParent(this,curWeapon->getDualAttachToTag());
 	} else {
 
 	}
@@ -1812,13 +1812,13 @@ bool Player::checkAttackLeft(const class stringList_c *arguments, class patternM
 	return false;
 }
 bool Player::checkAttackPrimary(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
-
-	// TODO
+	if(pers.cmd.buttons & BUTTON_ATTACK)
+		return true;
 	return false;
 }
 bool Player::checkAttackSecondary(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
-
-	// TODO
+	if(pers.cmd.buttons & BUTTON_ATTACK_SECONDARY)
+		return true;
 	return false;
 }
 bool Player::checkIsWeaponSemiAuto(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
@@ -1846,6 +1846,17 @@ bool Player::checkIsWeaponReadyToFire(const class stringList_c *arguments, class
 		if(arguments->size() > 1) {
 			const char *wpnName = arguments->getString(1);
 			if(stricmp(wpnName,curWeaponRight->getWeaponName()))
+				return false;
+		}
+		return true; // TODO
+	}
+	if(!stricmp(hand,"dualhand") || !stricmp(hand,"mainhand")) {
+		// check if there is a weapon in dualhand
+		if(curWeapon.getPtr() == 0)
+			return false;
+		if(arguments->size() > 1) {
+			const char *wpnName = arguments->getString(1);
+			if(stricmp(wpnName,curWeapon->getWeaponName()))
 				return false;
 		}
 		return true; // TODO
