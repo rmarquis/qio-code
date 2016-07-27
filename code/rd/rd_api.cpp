@@ -60,6 +60,7 @@ static aCvar_c rd_build_edgeMaxError("rd_build_edgeMaxError","1.3f");
 static aCvar_c rd_build_vertsPerPoly("rd_build_vertsPerPoly","6.0f");
 static aCvar_c rd_build_detailSampleDist("rd_build_detailSampleDist","6.0f");
 static aCvar_c rd_build_detailSampleMaxError("rd_build_detailSampleMaxError","1.0f");
+static aCvar_c rd_debugDraw("rd_debugDraw","0");
 	
 
 
@@ -139,6 +140,8 @@ public:
 		AUTOCMD_RegisterAutoConsoleCommands();
 	}
 	virtual void doDebugDrawing3D() {
+		if(rd_debugDraw.getInt() == 0)
+			return;
 		if(s) {
 			glPushMatrix();
 			//glRotatef(90,1,0,0);
