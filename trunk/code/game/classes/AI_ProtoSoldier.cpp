@@ -21,46 +21,13 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// AI_RTCW_Base.h
-#ifndef __AI_RTCW_BASE_H__
-#define __AI_RTCW_BASE_H__
+// AI_ProtoSoldier.cpp
+#include "AI_ProtoSoldier.h"
+#include <api/coreAPI.h>
 
-#include "ModelEntity.h"
+DEFINE_CLASS(AI_ProtoSoldier, "AI_RTCW_Base");
 
-class AI_RTCW_Base : public ModelEntity {
-	str skin;
-public:
-	AI_RTCW_Base();
+AI_ProtoSoldier::AI_ProtoSoldier() {
+	g_core->Print("AI_ProtoSoldier:;AI_ProtoSoldier() \n");
+}
 
-	DECLARE_CLASS( AI_RTCW_Base );
-
-	virtual void postSpawn();
-
-	void setSkin(const char *skinName);
-
-	virtual bool isLoper() const {
-		return false;
-	}
-	virtual bool isZombie() const {
-		return false;
-	}
-	virtual bool isWarZombie() const {
-		return false;
-	}
-	virtual bool isSuperSoldier() const {
-		return false;
-	}
-	virtual bool isBossHelga() const {
-		return false;
-	}
-	virtual bool isProtoSoldier() const {
-		return false;
-	}
-
-
-
-
-	virtual void setKeyValue(const char *key, const char *value);
-};
-
-#endif // __AI_RTCW_BASE_H__

@@ -59,6 +59,8 @@ void AI_RTCW_Base::setSkin(const char *skinName) {
 		setAnimation("alert_idle");
 	} else if(isSuperSoldier()) {
 		setAnimation("alert_idle");
+	} else if(isProtoSoldier()) {
+		setAnimation("alert_idle");
 	} else if(isBossHelga()) {
 		setAnimation("idle");
 	} else {
@@ -86,6 +88,8 @@ void AI_RTCW_Base::postSpawn() {
 		// default skin
 		if(isSuperSoldier()) {
 			setSkin("supersoldier/default");
+		} else if(isProtoSoldier()) {
+			setSkin("protosoldier/default");
 		} else if(isLoper()) {
 			setSkin("loper/default");
 		} else if(isZombie()) {
