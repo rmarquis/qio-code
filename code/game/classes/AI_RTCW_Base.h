@@ -50,6 +50,9 @@ public:
 	virtual bool isSuperSoldier() const {
 		return false;
 	}
+	virtual bool isBossHelga() const {
+		return false;
+	}
 
 
 

@@ -131,6 +131,11 @@ void SV_AdjustAreaPortalState(int area0, int area1, bool open) {
 		sv_bsp->adjustAreaPortalState(area0,area1,open);
 	}
 }
+bool SV_IsWorldTypeBSP() {
+	if(sv_bsp)
+		return true;
+	return false;
+}
 /*
 ===============
 SV_GetServerinfo

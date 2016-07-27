@@ -43,7 +43,7 @@ void SV_InitServerAPI() {
 	g_staticSVApi.linkEntity = SV_LinkEntity;
 	g_staticSVApi.unlinkEntity = SV_UnlinkEntity;
 	g_staticSVApi.adjustAreaPortalState = SV_AdjustAreaPortalState;
-
+	g_staticSVApi.isWorldTypeBSP = SV_IsWorldTypeBSP;
 	g_server = &g_staticSVApi;
 	g_iFaceMan->registerInterface(&g_staticSVApi,SERVER_API_IDENTSTR);
 }
