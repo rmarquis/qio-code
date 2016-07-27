@@ -168,7 +168,6 @@ state PUTAWAY_MAIN
 	torso
 	{
 		m249_unselect : IS_WEAPON_ACTIVE "dualhand" "m249"
-		mp5_acog_unselect : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_unselect : default // default animation, should be something flexible
 	}
 	entrycommands
@@ -177,7 +176,7 @@ state PUTAWAY_MAIN
 	}
 	exitcommands
 	{
-		deactivateweapon righthand
+		deactivateweapon dualhand
 	}
 	states
 	{
