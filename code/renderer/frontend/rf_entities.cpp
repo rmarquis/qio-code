@@ -67,6 +67,7 @@ static aCvar_c rf_dontUpdateRagdollAnimations("rf_dontUpdateRagdollAnimations","
 static aCvar_c rf_tiki_verboseSetTIKIModelAnimLocalIndex("rf_tiki_verboseSetTIKIModelAnimLocalIndex","0");
 static aCvar_c rf_printAnimatedEntityUpdatesSkippedByDontUpdateFlag("rf_printAnimatedEntityUpdatesSkippedByDontUpdateFlag","0");
 static aCvar_c rf_wolf_verboseSetAnim("rf_wolf_verboseSetAnim","0");
+static aCvar_c rf_printEntityLocalBounds("rf_printEntityLocalBounds","0");
 
 
 class q3AnimCtrl_c {
@@ -161,17 +162,17 @@ void rEntityImpl_c::recalcABSBounds() {
 	aabb prevABSBounds = this->absBB;
 	// update abs bounds
 	if(model->isValid() == false) {
-		aabb bb;
-		bb.fromRadius(16.f);
-		matrix.transformAABB(bb,this->absBB);
+		localBB.fromRadius(16.f);
+		matrix.transformAABB(localBB,this->absBB);
 	} else if(myRagdollDef) {
+		localBB.fromHalfSize(999999.f); // TODO
 		this->absBB.fromHalfSize(999999.f); // TODO
 	} else if(instance) {
-		const aabb &bb = instance->getBounds();
-		matrix.transformAABB(bb,this->absBB);
+		localBB = instance->getBounds();
+		matrix.transformAABB(localBB,this->absBB);
 	} else {
-		const aabb &bb = model->getBounds();
-		matrix.transformAABB(bb,this->absBB);
+		localBB = model->getBounds();
+		matrix.transformAABB(localBB,this->absBB);
 	}
 	// update grid lighting (for Q3 bsps)
 	this->bCenterLightSampleValid = (RF_SampleWorldLightGrid(this->absBB.getCenter(),this->centerLightSample)==false);
@@ -967,6 +968,13 @@ void rEntityImpl_c::addDrawCalls() {
 	if(rf_printEntityTriangleCounts.getInt()) {
 		u32 triangleCount = getEntityTriangleCount();
 		g_core->Print("Entity %i (%s) has %i triangles\n",this->networkingEntityNumber,this->getModelName(),triangleCount);
+	}
+	if(rf_printEntityLocalBounds.getInt()) {
+		g_core->Print("Entity %i (%s) has local bb (%f %f %f) (%f %f %f)\n",this->networkingEntityNumber,
+			this->getModelName(),
+			localBB.mins.x,localBB.mins.y,localBB.mins.z,
+			localBB.maxs.x,localBB.maxs.y,localBB.maxs.z
+			);
 	}
 	// this is needed here so rf_drawCalls.cpp know
 	// which orientation should be used 
