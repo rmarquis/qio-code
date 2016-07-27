@@ -874,6 +874,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\code\game\classes\AI_ProtoSoldier.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\AI_ProtoSoldier.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\code\game\classes\AI_RTCW_Base.cpp"
 					>
 				</File>

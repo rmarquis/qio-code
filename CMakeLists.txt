@@ -757,6 +757,7 @@ SET ( GAME_CLASSES_RTCW_HEADERS
 	${MOUNT_DIR}/game/classes/AI_RTCW_Base.h
 	${MOUNT_DIR}/game/classes/AI_Soldier.h
 	${MOUNT_DIR}/game/classes/AI_SuperSoldier.h
+	${MOUNT_DIR}/game/classes/AI_ProtoSoldier.h
 	${MOUNT_DIR}/game/classes/AI_Boss_Helga.h
 	${MOUNT_DIR}/game/classes/FuncInvisibleUser.h
 	${MOUNT_DIR}/game/classes/TargetScriptTrigger.h
@@ -770,6 +771,7 @@ SET ( GAME_CLASSES_RTCW_SOURCES
 	${MOUNT_DIR}/game/classes/AI_RTCW_Base.cpp
 	${MOUNT_DIR}/game/classes/AI_Soldier.cpp
 	${MOUNT_DIR}/game/classes/AI_SuperSoldier.cpp
+	${MOUNT_DIR}/game/classes/AI_ProtoSoldier.cpp
 	${MOUNT_DIR}/game/classes/AI_Boss_Helga.cpp
 	${MOUNT_DIR}/game/classes/FuncInvisibleUser.cpp
 	${MOUNT_DIR}/game/classes/TargetScriptTrigger.cpp
