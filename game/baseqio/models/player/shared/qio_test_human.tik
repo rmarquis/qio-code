@@ -39,6 +39,42 @@ animations
 	m249_walk_l walk_l.md5anim
 	m249_walk_r walk_r.md5anim
 	
+	// mp5_acog third person animations (for full player body)
+	path models/player/shared/mp5_acog/
+	
+	mp5_acog_attack_h attack_h.md5anim
+	mp5_acog_attack_h_s attack_h_s.md5anim
+	mp5_acog_attack_l attack_l.md5anim
+	mp5_acog_attack_l_s attack_l_s.md5anim
+	mp5_acog_hold_f hold_f.md5anim
+	mp5_acog_hold_s hold_s.md5anim
+	mp5_acog_hold_sit_f hold_sit_f.md5anim
+	mp5_acog_hold_sit_s hold_sit_s.md5anim
+	mp5_acog_jump_bg jump_bg.md5anim
+	mp5_acog_jump_ed jump_ed.md5anim
+	mp5_acog_jump_id jump_id.md5anim
+	mp5_acog_pose pose.md5anim
+	mp5_acog_pose_bend_f pose_bend_f.md5anim
+	mp5_acog_pose_bend_l pose_bend_l.md5anim
+	mp5_acog_pose_l pose_l.md5anim
+	mp5_acog_pose_l_s pose_l_s.md5anim
+	mp5_acog_pose_s pose_s.md5anim
+	mp5_acog_reload reload.md5anim
+	mp5_acog_run_b run_b.md5anim
+	mp5_acog_run_f run_f.md5anim
+	mp5_acog_run_f2 run_f2.md5anim
+	mp5_acog_run_l run_l.md5anim
+	mp5_acog_run_r run_r.md5anim
+	mp5_acog_select select.md5anim
+	mp5_acog_sit_b sit_b.md5anim
+	mp5_acog_sit_f sit_f.md5anim
+	mp5_acog_sit_l sit_l.md5anim
+	mp5_acog_sit_r sit_r.md5anim
+	mp5_acog_unselect unselect.md5anim
+	mp5_acog_walk_b walk_b.md5anim
+	mp5_acog_walk_f walk_f.md5anim
+	mp5_acog_walk_l walk_l.md5anim
+	mp5_acog_walk_r walk_r.md5anim
 	
 	// TODO - UNARMED, let's stub it for now
 	path models/player/shared/unarmed/

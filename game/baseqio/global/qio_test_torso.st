@@ -32,6 +32,7 @@ state RELOAD_WEAPON
 	torso
 	{
 		m249_reload :  IS_WEAPON_ACTIVE "dualhand" "m249"
+		mp5_acog_reload : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_reload : default // stop torso animation
 	}
 	entrycommands
@@ -95,6 +96,7 @@ state PRIMARY_ATTACK_FULLAUTO
 	torso
 	{
 		m249_attack_h :  IS_WEAPON_ACTIVE "dualhand" "m249"
+		mp5_acog_attack_h : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_attack_h : default // stop torso animation
 	}
 	
@@ -120,6 +122,7 @@ state PRIMARY_ATTACK_SEMIAUTO
 	torso
 	{
 		m249_attack_h :  IS_WEAPON_ACTIVE "dualhand" "m249"
+		mp5_acog_attack_h : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_attack_h : default // stop torso animation
 	}
 	
@@ -144,6 +147,7 @@ state RAISE_WEAPON
 	torso
 	{
 		m249_select : IS_WEAPON_ACTIVE "dualhand" "m249"
+		mp5_acog_select : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_select : default // default animation, should be something flexible
 	}
 	entrycommands
@@ -168,6 +172,7 @@ state PUTAWAY_MAIN
 	torso
 	{
 		m249_unselect : IS_WEAPON_ACTIVE "dualhand" "m249"
+		mp5_acog_unselect : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_unselect : default // default animation, should be something flexible
 	}
 	entrycommands
