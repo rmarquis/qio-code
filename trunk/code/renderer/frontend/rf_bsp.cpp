@@ -257,10 +257,15 @@ bool rBspTree_c::loadLightmaps(u32 lumpNum, u32 lightmapSize) {
 		g_core->RedWarning("rBspTree_c::loadLightmaps: invalid lightmaps lump size\n");
 		return true; // error
 	}
-	u32 numLightmaps = l.fileLen / (lightmapSize*lightmapSize*3);
+	u32 lightmapSizeBytes = lightmapSize*lightmapSize*3;
+	u32 numLightmaps = l.fileLen / lightmapSizeBytes;
 	lightmaps.resize(numLightmaps);
 	const byte *p = h->getLumpData(lumpNum);
 	for(u32 i = 0; i < numLightmaps; i++) {
+		// adjust lightmap
+		for(u32 j = 0; j < lightmapSizeBytes; j += 3) {
+			RF_AdjustColorRGB((byte*)p+j);
+		}
 		textureAPI_i *t = lightmaps[i] = g_ms->createLightmap(i,p,lightmapSize,lightmapSize);
 		p += (lightmapSize*lightmapSize*3);
 	}
@@ -613,6 +618,8 @@ bool rBspTree_c::loadVerts(u32 lumpVerts) {
 				ov->color[1] = iv->color[1];
 				ov->color[2] = iv->color[2];
 				ov->color[3] = iv->color[3];
+
+				RF_AdjustColorRGBA(ov->color);
 			}
 	//	}
 	}

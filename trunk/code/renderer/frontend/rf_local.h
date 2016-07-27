@@ -146,6 +146,11 @@ void RF_InitFonts();
 void RF_ShutdownFonts();
 class fontAPI_i *RF_RegisterFont(const char *name);
 
+// rf_colorAdjust.cpp
+void RF_AdjustColorRGB(byte *rgb);
+void RF_AdjustColorRGBA(byte *rgba);
+void RF_AdjustColorRGB(vec3_c &col);
+
 extern class cameraDef_c rf_camera;
 extern int rf_curTimeMsec;
 extern float rf_curTimeSeconds;

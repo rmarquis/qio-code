@@ -495,6 +495,7 @@ SET ( RENDERER_SOURCES
 	${MOUNT_DIR}/renderer/frontend/rf_terrain.cpp
 	${MOUNT_DIR}/renderer/frontend/rf_water.cpp
 	${MOUNT_DIR}/renderer/frontend/rf_world.cpp
+	${MOUNT_DIR}/renderer/frontend/rf_colorAdjust.cpp
 )
 
 SET ( MODELLOADER_API
