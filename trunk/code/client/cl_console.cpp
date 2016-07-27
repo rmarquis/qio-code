@@ -372,6 +372,11 @@ void Cmd_CompleteMDCName( char *args, int argNum ) {
 		AC_CompleteFilename( "models", "mdc", 0, 0, false, false );
 	}
 }
+void Cmd_CompleteMD3Name( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		AC_CompleteFilename( "models", "md3", 0, 0, false, false );
+	}
+}
 void Cmd_CompleteTIKName( char *args, int argNum ) {
 	if( argNum == 2 ) {
 		AC_CompleteFilename( "models", "tik", 0, 0, false, false );
@@ -539,6 +544,12 @@ void Con_Init (void) {
 
 	Cmd_AddCommand ("testModelMDS", Cmd_TestModel_f);
 	Cmd_SetCommandCompletionFunc( "testModelMDS", Cmd_CompleteMDSName );
+
+	Cmd_AddCommand ("testModelMD3", Cmd_TestModel_f);
+	Cmd_SetCommandCompletionFunc( "testModelMD3", Cmd_CompleteMD3Name );
+
+	Cmd_AddCommand ("testModelMDC", Cmd_TestModel_f);
+	Cmd_SetCommandCompletionFunc( "testModelMDC", Cmd_CompleteMDCName );
 
 	Com_Printf("Console initialized.\n");
 }
