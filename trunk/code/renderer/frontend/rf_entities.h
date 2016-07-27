@@ -51,6 +51,7 @@ class rEntityImpl_c : public rEntityAPI_i {
 	vec3_c origin;
 	class rModelAPI_i *model;
 	aabb absBB;
+	aabb localBB;
 	bool bFirstPersonOnly;
 	bool bThirdPersonOnly;
 	bool bHidden;
