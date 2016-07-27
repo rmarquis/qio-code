@@ -16,6 +16,9 @@ init
 		// must be a valid bone of player model
 		dualattachtotag t_weapon_r
 		hand dual
+		// I have used rf_printEntityLocalBounds in game to determine that sizes
+		// NOTE: this is before scaling
+		setsize -10 -4 -5 37 8 10
 		
 	}
 }
