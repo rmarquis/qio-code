@@ -71,6 +71,8 @@ public:
 	virtual ~BaseEntity();
 
 	DECLARE_CLASS( BaseEntity );
+	
+	void printTouchingAreas() const;
 
 	virtual void setKeyValue(const char *key, const char *value);
 	virtual void iterateKeyValues(class keyValuesListener_i *listener) const;

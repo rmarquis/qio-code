@@ -35,6 +35,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/eventSystem.h>
 #include <shared/eventBaseAPI.h>
 #include <shared/autoCvar.h>
+#include <shared/bspBoxDesc.h>
 #include <api/entDefAPI.h>
 #include <shared/entityType.h>
 #include <shared/wolfScript.h>
@@ -220,6 +221,24 @@ BaseEntity::~BaseEntity() {
 	memset (myEdict, 0, sizeof(*myEdict));
 	myEdict->freetime = level.time;
 	myEdict->s = 0;
+}
+void BaseEntity::printTouchingAreas() const {
+	g_core->Print("Bounds: %f %f %f, %f %f %f\n",
+		this->myEdict->absBounds.mins.x,
+		this->myEdict->absBounds.mins.y,
+		this->myEdict->absBounds.mins.z,
+		this->myEdict->absBounds.maxs.x,
+		this->myEdict->absBounds.maxs.y,
+		this->myEdict->absBounds.maxs.z
+		);
+	bspBoxDesc_s *bd = myEdict->bspBoxDesc;
+	g_core->Print("Touching %i areas: ",bd->areas.size());
+	for(u32 i = 0; i < bd->areas.size(); i++) {
+		if(i)
+			g_core->Print(",");
+		g_core->Print("%i",bd->areas[i]);
+	}
+	g_core->Print("\n");
 }
 void BaseEntity::setKeyValue(const char *key, const char *value) {
 	if(key[0] == '@')
