@@ -24,12 +24,19 @@ or simply visit <http://www.gnu.org/licenses/>.
 // rf_colorAdjust.cpp
 #include <math/vec3.h>
 float r_colorScale = 3.f;
+bool r_noColorAdjust = false;
 
 void RF_AdjustColorRGB(vec3_c &col) {
+	if(r_noColorAdjust)
+		return;
+
 	col *= r_colorScale;
 	col.capEachComponent(255.f);
 }
 void RF_AdjustColorRGB(byte *rgb) {
+	if(r_noColorAdjust)
+		return;
+
 	vec3_c col(rgb[0],rgb[1],rgb[2]);
 	RF_AdjustColorRGB(col);
 	rgb[0] = col.x;
@@ -37,6 +44,9 @@ void RF_AdjustColorRGB(byte *rgb) {
 	rgb[2] = col.z;
 }
 void RF_AdjustColorRGBA(byte *rgba) {
+	if(r_noColorAdjust)
+		return;
+
 	for(u32 i = 0; i < 4; i++) {
 		float f = rgba[i];
 		f *= r_colorScale;

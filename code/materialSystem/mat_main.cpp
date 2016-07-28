@@ -572,6 +572,15 @@ static void MAT_PrintLoadedMaterialNames_f() {
 	}
 	g_core->Print("%i materials loaded\n",materials.size());
 }
+static void MAT_PrintLoadedMaterialFileNames_f() {
+	g_core->Print("%i matFiles loaded\n",matFiles.size());
+	for(u32 i = 0; i < matFiles.size(); i++) {
+		matFile_s *mat = matFiles[i];
+		g_core->Print("%i/%i - %s\n",i,materials.size()
+			,mat->fname.c_str());
+	}
+	g_core->Print("%i materials loaded\n",materials.size());
+}
 static void MAT_PreviewMaterialText_f() {
 	if(g_core->Argc() < 2) {
 		g_core->Print("usage: \"mat_previewMaterialText <matName> <text>\"\n");
@@ -589,6 +598,6 @@ static aCmd_c mat_refreshSingleMaterial_f("mat_refreshSingleMaterial",MAT_Refres
 static aCmd_c mat_refreshMaterialSourceFile_f("mat_refreshMaterialSourceFile",MAT_RefreshMaterialSourceFile_f);
 static aCmd_c mat_printMaterialSourceFileName("mat_printMaterialSourceFileName",MAT_PrintMaterialSourceFileName_f);
 static aCmd_c mat_printLoadedMaterialNames("mat_printLoadedMaterialNames",MAT_PrintLoadedMaterialNames_f);
+static aCmd_c mat_printLoadedMaterialFileNames("mat_printLoadedMaterialFileNames",MAT_PrintLoadedMaterialFileNames_f);
 static aCmd_c mat_previewMaterialText("mat_previewMaterialText",MAT_PreviewMaterialText_f);
-
 
