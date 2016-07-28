@@ -53,6 +53,7 @@ static aCvar_c g_printPlayerSecondaryPrimaryFireState("g_printPlayerSecondaryPri
 static aCvar_c g_printPlayerLanding("g_printPlayerLanding","0");
 static aCvar_c g_printPlayerStateChange("g_printPlayerStateChange","0");
 static aCvar_c g_playerForceAnimation("g_playerForceAnimation","0");
+static aCvar_c g_useTraceHit_printAreas("g_useTraceHit_printAreas","0");
 
 DEFINE_CLASS(Player, "ModelEntity");
 
@@ -1097,6 +1098,9 @@ void Player::onUseKeyDown() {
 			return;
 		}
 		g_core->Print("Use trace hit classname %s, modelname %s, entnum %i\n",hit->getClassName(),hit->getRenderModelName(),hit->getEntNum());
+		if(g_useTraceHit_printAreas.getInt()) {
+			hit->printTouchingAreas();
+		}
 		if(hit->doUse(this) == false && hit->isDynamic()) {
 			ModelEntity *me = dynamic_cast<ModelEntity*>(hit);
 			this->pickupPhysicsProp(me);
