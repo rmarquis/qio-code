@@ -30,6 +30,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/shared.h>
 #include <math/plane.h>
 #include <shared/colorTable.h>
+#include <shared/autoCVar.h>
+
+static aCvar_c sv_bsp_cullByAreas("sv_bsp_cullByAreas","1");
 
 svBSP_c::svBSP_c() {
 	h = 0;
@@ -262,16 +265,18 @@ void svBSP_c::filterPoint(const class vec3_c &p, struct bspPointDesc_s &out) con
 }
 
 bool svBSP_c::checkVisibility(struct bspPointDesc_s &p, const struct bspBoxDesc_s &box) const {
-	bool bAreasConnected = false;
-	for(u32 i = 0; i < box.areas.size(); i++) {
-		int boxArea = box.areas[i];
-		if(areasConnected(p.area,boxArea)) {
-			bAreasConnected = true;
-			break;
+	if(sv_bsp_cullByAreas.getInt()) {
+		bool bAreasConnected = false;
+		for(u32 i = 0; i < box.areas.size(); i++) {
+			int boxArea = box.areas[i];
+			if(areasConnected(p.area,boxArea)) {
+				bAreasConnected = true;
+				break;
+			}
 		}
-	}
-	if(bAreasConnected == false) {
-		return false; // culled by areas
+		if(bAreasConnected == false) {
+			return false; // culled by areas
+		}
 	}
 	if(p.clusterPVS) {
 		bool clusterVisible = false;
