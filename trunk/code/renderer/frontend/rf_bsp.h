@@ -198,6 +198,8 @@ class rBspTree_c {
 	visHeader_s *vis;
 	class lightGridAPI_i *lightGrid;
 	aabb worldBoundsWithoutSkyBox;
+	// default or loaded from worldspawn entDef
+	vec3_c lightGridSize;
 
 	rVertexBuffer_c verts;
 	arraySTD_c<textureAPI_i*> lightmaps;
