@@ -68,6 +68,7 @@ static aCvar_c rf_tiki_verboseSetTIKIModelAnimLocalIndex("rf_tiki_verboseSetTIKI
 static aCvar_c rf_printAnimatedEntityUpdatesSkippedByDontUpdateFlag("rf_printAnimatedEntityUpdatesSkippedByDontUpdateFlag","0");
 static aCvar_c rf_wolf_verboseSetAnim("rf_wolf_verboseSetAnim","0");
 static aCvar_c rf_printEntityLocalBounds("rf_printEntityLocalBounds","0");
+static aCvar_c rfe_printEntityLightGridSamples("rfe_printEntityLightGridSamples","0");
 
 
 class q3AnimCtrl_c {
@@ -176,6 +177,10 @@ void rEntityImpl_c::recalcABSBounds() {
 	}
 	// update grid lighting (for Q3 bsps)
 	this->bCenterLightSampleValid = (RF_SampleWorldLightGrid(this->absBB.getCenter(),this->centerLightSample)==false);
+	if(rfe_printEntityLightGridSamples.getInt()) {
+		g_core->Print("Rentity %s bValis %i, ambient %f %f %f\n",getModelName(),bCenterLightSampleValid,
+			centerLightSample.ambientLight.x,centerLightSample.ambientLight.y,centerLightSample.ambientLight.z);
+	}
 	// increase shape change counter
 	absSilChangeCount++;
 	// V: RF_BoxAreas might be expensive - do it only if bounds has changed
