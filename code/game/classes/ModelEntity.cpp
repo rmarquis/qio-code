@@ -370,6 +370,7 @@ bool ModelEntity::setColModel(const char *newCModelName) {
 		return true; // error
 	this->myEdict->s->colModelIndex = G_CollisionModelIndex(newCModelName);
 	recalcABSBounds();
+	link();
 	return false;
 }
 void ModelEntity::setRagdollName(const char *ragName) {
