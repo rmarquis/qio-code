@@ -132,6 +132,8 @@ static aCvar_c rb_wireframeEditorImageStages("rb_wireframeEditorImageStages","0"
 static aCvar_c rb_printBumpHeightMapMaterials("rb_printBumpHeightMapMaterials","0");
 static aCvar_c rb_skipSpecular("rb_skipSpecular","0");
 static aCvar_c rb_printBoundShininess("rb_printBoundShininess", "0");
+static aCvar_c rb_ignoreAutoSprite("rb_ignoreAutoSprite", "0");
+
 
 #define MAX_TEXTURE_SLOTS 32
 
@@ -1844,7 +1846,7 @@ public:
 		// first apply deforms
 		if(bDeformsDone == false && lastMat && lastMat->hasDeforms()) {
 			// right now we're only supporting the autoSprite deform
-			if(lastMat->hasDeformOfType(DEFORM_AUTOSPRITE)) {
+			if(rb_ignoreAutoSprite.getInt() == 0 && lastMat->hasDeformOfType(DEFORM_AUTOSPRITE)) {
 				if(verts.size() > indices.getNumIndices()) {
 					// extract the vertices we want
 					// The large VBO buffer is used by Qio to speed up rendering,
