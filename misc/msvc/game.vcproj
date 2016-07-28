@@ -619,6 +619,22 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\classes\Item.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Item.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Item_Health.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\classes\Item_Health.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\classes\Light.cpp"
 				>
 			</File>
@@ -922,6 +938,38 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\code\game\classes\Ammo_792mm_Small.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Ammo_792mm_Small.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Ammo_9mm.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Ammo_9mm.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Ammo_9mm_Small.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Ammo_9mm_Small.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Ammo_Grenades.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Ammo_Grenades.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\code\game\classes\FuncExplosive.cpp"
 					>
 				</File>
@@ -938,11 +986,75 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\code\game\classes\Item_Armor_Body.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Item_Armor_Body.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Item_Armor_Head.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Item_Armor_Head.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Item_Health_BreadAndMeat.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Item_Health_BreadAndMeat.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Item_Health_Turkey.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Item_Health_Turkey.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Item_Health_Wall.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Item_Health_Wall.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Item_Treasure.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Item_Treasure.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\code\game\classes\TargetScriptTrigger.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\code\game\classes\TargetScriptTrigger.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Weapon_MP40.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Weapon_MP40.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Weapon_Tesla.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Weapon_Tesla.h"
 					>
 				</File>
 			</Filter>
