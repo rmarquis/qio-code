@@ -44,6 +44,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <shared/perStringCallback.h>
 #include <shared/colorTable.h>
 #include <shared/displacementBuilder.h>
+#include <shared/entDefsList.h>
 
 aCvar_c rf_bsp_noSurfaces("rf_bsp_noSurfaces","0");
 aCvar_c rf_bsp_noBezierPatches("rf_bsp_noBezierPatches","0");
@@ -85,6 +86,7 @@ rBspTree_c::rBspTree_c() {
 	c_flares = 0;
 	lightGrid = 0;
 	numWorldSurfs = 0;
+	lightGridSize = vec3_c(64,64,128);
 }
 rBspTree_c::~rBspTree_c() {
 	clear();
@@ -1615,7 +1617,6 @@ bool rBspTree_c::loadQ3LightGrid(u32 lightGridLump) {
 		// map was compiled without grid lighting
 		return false; // dont do the error
 	}
-	vec3_c lightGridSize(64,64,128);
 	aabb worldBounds = this->models[0].bb;
 	const byte *lightGridData = h->getLumpData(lightGridLump);
 	q3BSPLightGrid_c *q3LightGrid = new q3BSPLightGrid_c;
@@ -1781,6 +1782,14 @@ bool rBspTree_c::load(const char *fname) {
 	if(fileData == 0) {
 		g_core->RedWarning("rBspTree_c::load: cannot open %s\n",fname);
 		return true;
+	}
+	entDefsList_c ents;
+	if(ents.load(fname)==false && ents.size()) {
+		const entDef_c *w = ents[0];
+		const char *gs = w->getKeyValue("gridsize");
+		if(gs) {
+			lightGridSize.fromString(gs);
+		}
 	}
 	rf_bsp_forceEverythingVisible.setString("0");
 	h = (const q3Header_s*) fileData;
