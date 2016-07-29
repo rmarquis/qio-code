@@ -133,6 +133,7 @@ static aCvar_c rb_printBumpHeightMapMaterials("rb_printBumpHeightMapMaterials","
 static aCvar_c rb_skipSpecular("rb_skipSpecular","0");
 static aCvar_c rb_printBoundShininess("rb_printBoundShininess", "0");
 static aCvar_c rb_ignoreAutoSprite("rb_ignoreAutoSprite", "0");
+static aCvar_c rb_printSetColor4f("rb_printSetColor4f", "0");
 
 
 #define MAX_TEXTURE_SLOTS 32
@@ -963,6 +964,9 @@ public:
 	virtual void setColor4f(float r, float g, float b, float a)  {
 		//if(lastSurfaceColor[0] == r && lastSurfaceColor[1] == g && lastSurfaceColor[2] == b && lastSurfaceColor[3] == a)
 		//	return;
+		if(rb_printSetColor4f.getInt()) {
+			g_core->Print("setColor4f: %f %f %f %f\n",r,g,b,a);
+		}
 		glColor4f(r,g,b,a);
 		lastSurfaceColor.set(r,g,b,a);
 	}
@@ -2294,11 +2298,13 @@ drawOnlyLightmap:
 				if(bDrawEditorImageStages) {
 					bindVertexColors = false;
 				} else {
-					if(curLight == 0) {
-						if(lastLightmap == 0) {
-							bindVertexColors = true;
-						} else {
-							bindVertexColors = false;
+					if(lastSurfaceColor.isFullBright()) {
+						if(curLight == 0) {
+							if(lastLightmap == 0) {
+								bindVertexColors = true;
+							} else {
+								bindVertexColors = false;
+							}
 						}
 					}
 				}
