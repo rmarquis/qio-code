@@ -69,6 +69,7 @@ static aCvar_c rf_printAnimatedEntityUpdatesSkippedByDontUpdateFlag("rf_printAni
 static aCvar_c rf_wolf_verboseSetAnim("rf_wolf_verboseSetAnim","0");
 static aCvar_c rf_printEntityLocalBounds("rf_printEntityLocalBounds","0");
 static aCvar_c rfe_printEntityLightGridSamples("rfe_printEntityLightGridSamples","0");
+static aCvar_c rfe_printStaticModelsExtraRGBs("rfe_printStaticModelsExtraRGBs","0");
 
 
 class q3AnimCtrl_c {
@@ -995,6 +996,14 @@ void rEntityImpl_c::addDrawCalls() {
 				extraRGB = &entityColor;
 			} else {
 				extraRGB = 0;
+			}
+		}
+		if(rfe_printStaticModelsExtraRGBs.getInt()) {
+			if(extraRGB) {
+				g_core->Print("Model %s has extraRGB %f %f %f\n",getModelName(),
+					extraRGB->getX(),extraRGB->getY(),extraRGB->getZ());
+			} else {
+				g_core->Print("Model %s has no extraRGB\n",getModelName());
 			}
 		}
 		((model_c*)model)->addModelDrawCalls(&surfaceFlags,extraRGB);
