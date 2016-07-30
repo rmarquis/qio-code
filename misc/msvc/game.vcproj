@@ -970,6 +970,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\code\game\classes\Ammo_Panzerfaust.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Ammo_Panzerfaust.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\code\game\classes\FuncExplosive.cpp"
 					>
 				</File>
@@ -1047,6 +1055,14 @@
 				</File>
 				<File
 					RelativePath="..\..\code\game\classes\Weapon_MP40.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Weapon_Panzerfaust.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\code\game\classes\Weapon_Panzerfaust.h"
 					>
 				</File>
 				<File

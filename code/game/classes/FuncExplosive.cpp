@@ -23,6 +23,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // FuncExplosive.cpp
 #include "FuncExplosive.h"
+#include <api/coreAPI.h>
+#include <math/aabb.h>
 
 #define RTCW_STARTINVIS 1
 
@@ -42,7 +44,8 @@ void FuncExplosive::setKeyValue(const char *key, const char *value) {
 	}
 }
 void FuncExplosive::postSpawn() {
-	if(!stricmp(type,"glass") || !stricmp(type,"fabric")) {
+	// rigid body physics hack, enable physics only for suitable entities
+	if(!stricmp(type,"glass") || !stricmp(type,"fabric") || getAbsBounds().hasExtentSmallerThan(8.f)) {
 		bRigidBodyPhysicsEnabled = false;
 	}
 	if(spawnFlags & RTCW_STARTINVIS) {
@@ -51,4 +54,8 @@ void FuncExplosive::postSpawn() {
 	} else {
 		ModelEntity::postSpawn();
 	}
+}
+void FuncExplosive::printInfo() const {
+	g_core->Print("FuncExplosive::type: %s\n",type.c_str());
+	ModelEntity::printInfo();
 }

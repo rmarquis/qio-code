@@ -68,7 +68,9 @@ bool wolfAnimCfg_c::parse(const char *fileName) {
 			}
 			nextAnim.calcFrameTimeFromFPS();
 			nextAnim.calcTotalTimeFromFrameTime();	
-			g_core->Print("wolfAnimCfg_c::parse: anim %i is %s\n",anims.size(),nextAnim.name.c_str());
+			if(0) {
+				g_core->Print("wolfAnimCfg_c::parse: anim %i is %s\n",anims.size(),nextAnim.name.c_str());
+			}
 		}
 	}
 	g_core->Print("wolfAnimCfg_c::parse: %i animations loaded\n",anims.size());

@@ -34,5 +34,7 @@ void Ammo_9mm_Small::postSpawn() {
 
 	this->setRenderModel("models/powerups/ammo/am9mm_s.mdc");
 
+	dropToFloor(0.f);
+
 	Item::postSpawn();
 }

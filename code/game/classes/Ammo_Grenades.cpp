@@ -34,5 +34,7 @@ void Ammo_Grenades::postSpawn() {
 
 	this->setRenderModel("models/powerups/ammo/amgren_bag.mdc");
 
+	dropToFloor(0.f);
+
 	Item::postSpawn();
 }

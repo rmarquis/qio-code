@@ -37,6 +37,7 @@ void Item_Health::postSpawn() {
 	} else if(g_vfs->FS_FileExists("models/powerups/health/health_m.mdc")) {
 		// RTCW mdc
 		this->setRenderModel("models/powerups/health/health_m.mdc");
+		dropToFloor(0.f);
 	} else if(g_vfs->FS_FileExists("models/powerups/health/medium_cross.md3")) {
 		// Quake3
 		this->setRenderModel("models/powerups/health/medium_cross.md3");

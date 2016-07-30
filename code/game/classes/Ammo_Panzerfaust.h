@@ -21,20 +21,22 @@ Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA,
 or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
-// Ammo_9mm.cpp
-#include "Ammo_9mm.h"
-#include <api/coreAPI.h>
-#include <api/vfsAPI.h>
+// Ammo_Panzerfaust.h
+#ifndef __Ammo_Panzerfaust_H__
+#define __Ammo_Panzerfaust_H__
 
-DEFINE_CLASS(Ammo_9mm, "Item");
+#include "Item.h"
 
-Ammo_9mm::Ammo_9mm() {
-}
-void Ammo_9mm::postSpawn() {
+class Ammo_Panzerfaust : public Item {
+public:
+	Ammo_Panzerfaust();
 
-	this->setRenderModel("models/powerups/ammo/am9mm_l.mdc");
+	DECLARE_CLASS( Ammo_Panzerfaust );
 
-	dropToFloor(0.f);
+	virtual void postSpawn();
+};
 
-	Item::postSpawn();
-}
+#endif // __Ammo_Panzerfaust_H__
+
+
+

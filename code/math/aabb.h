@@ -144,6 +144,16 @@ public:
 		if (z < mins.z)
 			mins.z = z;
 	}
+	bool hasExtentSmallerThan(float f) const {
+		vec3_c s = getSizes();
+		if(s.x < f)
+			return true;
+		if(s.y < f)
+			return true;
+		if(s.z < f)
+			return true;
+		return false;
+	}
 	void addArray(const vec3_c *ar, u32 count) {
 		for(u32 i = 0; i < count; i++) {
 			addPoint(ar[i]);
