@@ -242,6 +242,7 @@ public:
 	bool checkJump(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkLookingUp(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkAtLadder(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkHardImpact(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkKilled(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkPain(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkHeight(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);

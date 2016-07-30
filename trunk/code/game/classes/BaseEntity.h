@@ -215,6 +215,7 @@ public:
 	void setParent(BaseEntity *newParent, const char *tagName, bool enableLocalOffset = false);
 	void setParent(const char *parentTargetName, int tagNum = -1, bool enableLocalOffset = false);
 	void detachFromParent();
+	int getParentTagNum() const;
 	// "this" is an attachment (not parent)
 	void setLocalAttachmentAngles(const vec3_c &newAngles);
 	// update origin/angles/matrix fields of entity attached to another

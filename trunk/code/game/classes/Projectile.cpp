@@ -26,11 +26,15 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "../g_local.h"
 #include <api/serverAPI.h>
 #include <api/physAPI.h>
+#include <api/coreAPI.h>
 #include <shared/trace.h>
+#include <shared/autoCVar.h>
 
 DEFINE_CLASS(Projectile, "ModelEntity");
 DEFINE_CLASS_ALIAS(Projectile, idProjectile);
 DEFINE_CLASS_ALIAS(Projectile, idBFGProjectile);
+
+static aCvar_c g_projectile_printHit("g_projectile_printHit","0");
 
 Projectile::Projectile() {
 	explosionDelay = 500;
@@ -115,6 +119,15 @@ void Projectile::runFrame() {
 				hit->applyDamageFromDef(def_damage,&tr);
 			} else {
 				hit->applyPointImpulse(linearVelocity,tr.getHitPos());
+			}
+			if(g_projectile_printHit.getInt()) {
+				g_core->Print("Projectile %s hit entity %i (%s)\n",
+					getRenderModelName(),hit->getEntNum(),hit->getRenderModelName());
+			}
+		} else {
+			if(g_projectile_printHit.getInt()) {
+				g_core->Print("Projectile %s hit NULL\n",
+					getRenderModelName());
 			}
 		}
 		if(explosionInfo.radius) {

@@ -64,9 +64,12 @@ public:
 	}
 
 	const char *getURCFileNameForURCInternalName(const char *internalName) const;
+	const char *findURCInternalNameForURCFileName(const char *fname) const;
 
 	// internal name is not a file name, it's a URC name specified inside URC file
 	urc_c *registerURC(const char *internalName);
+
+	urc_c *findURCForFileName(const char *fname);
 
 	void drawURCs();
 

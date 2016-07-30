@@ -2077,6 +2077,12 @@ static int FS_AddFileToList( char *name, char *list[MAX_FOUND_FILES], int nfiles
 	return nfiles;
 }
 
+int CompareStr(const void *v0, const void *v1) {
+	const char **s0 = (const char **)v0;
+	const char **s1 = (const char **)v1;
+	return stricmp(*s0,*s1);
+}
+
 /*
 ===============
 FS_ListFilteredFiles
@@ -2209,6 +2215,7 @@ char **FS_ListFilteredFiles( const char *path, const char *extension, const char
 		//Com_Printf("%s\n",list[i]);
 		listCopy[i] = list[i];
 	}
+	qsort(listCopy,nfiles,sizeof(char**),CompareStr);
 	listCopy[i] = NULL;
 
 	return listCopy;

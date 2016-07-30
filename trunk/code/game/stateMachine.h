@@ -206,7 +206,7 @@ public:
 	void setName(const char *newName) {
 		fileName = newName;
 	}
-	const char *getName() const {
+	virtual const char *getName() const {
 		return fileName.c_str();
 	}
 	void setHashNext(stateMachine_c *newHashNext) {

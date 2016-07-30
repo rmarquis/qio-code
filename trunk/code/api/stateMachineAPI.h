@@ -51,6 +51,7 @@ struct stTime_s {
 
 class stateMachineAPI_i {
 public:
+	virtual const char *getName() const = 0;
 	virtual bool hasState(const char *stateName) const = 0;
 	virtual const char *getStateName(u32 stateIndex) const = 0;
 	virtual const char *transitionState(const char *curStateName, class stateConditionsHandler_i *handler) const = 0;

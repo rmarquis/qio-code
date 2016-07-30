@@ -52,8 +52,11 @@ void urcMgr_c::precacheURCFile(const char *fname) {
 		c = new urcNameMappingCache_c();
 		c->setName(name);
 		nameCache.addObject(c);
+		c->setFName(fname);
+	} else {
+		g_core->Print("URC internal name %s already in use in %s, cant load from %s\n",
+			name.c_str(),c->getFName(),fname);
 	}
-	c->setFName(fname);
 }
 void urcMgr_c::precacheURCFiles() {
 	int numFiles;
@@ -67,6 +70,15 @@ void urcMgr_c::precacheURCFiles() {
 	g_vfs->FS_FreeFileList(fnames);
 }
 
+const char *urcMgr_c::findURCInternalNameForURCFileName(const char *fname) const {
+	for(u32 i = 0; i < nameCache.size(); i++) {
+		const urcNameMappingCache_c *c = nameCache[i];
+		g_core->Print("Comparing %s with %s\n",fname,c->getFName());
+		if(!stricmp(c->getFName(),fname))
+			return c->getName();
+	}
+	return 0;
+}
 const char *urcMgr_c::getURCFileNameForURCInternalName(const char *internalName) const {
 	const urcNameMappingCache_c *c = nameCache.getEntry(internalName);
 	if(c == 0) {
@@ -193,8 +205,19 @@ void urcMgr_c::popMenu() {
 void urcMgr_c::pushMenu(const char *name) {
 	urc_c *urc = registerURC(name);
 	if(urc == 0 || urc->getNumElements() == 0) {
-		g_core->RedWarning("Pushmenu: %s is not a valid menu\n",name);
-		return;
+		const char *fixedName = findURCInternalNameForURCFileName(name);
+		if(fixedName == 0) {
+			str tmp = "ui/";
+			tmp.append(name);
+			fixedName = findURCInternalNameForURCFileName(tmp);
+		}
+		urc = registerURC(fixedName);
+		if(urc == 0) {
+			g_core->RedWarning("Pushmenu: %s is not a valid menu\n",name);
+			return;
+		}
+		g_core->Print("Fixing %s into %s\n",name,fixedName);
+		name = fixedName;
 	}
 	g_core->Print("Pushmenu: pushing %s\n",name);
 	stack.push_back(urc);
@@ -230,7 +253,18 @@ void urcMgr_c::onKeyDown(int keyCode) {
 		activeField->onKeyDown(keyCode);
 	}
 }
+urc_c *urcMgr_c::findURCForFileName(const char *fname) {
+	for(u32 i = 0; i < loaded.size(); i++) {
+		urc_c *urc = loaded[i];
+		const char *urcFName = urc->getFName();
+		if(!stricmp(urcFName,fname))
+			return urc;
+	}
+	return 0;
+}
 urc_c *urcMgr_c::registerURC(const char *internalName) {
+	if(internalName == 0)
+		return 0;
 	urc_c *urc = loaded.getEntry(internalName);
 	if(urc) {
 		return urc;

@@ -512,6 +512,9 @@ void BaseEntity::setParent(BaseEntity *newParent, int tagNum, bool enableLocalOf
 void BaseEntity::setParent(const char *parentTargetName, int tagNum, bool enableLocalOffset) {
 	setParent(G_FindFirstEntityWithTargetName(parentTargetName),tagNum,enableLocalOffset);
 }
+int BaseEntity::getParentTagNum() const {
+	return myEdict->s->parentTagNum;
+}
 void BaseEntity::detachFromParent() {
 	if(parent == 0) {
 		assert(this->myEdict->s->parentNum == ENTITYNUM_NONE);

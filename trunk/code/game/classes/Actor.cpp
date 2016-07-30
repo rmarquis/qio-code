@@ -43,6 +43,7 @@ DEFINE_CLASS(Actor, "ModelEntity");
 static aCvar_c g_actor_st_debugAnimDone("g_actor_st_debugAnimDone","0");
 static aCvar_c g_actor_debugCanSee("g_actor_debugCanSee","0");
 static aCvar_c g_actor_printStateChange("g_actor_printStateChange","0");
+static aCvar_c g_actor_printActiveStateFiles("g_actor_printActiveStateFiles","0");
 
 
 conditionFunction_s g_actorConditions [] = {
@@ -53,12 +54,26 @@ conditionFunction_s g_actorConditions [] = {
 	GETFUNC("TIME_DONE",Actor::checkTimeDone)
 	GETFUNC("NAME",Actor::checkName)
 	GETFUNC("HAVE_ENEMY",Actor::checkHaveEnemy)
+	GETFUNC("CAN_SEE_ENEMY",Actor::checkCanSeeEnemy)
 	GETFUNC("RANGE",Actor::checkRange)
 	GETFUNC("DONE",Actor::checkDone)
+	GETFUNC("PAIN",Actor::checkPain)
+	GETFUNC("SMALL_PAIN",Actor::checkSmallPain)
+	GETFUNC("MELEE_HIT",Actor::checkMeleeHit)
+	GETFUNC("IN_WATER",Actor::checkInWater)
+	GETFUNC("HELD",Actor::checkHeld)
+	// MeansOfDeath - type of damage
+	GETFUNC("MOD",Actor::checkMOD)
+	
+	GETFUNC("ON_FIRE",Actor::checkOnFire)
+	
+
 	// is this the same?
 	GETFUNC("BEHAVIOR_DONE",Actor::checkDone)
 
+
 	
+	GETFUNC("CAN_JUMP_TO_ENEMY",Actor::checkJumpToEnemy)
 	GETFUNC("CAN_SHOOT_ENEMY",Actor::checkCanShootEnemy)
 	// is health lower than given value
 	GETFUNC("HEALTH",Actor::checkHealth)
@@ -96,6 +111,89 @@ public:
 
 	}
 };
+// Left
+// behavior turn "1" 
+// Right
+// behavior turn "-1"
+// AimAndMelee behaviour
+// just a fast experiment
+class bhTurn_c : public bhBase_c {
+	float arg;
+public:
+	bhTurn_c(Actor *self, const char *args) : bhBase_c(self) {
+		parser_c p(args);
+		arg = p.getFloat();
+	}
+	virtual void advanceTime(float f) {
+		bhBase_c::advanceTime(f);
+		vec3_c a = self->getAngles();
+		a.y += f * arg;
+		self->setAngles(a);
+	}
+	virtual bool setupMoveDir(vec3_c &o) const {
+		o.clear();
+		return true;
+	}
+	virtual bool isDone() const {
+		return false;
+	}
+	virtual ~bhTurn_c() {
+
+	}
+};
+// behavior TurnToEnemy "turnleft" "turnright" "3" "1"
+// just a fast experiment
+class bhTurnToEnemy_c : public bhBase_c {
+	str animLeft, animRight;
+	float arg, arg2;
+	bool bReached;
+public:
+	bhTurnToEnemy_c(Actor *self, const char *args) : bhBase_c(self) {
+		parser_c p(args);
+		animLeft = p.getToken();
+		animRight = p.getToken();
+		arg = p.getFloat();
+		arg2 = p.getFloat();
+		bReached = false;
+	}
+	virtual void advanceTime(float f) {
+		bhBase_c::advanceTime(f);
+		float step = f * 10.f; // FIXME
+		ModelEntity *e = self->getEnemy();
+		if(e) {
+			vec3_c d = e->getOrigin() - self->getOrigin();
+			d.setZ(0);
+			float neededYaw = d.getYaw();
+			vec3_c a = self->getAngles();
+			float curYaw = a.y;
+			neededYaw = AngleNormalize360(neededYaw);
+			curYaw = AngleNormalize360(curYaw);
+			float delta = neededYaw - curYaw;
+			if(delta > step) {
+				self->setAnimation(animLeft);
+				delta = step;
+			} else if(delta < -step) {
+				self->setAnimation(animRight);
+				delta = -step;
+			} else {
+				bReached = true;
+			}
+			curYaw += delta;
+			a.y = curYaw;
+			self->setAngles(a);
+		}
+	}
+	virtual bool setupMoveDir(vec3_c &o) const {
+		o.clear();
+		return true;
+	}
+	virtual bool isDone() const {
+		return bReached;
+	}
+	virtual ~bhTurnToEnemy_c() {
+
+	}
+};
 // GetCloseToEnemy behaviour
 class bhGetCloseToEnemy_c : public bhBase_c {
 	str animName;
@@ -120,6 +218,34 @@ public:
 		return true;
 	}
 	virtual ~bhGetCloseToEnemy_c() {
+
+	}
+};
+// Flee behaviour
+class bhFlee_c : public bhBase_c {
+	str animName;
+public:
+	bhFlee_c(Actor *self, const char *args) : bhBase_c(self) {
+		animName = args;
+		animName.removeCharacter('"');
+	}
+	virtual const char *getAnimName() const {
+		return animName;
+	}
+	virtual bool setupMoveDir(vec3_c &o) const {
+		if(self->getEnemy()) {
+			vec3_c d = self->getEnemy()->getOrigin()-self->getOrigin();
+			d.setZ(0);
+			d.normalize();
+			d *= -1;
+			o = d;
+			self->setAngles(d.toAngles());
+		} else {
+			o.clear();
+		}
+		return true;
+	}
+	virtual ~bhFlee_c() {
 
 	}
 };
@@ -173,10 +299,39 @@ public:
 		return true;
 	}
 	virtual bool isDone() const {
-		g_core->Print("Needed: %f, elapsed: %f\n",timeNeeded,timeElapsed);
+		if(0) {
+			g_core->Print("Needed: %f, elapsed: %f\n",timeNeeded,timeElapsed);
+		}
 		return timeNeeded < timeElapsed;
 	}
 	virtual ~bhAimAndMelee_c() {
+
+	}
+};
+
+// Pain behaviour
+class bhPain_c : public bhBase_c {
+	str animName;
+	float timeNeeded;
+public:
+	bhPain_c(Actor *self, const char *args) : bhBase_c(self) {
+		animName = self->getRandomPainAnimationName();
+		timeNeeded = self->getAnimationTotalTimeMs(animName) * 0.001f;
+	}
+	virtual const char *getAnimName() const {
+		return animName;
+	}
+	virtual bool setupMoveDir(vec3_c &o) const {
+		o.clear();
+		return true;
+	}
+	virtual bool isDone() const {
+		if(0) {
+			g_core->Print("Needed: %f, elapsed: %f\n",timeNeeded,timeElapsed);
+		}
+		return timeNeeded < timeElapsed;
+	}
+	virtual ~bhPain_c() {
 
 	}
 };
@@ -209,6 +364,10 @@ Actor::Actor() {
 	st_handler = 0;
 	this->characterController = 0;
 	this->enemy = 0;
+	painTime = 0;
+
+	nearestSentient = 0;
+	nearestSentientDist = 0.f;
 }
 Actor::~Actor() {
 	if(characterController) {
@@ -217,6 +376,9 @@ Actor::~Actor() {
 	}
 }
 
+void Actor::findNearestSentient() {
+
+}
 void Actor::enableCharacterController() {
 	if(this->cmod == 0) {
 		return;
@@ -268,10 +430,18 @@ void Actor::setBehaviour(const char *behaviourName, const char *args) {
 		nb = new bhGetCloseToEnemy_c(this,args);
 	} else if(!stricmp(behaviourName,"Watch")) {
 		nb = new bhWatch_c(this,args);
+	} else if(!stricmp(behaviourName,"Turn")) {
+		nb = new bhTurn_c(this,args);
+	} else if(!stricmp(behaviourName,"TurnToEnemy")) {
+		nb = new bhTurnToEnemy_c(this,args);
 	} else if(!stricmp(behaviourName,"AimAndMelee")) {
 		nb = new bhAimAndMelee_c(this,args);
 	} else if(!stricmp(behaviourName,"Idle")) {
 		nb = new bhIdle_c(this,args);
+	} else if(!stricmp(behaviourName,"Pain")) {
+		nb = new bhPain_c(this,args);
+	} else if(!stricmp(behaviourName,"Flee")) {
+		nb = new bhFlee_c(this,args);
 	} else {
 		g_core->RedWarning("Actor::setBehaviour: unknown behaviour name '%s'\n",behaviourName);
 		nb = 0;
@@ -298,22 +468,37 @@ void Actor::resetStateTimer() {
 	st_passedTime = 0.f; // reset timer
 }
 void Actor::runActorStateMachines() {
+	if(g_actor_printActiveStateFiles.getInt()) {
+		g_core->Print("Actor::runActorStateMachines: %s is using %s\n",getRenderModelName(),st->getName());
+	}
 	st_passedTime += level.frameTime;
 	if(st_handler == 0) {
 		st_handler = new genericConditionsHandler_t<Actor>(&g_actorConditionsTable,this);
 	}
 	st_handler->updateFrame();
 	bool bChanged = false;
-	for(u32 i = 0; i < 2; i++) {
-		const char *next = st->transitionState(st_curState,st_handler);
-		if(next && next[0]) {
-			if(g_actor_printStateChange.getInt()) 
-				g_core->Print("Actor::runActorStateMachines: time %i: changing from %s to %s\n",level.time,st_curState.c_str(),next);
-			st_curState = next;
-			bChanged = true;
-			if(st->stateHasBehaviour(st_curState) && st->hasBehaviorOfType(st_curState,"idle")==false)
-				break;
+	if(forceState.length() == 0) {
+		for(u32 i = 0; i < 2; i++) {
+			const char *next = st->transitionState(st_curState,st_handler);
+			if(next && next[0]) {
+				if(g_actor_printStateChange.getInt()) 
+					g_core->Print("Actor::runActorStateMachines: time %i: changing from %s to %s\n",level.time,st_curState.c_str(),next);
+				st->iterateStateExitCommands(st_curState,this);
+				st_curState = next;
+				st->iterateStateEntryCommands(st_curState,this);
+				bChanged = true;
+				if(st->stateHasBehaviour(st_curState) && st->hasBehaviorOfType(st_curState,"idle")==false)
+					break;
+			}
 		}
+	} else {			
+		st->iterateStateExitCommands(st_curState,this);
+		st_curState = forceState;
+		st->iterateStateEntryCommands(st_curState,this);
+		if(g_actor_printStateChange.getInt()) 
+			g_core->Print("Forced transition to %s\n",forceState.c_str());
+		bChanged = true;
+		forceState = "";
 	}
 	if(bChanged) {
 		resetStateTimer();
@@ -418,16 +603,49 @@ void Actor::setKeyValue(const char *key, const char *value) {
 	if(!stricmp("statemap",key)) {
 		loadAIStateMachine(value);
 	} else if(!stricmp("behaviour",key)) {
+	} else if(!stricmp("suicide",key)) {
+		// in shgliek.st it's used like "suicide 1",
+		// but g_allclasses.html does not describe any arguments...
+		health = 0;
+		onDeath();
 	}
 	ModelEntity::setKeyValue(key,value);
+}
+void Actor::onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damage) {
+	painTime = level.time;
+}
+void Actor::onDeath() {
+	forceState = "DEATH";
 }
 void Actor::postSpawn() {
 	executeTIKIInitCommands();
 	enableCharacterController();
 }
 
+const char *Actor::getRandomPainAnimationName() const {
+	const char *painAnimNames[] = {
+		"pain1", "pain", "pain2", "pain3"
+	};
+	u32 numPainAnims = sizeof(painAnimNames) / sizeof(painAnimNames[0]);
+	u32 r = rand()%numPainAnims;
+	for(u32 i = 0; i < numPainAnims; i++) {
+		u32 idx = (i+r) % numPainAnims;
+		const char *name = painAnimNames[idx];
+		if(this->findAnimationIndex(name)!= -1)
+			return name;
+	}
+	return "";
+}
 bool Actor::checkMovingActorRange(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	float range = atof(arguments->getString(0));
+	for(u32 i = 0; i < MAX_CLIENTS; i++) {
+		Player *pl = G_GetPlayer(i);
+		if(pl == 0)
+			continue;
+		float d = pl->getOrigin().dist(this->getOrigin());
+		if(d < range)
+			return true;
+	}
 	return false;
 }
 bool Actor::checkChance(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
@@ -442,6 +660,12 @@ bool Actor::checkTimeDone(const class stringList_c *arguments, class patternMatc
 		return true;
 	return false;
 }	
+
+bool Actor::checkCanSeeEnemy(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	if(enemy==0)
+		return false;
+	return true;
+}
 bool Actor::checkHaveEnemy(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	if(enemy)
 		return true;
@@ -476,6 +700,42 @@ bool Actor::checkAllowHangBack(const class stringList_c *arguments, class patter
 }
 bool Actor::checkOnGround(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	return true;
+}
+bool Actor::checkJumpToEnemy(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	return false;
+}
+bool Actor::checkMeleeHit(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	return false;
+}
+bool Actor::checkInWater(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	return false;
+}
+bool Actor::checkHeld(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	// player can hold Shgliek
+	return false;
+}
+
+bool Actor::checkMOD(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	// check type of damage
+	return false;
+}
+bool Actor::checkOnFire(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+
+	return false;
+}
+
+
+bool Actor::checkSmallPain(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	u32 del = 100;
+	if(level.time < this->painTime + del)
+		return true;
+	return false;
+}
+bool Actor::checkPain(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	u32 del = 100;
+	if(level.time < this->painTime + del)
+		return true;
+	return false;
 }
 bool Actor::checkEnemyRelativeYaw(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	if(enemy == 0)

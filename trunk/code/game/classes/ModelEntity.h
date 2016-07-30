@@ -87,6 +87,7 @@ protected:
 	}
 	void updateAnimations();
 	void attachModel(const char *args);
+	void removeAttachedModel(const char *args);
 public:
 	ModelEntity();
 	virtual ~ModelEntity();

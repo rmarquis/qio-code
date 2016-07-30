@@ -561,6 +561,9 @@ void ModelEntity::setKeyValue(const char *key, const char *value) {
 		this->setAnimation(value);
 	} else if(!_stricmp(key,"attachmodel")) {
 		this->attachModel(value);
+	} else if(!_stricmp(key,"removeattachedmodel")) {
+		// removeattachedmodel <tagname>
+		this->removeAttachedModel(value);
 	} else {
 		// fallback to parent class keyvalues
 		BaseEntity::setKeyValue(key,value);
@@ -845,6 +848,21 @@ void ModelEntity::destroyPhysicsObject() {
 		delete ragdoll;
 		ragdoll = 0;
 		this->myEdict->s->activeRagdollDefNameIndex = 0;
+	}
+}
+void ModelEntity::removeAttachedModel(const char *args) {
+	parser_c p;
+	str tagName;
+	p.setup(args);
+	p.getToken(tagName);
+	int tagNum = this->getBoneNumForName(tagName);
+	for(int i = 0; i < privateAttachedEntities.size(); i++) {
+		if(privateAttachedEntities[i]->getParentTagNum() == tagNum) {
+			BaseEntity *be = privateAttachedEntities[i];
+			privateAttachedEntities.erase(i);
+			i--;
+			delete be;
+		}
 	}
 }
 void ModelEntity::attachModel(const char *args) {

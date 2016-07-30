@@ -682,6 +682,8 @@ conditionFunction_s g_playerConditions [] = {
 	GETFUNC("JUMP",Player::checkJump)
 	GETFUNC("LOOKING_UP",Player::checkLookingUp)
 	GETFUNC("AT_LADDER",Player::checkAtLadder)
+	GETFUNC("HARD_IMPACT",Player::checkHardImpact)
+
 
 	
 	// damage stuff
@@ -1593,6 +1595,10 @@ bool Player::checkCrouch(const class stringList_c *arguments, class patternMatch
 bool Player::checkJump(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	if(hasUserCmdUp())
 		return true;
+	return false;
+}
+bool Player::checkHardImpact(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
+	// TODO
 	return false;
 }
 bool Player::checkAtLadder(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
