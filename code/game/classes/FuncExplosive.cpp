@@ -33,8 +33,15 @@ FuncExplosive::FuncExplosive() {
 
 }
 void FuncExplosive::setKeyValue(const char *key, const char *value) {
-	if(!_stricmp(key,"funcexptest")) {
+	if(!_stricmp(key,"type")) {
+		this->type = value;
 	} else {
 		ModelEntity::setKeyValue(key,value);
 	}
+}
+void FuncExplosive::postSpawn() {
+	if(!stricmp(type,"glass") || !stricmp(type,"fabric")) {
+		bRigidBodyPhysicsEnabled = false;
+	}
+	ModelEntity::postSpawn();
 }

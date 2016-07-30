@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "ModelEntity.h"
 
 class FuncExplosive : public ModelEntity {
+	str type;
 public:
 	FuncExplosive();
 
@@ -36,6 +37,8 @@ public:
 
 
 	virtual void setKeyValue(const char *key, const char *value);
+
+	virtual void postSpawn();
 };
 
 #endif // __FUNC_EXPLOSIVE_H__
