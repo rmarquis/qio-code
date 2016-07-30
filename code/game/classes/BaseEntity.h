@@ -66,6 +66,8 @@ protected:
 	void setEntityType(int newEType);
 	// entity's edict, set once during entity allocation
 	struct edict_s *myEdict;
+	// loaded from .map file
+	int spawnFlags;
 public:
 	BaseEntity();
 	virtual ~BaseEntity();

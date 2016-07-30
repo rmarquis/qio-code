@@ -166,6 +166,7 @@ ModelEntity::ModelEntity() {
 	damageZones = 0;
 	legsAnimationTime = 0;
 	torsoAnimationTime = 0;
+	spawnFlags = 0;
 }
 ModelEntity::~ModelEntity() {
 	for(u32 i = 0; i < privateAttachedEntities.size(); i++) {
