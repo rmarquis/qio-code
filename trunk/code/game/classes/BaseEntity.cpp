@@ -266,6 +266,8 @@ void BaseEntity::setKeyValue(const char *key, const char *value) {
 		this->setScriptName(value);
 	} else if(!_stricmp(key,"target")) {
 		this->setTarget(value);
+	} else if(!_stricmp(key,"spawnFlags")) {
+		this->spawnFlags = atoi(value);
 	} else if(!_stricmp(key,"parent")) {
 		this->postEvent(0,"setparent",value,"-1","1");
 		//this->setParent(value,-1,true);

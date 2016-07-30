@@ -24,6 +24,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 // FuncExplosive.cpp
 #include "FuncExplosive.h"
 
+#define RTCW_STARTINVIS 1
+
 DEFINE_CLASS(FuncExplosive, "ModelEntity");
 DEFINE_CLASS_ALIAS(FuncExplosive, func_explosive);
  
@@ -43,5 +45,10 @@ void FuncExplosive::postSpawn() {
 	if(!stricmp(type,"glass") || !stricmp(type,"fabric")) {
 		bRigidBodyPhysicsEnabled = false;
 	}
-	ModelEntity::postSpawn();
+	if(spawnFlags & RTCW_STARTINVIS) {
+		// RTCW start_invis
+		this->hideEntity();
+	} else {
+		ModelEntity::postSpawn();
+	}
 }
