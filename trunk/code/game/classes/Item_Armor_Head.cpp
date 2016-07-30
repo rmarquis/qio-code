@@ -34,5 +34,7 @@ void Item_Armor_Head::postSpawn() {
 
 	this->setRenderModel("models/powerups/armor/armor_head1.mdc");
 
+	dropToFloor(0.f);
+
 	Item::postSpawn();
 }

@@ -35,10 +35,10 @@ public:
 	DECLARE_CLASS( AI_RTCW_Base );
 
 
-
 	virtual void setKeyValue(const char *key, const char *value);
 
 	virtual void postSpawn();
+	virtual void printInfo() const;
 };
 
 #endif // __FUNC_EXPLOSIVE_H__

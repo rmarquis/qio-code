@@ -30,7 +30,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include "Player.h"
 #include <api/serverAPI.h>
 #include <api/coreAPI.h>
+#include <api/physAPI.h>
 #include <shared/keyValuesListener.h>
+#include <shared/trace.h>
 // our internal event system
 #include <shared/eventSystem.h>
 #include <shared/eventBaseAPI.h>
@@ -221,6 +223,17 @@ BaseEntity::~BaseEntity() {
 	memset (myEdict, 0, sizeof(*myEdict));
 	myEdict->freetime = level.time;
 	myEdict->s = 0;
+}
+void BaseEntity::printInfo() const {
+	// TODO?
+}
+void BaseEntity::dropToFloor(float zOfs) {
+	trace_c tr;
+	tr.setupRay(getOrigin(),getOrigin()+vec3_c(0,0,-8192.f));
+	g_physWorld->traceRay(tr,this);
+	if(tr.hasHit()) {
+		this->setOrigin(tr.getHitPos()+vec3_c(0,0,-zOfs));
+	}
 }
 void BaseEntity::printTouchingAreas() const {
 	g_core->Print("Bounds: %f %f %f, %f %f %f\n",
