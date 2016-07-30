@@ -30,6 +30,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 class Actor : public ModelEntity {
 	str st_curState;
+	// used to force a transition next frame
+	str forceState;
 	// selected time for current state (TIME_DONE condition)
 	float st_timeLimit;
 	// passed time
@@ -38,10 +40,15 @@ class Actor : public ModelEntity {
 	genericConditionsHandler_t<Actor> *st_handler;
 	class bhBase_c *behaviour;
 	class ModelEntity *enemy;
+	u32 painTime;
+
+	class ModelEntity *nearestSentient;
+	float nearestSentientDist;
 
 	class physCharacterControllerAPI_i *characterController;
 	vec3_c characterControllerOffset;
 
+	void findNearestSentient();
 	float getDistanceToEnemy() const;
 	void resetStateTimer();
 	void runActorStateMachines();
@@ -67,6 +74,12 @@ public:
 
 	virtual void setKeyValue(const char *key, const char *value);
 
+	virtual void onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damage);
+
+	virtual void onDeath();
+
+	const char *getRandomPainAnimationName() const;
+
 	//
 	// state conditions
 	// (for FAKK ai/*.st files support)
@@ -77,6 +90,8 @@ public:
 	bool checkTimeDone(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkName(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkHaveEnemy(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkCanSeeEnemy(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+
 	bool checkRange(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkDone(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkCanShootEnemy(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
@@ -84,6 +99,14 @@ public:
 	bool checkEnemyRelativeYaw(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkAllowHangBack(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 	bool checkOnGround(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkPain(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkSmallPain(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkJumpToEnemy(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkMeleeHit(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkInWater(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkHeld(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkMOD(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
+	bool checkOnFire(const class stringList_c *arguments, class patternMatcher_c *patternMatcher);
 
 };
 

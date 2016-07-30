@@ -382,6 +382,12 @@ void Cmd_CompleteTIKName( char *args, int argNum ) {
 		AC_CompleteFilename( "models", "tik", 0, 0, false, false );
 	}
 }
+void Cmd_CompleteURCName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		AC_CompleteFilename( "ui", "urc", 0, 0, false, false );
+	}
+}
+
 void Cmd_CompleteSMDName( char *args, int argNum ) {
 	if( argNum == 2 ) {
 		AC_CompleteFilename( "models", "smd", 0, 0, false, false );
@@ -534,6 +540,9 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "rf_setSkyMaterial", Cmd_CompleteMaterialName );
 	Cmd_SetCommandCompletionFunc( "mat_refreshSingleMaterial", Cmd_CompleteMaterialName );
 	Cmd_SetCommandCompletionFunc( "mat_refreshMaterialSourceFile", Cmd_CompleteMaterialFileName );
+
+	Cmd_AddCommand ("pushmenu", 0);
+	Cmd_SetCommandCompletionFunc( "pushmenu", Cmd_CompleteURCName );
 
 	// test model
 	Cmd_AddCommand ("testModelTIKI", Cmd_TestModel_f);
