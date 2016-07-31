@@ -7,6 +7,7 @@ state STAND
 	}
 	legs
 	{
+		steyr_aug_hold_f :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_hold_f :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_hold_f :  IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_hold_f : default
@@ -15,18 +16,18 @@ state STAND
 	{
 		JUMP_STANDING		: +JUMP ONGROUND
 		
-		RUN_FORWARD			: FORWARD RUN
+		RUN_FORWARD		: FORWARD RUN
 		RUN_BACKWARD		: BACKWARD  RUN
-		RUN_LEFT			: STRAFE_LEFT RUN
+		RUN_LEFT		: STRAFE_LEFT RUN
 		RUN_BACKWARD		: STRAFE_RIGHT RUN
 		
 		WALK_FORWARD		: FORWARD
 		WALK_BACKWARD		: BACKWARD 
-		WALK_LEFT			: STRAFE_LEFT
+		WALK_LEFT		: STRAFE_LEFT
 		WALK_BACKWARD		: STRAFE_RIGHT
 		
 		// restart if animation is done
-		STAND				: ANIMDONE_LEGS
+		STAND			: ANIMDONE_LEGS
 	}
 }
 
@@ -35,6 +36,7 @@ state RUN_FORWARD
 {
 	legs
 	{
+		steyr_aug_run_f :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_run_f :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_run_f :  IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_run_f : default
@@ -62,6 +64,7 @@ state RUN_BACKWARD
 {
 	legs
 	{
+		steyr_aug_run_b :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_run_b :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_run_b :  IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_run_b : default
@@ -71,16 +74,16 @@ state RUN_BACKWARD
 	{
 		JUMP_STANDING		: +JUMP ONGROUND
 		
-		STAND				: !HAS_VELOCITY
+		STAND			: !HAS_VELOCITY
 
 		WALK_FORWARD		: !RUN FORWARD
 		WALK_BACKWARD		: !RUN BACKWARD
-		WALK_LEFT			: !RUN STRAFE_LEFT
+		WALK_LEFT		: !RUN STRAFE_LEFT
 		WALK_BACKWARD		: !RUN STRAFE_RIGHT
 		
-		RUN_FORWARD			: FORWARD
-		RUN_LEFT			: STRAFE_LEFT !FORWARD !BACKWARD
-		RUN_RIGHT			: STRAFE_RIGHT !FORWARD !BACKWARD
+		RUN_FORWARD		: FORWARD
+		RUN_LEFT		: STRAFE_LEFT !FORWARD !BACKWARD
+		RUN_RIGHT		: STRAFE_RIGHT !FORWARD !BACKWARD
 	}
 }
 
@@ -88,6 +91,7 @@ state RUN_LEFT
 {
 	legs
 	{
+		steyr_aug_run_l :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_run_l :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_run_l :  IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_run_l : default
@@ -97,16 +101,16 @@ state RUN_LEFT
 	{
 		JUMP_STANDING		: +JUMP ONGROUND
 		
-		STAND				: !HAS_VELOCITY
+		STAND			: !HAS_VELOCITY
 
 		WALK_FORWARD		: !RUN FORWARD
 		WALK_BACKWARD		: !RUN BACKWARD
-		WALK_LEFT			: !RUN STRAFE_LEFT
+		WALK_LEFT		: !RUN STRAFE_LEFT
 		WALK_BACKWARD		: !RUN STRAFE_RIGHT
 		
-		RUN_FORWARD			: FORWARD 
+		RUN_FORWARD		: FORWARD 
 		RUN_BACKWARD		: BACKWARD 
-		RUN_RIGHT			: STRAFE_RIGHT !FORWARD !BACKWARD
+		RUN_RIGHT		: STRAFE_RIGHT !FORWARD !BACKWARD
 	}
 }
 
@@ -114,6 +118,7 @@ state RUN_RIGHT
 {
 	legs
 	{
+		steyr_aug_run_r :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_run_r :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_run_r :  IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_run_r : default
@@ -123,16 +128,16 @@ state RUN_RIGHT
 	{
 		JUMP_STANDING		: +JUMP ONGROUND
 		
-		STAND				: !HAS_VELOCITY
+		STAND			: !HAS_VELOCITY
 		
 		WALK_FORWARD		: !RUN FORWARD
 		WALK_BACKWARD		: !RUN BACKWARD
-		WALK_LEFT			: !RUN STRAFE_LEFT
+		WALK_LEFT		: !RUN STRAFE_LEFT
 		WALK_BACKWARD		: !RUN STRAFE_RIGHT
 		
-		RUN_FORWARD			: FORWARD
+		RUN_FORWARD		: FORWARD
 		RUN_BACKWARD		: BACKWARD
-		RUN_LEFT			: STRAFE_LEFT !FORWARD !BACKWARD
+		RUN_LEFT		: STRAFE_LEFT !FORWARD !BACKWARD
 	}
 }
 
@@ -142,6 +147,7 @@ state WALK_FORWARD
 {
 	legs
 	{
+		steyr_aug_walk_f :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_walk_f :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_walk_f :  IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_walk_f : default
@@ -151,16 +157,16 @@ state WALK_FORWARD
 	{
 		JUMP_STANDING		: +JUMP ONGROUND
 		
-		STAND				: !HAS_VELOCITY
+		STAND			: !HAS_VELOCITY
 		
-		RUN_FORWARD			: RUN FORWARD
+		RUN_FORWARD		: RUN FORWARD
 		RUN_BACKWARD		: RUN BACKWARD
-		RUN_LEFT			: RUN STRAFE_LEFT
+		RUN_LEFT		: RUN STRAFE_LEFT
 		RUN_BACKWARD		: RUN STRAFE_RIGHT
 		
 		WALK_BACKWARD		: BACKWARD
-		WALK_LEFT			: STRAFE_LEFT !FORWARD !BACKWARD
-		WALK_RIGHT			: STRAFE_RIGHT !FORWARD !BACKWARD
+		WALK_LEFT		: STRAFE_LEFT !FORWARD !BACKWARD
+		WALK_RIGHT		: STRAFE_RIGHT !FORWARD !BACKWARD
 	}
 }
 
@@ -168,6 +174,7 @@ state WALK_BACKWARD
 {
 	legs
 	{
+		steyr_aug_walk_b :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_walk_b :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_walk_b :  IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_walk_b : default
@@ -177,16 +184,16 @@ state WALK_BACKWARD
 	{
 		JUMP_STANDING		: +JUMP ONGROUND
 		
-		STAND				: !HAS_VELOCITY
+		STAND			: !HAS_VELOCITY
 		
-		RUN_FORWARD			: RUN FORWARD
+		RUN_FORWARD		: RUN FORWARD
 		RUN_BACKWARD		: RUN BACKWARD
-		RUN_LEFT			: RUN STRAFE_LEFT
+		RUN_LEFT		: RUN STRAFE_LEFT
 		RUN_BACKWARD		: RUN STRAFE_RIGHT
 		
 		WALK_FORWARD		: FORWARD
-		WALK_LEFT			: STRAFE_LEFT !FORWARD !BACKWARD
-		WALK_RIGHT			: STRAFE_RIGHT !FORWARD !BACKWARD
+		WALK_LEFT		: STRAFE_LEFT !FORWARD !BACKWARD
+		WALK_RIGHT		: STRAFE_RIGHT !FORWARD !BACKWARD
 	}
 }
 
@@ -195,6 +202,7 @@ state WALK_LEFT
 {
 	legs
 	{
+		steyr_aug_walk_l :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_walk_l :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_walk_l :  IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_walk_l : default
@@ -204,16 +212,16 @@ state WALK_LEFT
 	{
 		JUMP_STANDING		: +JUMP ONGROUND
 		
-		STAND				: !HAS_VELOCITY
+		STAND			: !HAS_VELOCITY
 		
-		RUN_FORWARD			: RUN FORWARD
+		RUN_FORWARD		: RUN FORWARD
 		RUN_BACKWARD		: RUN BACKWARD
-		RUN_LEFT			: RUN STRAFE_LEFT
+		RUN_LEFT		: RUN STRAFE_LEFT
 		RUN_BACKWARD		: RUN STRAFE_RIGHT
 		
 		WALK_FORWARD		: FORWARD
 		WALK_BACKWARD		: BACKWARD
-		WALK_RIGHT			: STRAFE_RIGHT !FORWARD !BACKWARD
+		WALK_RIGHT		: STRAFE_RIGHT !FORWARD !BACKWARD
 	}
 }
 
@@ -221,6 +229,7 @@ state WALK_RIGHT
 {
 	legs
 	{
+		steyr_aug_walk_r :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_walk_r :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_walk_r :  IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_walk_r : default
@@ -230,16 +239,16 @@ state WALK_RIGHT
 	{
 		JUMP_STANDING		: +JUMP ONGROUND
 		
-		STAND				: !HAS_VELOCITY
+		STAND			: !HAS_VELOCITY
 		
-		RUN_FORWARD			: RUN FORWARD
+		RUN_FORWARD		: RUN FORWARD
 		RUN_BACKWARD		: RUN BACKWARD
-		RUN_LEFT			: RUN STRAFE_LEFT
+		RUN_LEFT		: RUN STRAFE_LEFT
 		RUN_BACKWARD		: RUN STRAFE_RIGHT
 		
 		WALK_FORWARD		: FORWARD
 		WALK_BACKWARD		: BACKWARD
-		WALK_LEFT			: STRAFE_LEFT !FORWARD !BACKWARD
+		WALK_LEFT		: STRAFE_LEFT !FORWARD !BACKWARD
 	}
 }
 
@@ -251,6 +260,7 @@ state JUMP_STANDING
 	}*/
 	legs
 	{
+		steyr_aug_jump_bg :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_jump_bg :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_jump_bg :  IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_jump_bg : default
@@ -269,6 +279,7 @@ state FALL
 {
 	legs
 	{
+		steyr_aug_jump_id :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_jump_id :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_jump_id :  IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_jump_id : default
@@ -283,6 +294,7 @@ state LAND
 {
 	legs
 	{
+		steyr_aug_jump_ed :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_jump_ed :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_jump_ed :  IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_jump_ed : default
