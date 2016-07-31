@@ -70,7 +70,8 @@ bool rgbGen_c::parse(class parser_c &p) {
 	if(p.atWord("wave")) {
 		type = RGBGEN_WAVE;
 		wave.parse(p);
-	} else if(p.atWord("const")) {
+	} else if(p.atWord("const") || p.atWord("constant")) {
+		// "constant" is used in FAKK scripts/eden_base.shader
 		type = RGBGEN_CONST;
 		p.getFloatMat_braced(constValue,3);
 	} else if(p.atWord("vertex")) {
@@ -94,6 +95,9 @@ bool rgbGen_c::parse(class parser_c &p) {
 		type = RGBGEN_LIGHTINGDIFFUSE; // added for RTCW? 
 	} else if(p.atWord("entity")) {
 		// this is used by Quake3 railgun model to set shader color from cgame code
+	} else if(p.atWord("colorWave")) {
+		// FAKK, in scripts/beau.shader
+		p.skipLine();
 	} else {
 		str tok = p.getToken();
 		g_core->RedWarning("rgbGen_c::parse: unknown rgbGen %s\n",tok.c_str());
