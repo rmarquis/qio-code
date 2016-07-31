@@ -1142,6 +1142,17 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 					// V: found in cqbtest materials
 				} else if(p.atWord("picmip2")) {
 					// V: RTCW?
+				} else if(p.atWord("surfaceDensity")) {
+					// V: FAKK. scripts/eden_density.shader
+					// eg. surfaceDensity 32
+					p.getFloat();
+				} else if(p.atWord("surfaceColor")) {
+					// V: FAKK. scripts/eden_base.shader
+					// eg. surfaceColor 1 1 0
+					p.getFloat();
+				} else if(p.atWord("q3map_backShader")) {
+					// V: FAKK. scripts/eden_liquid.shader
+					p.skipLine();
 				} else {
 					u32 line = p.getCurrentLineNumber();
 					str token  = p.getToken();
@@ -1711,6 +1722,15 @@ bool mtrIMPL_c::loadFromText(const matTextDef_s &txt) {
 				} else if(p.atWord("alphaShadow")) {
 					// test light on a per-pixel basis
 					p.skipLine();
+				} else if(p.atWord("depthFunc")) {
+					// used in FAKK
+					p.skipLine();
+				} else if(p.atWord("nomipmaps")) {
+					// used in FAKK
+				} else if(p.atWord("depthMask")) {
+					// used in FAKK, scripts/e1amodels.shader
+				} else if(p.atWord("doDepthTest")) {
+					// used in FAKK, scripts/beau.shader
 				} else {
 					u32 line = p.getCurrentLineNumber();
 					str token  = p.getToken();

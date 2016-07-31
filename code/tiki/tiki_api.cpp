@@ -142,8 +142,11 @@ public:
 	void iterateCommands(const tikiAnimCommands_c *s, u32 startTime, u32 endTime, class perStringCallbackListener_i *cb) const {
 		if(endTime <= startTime)
 			return;
-		u32 startFrame = startTime / getFrameTimeMs();
-		u32 lastFrame = endTime / getFrameTimeMs();
+		int frameTimeMS = getFrameTimeMs();
+		if(frameTimeMS == 0)
+			return; // avoid division by 0
+		u32 startFrame = startTime / frameTimeMS;
+		u32 lastFrame = endTime / frameTimeMS;
 		s->executeCommands(startFrame,lastFrame,cb);
 	}
 	void iterateCommands(tikiCommandSide_e side, u32 startTime, u32 endTime, class perStringCallbackListener_i *cb) const {
