@@ -31,6 +31,7 @@ state RELOAD_WEAPON
 
 	torso
 	{
+		steyr_aug_reload :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_reload :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_reload : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_reload : default // stop torso animation
@@ -43,8 +44,8 @@ state RELOAD_WEAPON
 	
 	states
 	{
-		KILLED				: KILLED
-		STAND		:  ANIMDONE_TORSO
+		KILLED		: KILLED
+		STAND		: ANIMDONE_TORSO
 	}
 	
 }
@@ -95,6 +96,7 @@ state PRIMARY_ATTACK_FULLAUTO
 
 	torso
 	{
+		steyr_aug_attack_h :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_attack_h :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_attack_h : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_attack_h : default // stop torso animation
@@ -121,6 +123,7 @@ state PRIMARY_ATTACK_SEMIAUTO
 
 	torso
 	{
+		steyr_aug_attack_h :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_attack_h :  IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_attack_h : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_attack_h : default // stop torso animation
@@ -146,6 +149,7 @@ state RAISE_WEAPON
 
 	torso
 	{
+		steyr_aug_select : IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_select : IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_select : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_select : default // default animation, should be something flexible
@@ -171,6 +175,7 @@ state PUTAWAY_MAIN
 
 	torso
 	{
+		steyr_aug_unselect : IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
 		m249_unselect : IS_WEAPON_ACTIVE "dualhand" "m249"
 		mp5_acog_unselect : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_unselect : default // default animation, should be something flexible
