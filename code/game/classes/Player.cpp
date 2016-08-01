@@ -959,7 +959,9 @@ void Player::runPlayer() {
 				fpsModelName.stripExtension();
 				fpsModelName.append("_fps.tik");
 				this->ps.customViewRModelIndex = G_RenderModelIndex(fpsModelName);
+				this->ps.customViewRModelIndex2 = G_RenderModelIndex("models/weapons/m249_fps.tik");
 				this->setViewModelAnim("m249_fps_attack",0);
+				this->setViewModel2Anim("attack",0);
 			} else {
 				runPlayerAnimation_gameCode();
 			}
@@ -1128,6 +1130,10 @@ void Player::onUseKeyDown() {
 void Player::setViewModelAnim(const char *animName, int animFlags) {
 	ps.viewModelAnim = G_AnimationIndex(animName);
 	ps.viewModelAnimFlags = animFlags;
+}
+void Player::setViewModel2Anim(const char *animName, int animFlags) {
+	ps.viewModel2Anim = G_AnimationIndex(animName);
+	ps.viewModel2AnimFlags = animFlags;
 }
 void Player::onFireKeyHeld() {
 	if(vehicle) {

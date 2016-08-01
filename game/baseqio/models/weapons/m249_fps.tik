@@ -1,6 +1,9 @@
 TIKI
 setup
 {
+	scale 0.52
+	baseRotation 0 90 0
+	basePosition 0 0 -25
 	path models/weapons/m249/
 	skelmodel m249_fps.md5mesh
 }
