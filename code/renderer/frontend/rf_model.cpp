@@ -166,6 +166,9 @@ bool model_c::hasAnim(const char *animName) const {
 	if(type == MOD_DECL) {
 		return declModel->hasAnim(animName);
 	}
+	if(type == MOD_TIKI) {
+		return declModel->getAnimIndexForAnimAlias(animName) >= 0;
+	}
 	return 0;	
 }
 void model_c::addModelDrawCalls(const class rfSurfsFlagsArray_t *extraSfFlags, const vec3_c *extraRGB) {

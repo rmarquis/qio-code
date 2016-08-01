@@ -63,6 +63,7 @@ public:
 
 	virtual const char *getClassName() const = 0;
 	virtual const vec3_c &getBaseRotation() const = 0;
+	virtual const vec3_c &getBasePosition() const = 0;
 
 	virtual void iterateInitCommands(tikiCommandSide_e side, class perStringCallbackListener_i *cb) const = 0;
 

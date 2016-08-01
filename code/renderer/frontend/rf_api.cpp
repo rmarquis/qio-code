@@ -199,6 +199,7 @@ public:
 		if(rd) {
 			rd->onRenderWorldMapLoaded();
 		}
+		return false;
 	}
 	virtual const char *getLoadedMapName() const {
 		return RF_GetWorldMapName();

@@ -381,7 +381,8 @@ void rEntityImpl_c::setModel(class rModelAPI_i *newModel) {
 	}
 	if(model->isTIKI()) {
 		const vec3_c &r = model->getTIKI()->getBaseRotation();
-		worldBoneMat.fromAngles(r);
+		const vec3_c &p = model->getTIKI()->getBasePosition();
+		worldBoneMat.fromAnglesAndOrigin(r,p);
 	} else {
 		worldBoneMat.identity();
 	}

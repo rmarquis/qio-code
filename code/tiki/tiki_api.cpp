@@ -52,6 +52,7 @@ public:
 	virtual void addInitCommand(tikiCommandSide_e side, const char *txt) = 0;
 	// added for Qio
 	virtual void setBaseRotation(const vec3_c &nr) = 0;
+	virtual void setBasePosition(const vec3_c &np) = 0;
 };
 
 class tikiAnimCommand_c {
@@ -225,6 +226,7 @@ class simpleTIKI_c : public tikiBase_c, public tikiBuilder_i {
 	tikiCommands_c *clientCommands;
 	float scale;
 	vec3_c baseRotation;
+	vec3_c basePosition;
 public:
 	simpleTIKI_c() {
 		skelModel = 0;
@@ -232,6 +234,7 @@ public:
 		clientCommands = 0;
 		scale = 1.f;
 		baseRotation.set(0,0,0);
+		basePosition.set(0,0,0);
 	}
 	virtual ~simpleTIKI_c() {
 		if(skelModel) {
@@ -271,6 +274,9 @@ public:
 	}
 	virtual const vec3_c &getBaseRotation() const {
 		return baseRotation;
+	}
+	virtual const vec3_c &getBasePosition() const {
+		return basePosition;
 	}
 	virtual const char *getAnimAlias(int animIndex) const {
 		if(animIndex < 0)
@@ -408,6 +414,9 @@ public:
 	}
 	virtual void setBaseRotation(const vec3_c &nr) {
 		baseRotation = nr;
+	}
+	virtual void setBasePosition(const vec3_c &np) {
+		basePosition = np;
 	}
 	virtual void addInitCommand(tikiCommandSide_e side, const char *txt) {
 		tikiCommands_c *cmds;
@@ -597,6 +606,14 @@ class tikiParser_c : public parser_c {
 				r.z = getFloat();
 				if(out) {
 					out->setBaseRotation(r);
+				}
+			} else if(atWord("basePosition")) {
+				vec3_c r;
+				r.x = getFloat();
+				r.y = getFloat();
+				r.z = getFloat();
+				if(out) {
+					out->setBasePosition(r);
 				}
 			} else {
 				g_core->RedWarning("tikiParser_c::parseSetup: unknown token '%s' at line %i of %s\n",

@@ -949,6 +949,17 @@ void Player::runPlayer() {
 			}
 			if(st_legs) {
 				runPlayerAnimation_stateMachine();
+				// temporary hack, it should be done better way
+				if(curWeapon.getPtr())
+					ps.curWeaponEntNum = curWeapon->getEntNum();
+				else
+					ps.curWeaponEntNum = ENTITYNUM_NONE;
+
+				str fpsModelName = this->getRenderModelName();
+				fpsModelName.stripExtension();
+				fpsModelName.append("_fps.tik");
+				this->ps.customViewRModelIndex = G_RenderModelIndex(fpsModelName);
+				this->setViewModelAnim("m249_fps_attack",0);
 			} else {
 				runPlayerAnimation_gameCode();
 			}
