@@ -3,6 +3,83 @@
 animations
 {
 
+
+	// awm third person animations (for full player body)
+	path models/player/shared/awm/
+	
+	awm_attack_h attack_h.md5anim
+	awm_attack_h_s attack_h_s.md5anim
+	awm_attack_l attack_l.md5anim
+	awm_attack_l_s attack_l_s.md5anim
+	awm_hold_f hold_f.md5anim
+	awm_hold_s hold_s.md5anim
+	awm_hold_sit_f hold_sit_f.md5anim
+	awm_hold_sit_s hold_sit_s.md5anim
+	awm_jump_bg jump_bg.md5anim
+	awm_jump_ed jump_ed.md5anim
+	awm_jump_id jump_id.md5anim
+	awm_pose pose.md5anim
+	awm_pose_bend_f pose_bend_f.md5anim
+	awm_pose_bend_l pose_bend_l.md5anim
+	awm_pose_l pose_l.md5anim
+	awm_pose_l_s pose_l_s.md5anim
+	awm_pose_s pose_s.md5anim
+	awm_reload reload.md5anim
+	awm_run_b run_b.md5anim
+	awm_run_f run_f.md5anim
+	awm_run_f2 run_f2.md5anim
+	awm_run_l run_l.md5anim
+	awm_run_r run_r.md5anim
+	awm_select select.md5anim
+	awm_sit_b sit_b.md5anim
+	awm_sit_f sit_f.md5anim
+	awm_sit_l sit_l.md5anim
+	awm_sit_r sit_r.md5anim
+	awm_unselect unselect.md5anim
+	awm_walk_b walk_b.md5anim
+	awm_walk_f walk_f.md5anim
+	awm_walk_l walk_l.md5anim
+	awm_walk_r walk_r.md5anim
+
+
+	// dragunov third person animations (for full player body)
+	path models/player/shared/dragunov/
+	
+	dragunov_attack_h attack_h.md5anim
+	dragunov_attack_h_s attack_h_s.md5anim
+	dragunov_attack_l attack_l.md5anim
+	dragunov_attack_l_s attack_l_s.md5anim
+	dragunov_hold_f hold_f.md5anim
+	dragunov_hold_s hold_s.md5anim
+	dragunov_hold_sit_f hold_sit_f.md5anim
+	dragunov_hold_sit_s hold_sit_s.md5anim
+	dragunov_jump_bg jump_bg.md5anim
+	dragunov_jump_ed jump_ed.md5anim
+	dragunov_jump_id jump_id.md5anim
+	dragunov_pose pose.md5anim
+	dragunov_pose_bend_f pose_bend_f.md5anim
+	dragunov_pose_bend_l pose_bend_l.md5anim
+	dragunov_pose_l pose_l.md5anim
+	dragunov_pose_l_s pose_l_s.md5anim
+	dragunov_pose_s pose_s.md5anim
+	dragunov_reload reload.md5anim
+	dragunov_run_b run_b.md5anim
+	dragunov_run_f run_f.md5anim
+	dragunov_run_f2 run_f2.md5anim
+	dragunov_run_l run_l.md5anim
+	dragunov_run_r run_r.md5anim
+	dragunov_select select.md5anim
+	dragunov_sit_b sit_b.md5anim
+	dragunov_sit_f sit_f.md5anim
+	dragunov_sit_l sit_l.md5anim
+	dragunov_sit_r sit_r.md5anim
+	dragunov_unselect unselect.md5anim
+	dragunov_walk_b walk_b.md5anim
+	dragunov_walk_f walk_f.md5anim
+	dragunov_walk_l walk_l.md5anim
+	dragunov_walk_r walk_r.md5anim
+
+
 	// steyr_aug third person animations (for full player body)
 	path models/player/shared/steyr_aug/
 	
@@ -39,6 +116,7 @@ animations
 	steyr_aug_walk_f walk_f.md5anim
 	steyr_aug_walk_l walk_l.md5anim
 	steyr_aug_walk_r walk_r.md5anim
+
 
 	// m249 third person animations (for full player body)
 	path models/player/shared/m249/
@@ -77,6 +155,7 @@ animations
 	m249_walk_l walk_l.md5anim
 	m249_walk_r walk_r.md5anim
 	
+
 	// mp5_acog third person animations (for full player body)
 	path models/player/shared/mp5_acog/
 	
@@ -114,6 +193,7 @@ animations
 	mp5_acog_walk_l walk_l.md5anim
 	mp5_acog_walk_r walk_r.md5anim
 	
+
 	// TODO - UNARMED, let's stub it for now
 	path models/player/shared/unarmed/
 	

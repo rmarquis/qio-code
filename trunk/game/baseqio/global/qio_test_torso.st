@@ -31,10 +31,12 @@ state RELOAD_WEAPON
 
 	torso
 	{
-		steyr_aug_reload :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
-		m249_reload :  IS_WEAPON_ACTIVE "dualhand" "m249"
-		mp5_acog_reload : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
-		unarmed_reload : default // stop torso animation
+		awm_reload 		: IS_WEAPON_ACTIVE "dualhand" "awm"
+		dragunov_reload 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
+		steyr_aug_reload 	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
+		m249_reload 		: IS_WEAPON_ACTIVE "dualhand" "m249"
+		mp5_acog_reload 	: IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
+		unarmed_reload 		: default // stop torso animation
 	}
 	entrycommands
 	{
@@ -44,8 +46,8 @@ state RELOAD_WEAPON
 	
 	states
 	{
-		KILLED		: KILLED
-		STAND		: ANIMDONE_TORSO
+		KILLED			: KILLED
+		STAND			: ANIMDONE_TORSO
 	}
 	
 }
@@ -60,14 +62,14 @@ state CHECK_PRIMARY_ATTACK_FULLAUTO
 	}
 	states
 	{
-		KILLED				: KILLED
+		KILLED			: KILLED
 		
-		STAND					: RELOAD
-		STAND					: NEW_WEAPON
-		STAND					: !IS_WEAPON_READY_TO_FIRE "dualhand"
-		PRIMARY_ATTACK_FULLAUTO		: ATTACK_PRIMARY
+		STAND			: RELOAD
+		STAND			: NEW_WEAPON
+		STAND			: !IS_WEAPON_READY_TO_FIRE "dualhand"
+		PRIMARY_ATTACK_FULLAUTO	: ATTACK_PRIMARY
 		
-		STAND					: !ATTACK_PRIMARY
+		STAND			: !ATTACK_PRIMARY
 	}
 }
 state CHECK_PRIMARY_ATTACK_SEMIAUTO
@@ -80,14 +82,14 @@ state CHECK_PRIMARY_ATTACK_SEMIAUTO
 	}
 	states
 	{
-		KILLED				: KILLED
+		KILLED			: KILLED
 		
-		STAND					: RELOAD
-		STAND					: NEW_WEAPON
-		STAND					: !IS_WEAPON_READY_TO_FIRE "dualhand"
-		PRIMARY_ATTACK_SEMIAUTO		: ATTACK_PRIMARY
+		STAND			: RELOAD
+		STAND			: NEW_WEAPON
+		STAND			: !IS_WEAPON_READY_TO_FIRE "dualhand"
+		PRIMARY_ATTACK_SEMIAUTO	: ATTACK_PRIMARY
 		
-		STAND					: !ATTACK_PRIMARY
+		STAND			: !ATTACK_PRIMARY
 	}
 }
 state PRIMARY_ATTACK_FULLAUTO
@@ -96,10 +98,12 @@ state PRIMARY_ATTACK_FULLAUTO
 
 	torso
 	{
-		steyr_aug_attack_h :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
-		m249_attack_h :  IS_WEAPON_ACTIVE "dualhand" "m249"
-		mp5_acog_attack_h : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
-		unarmed_attack_h : default // stop torso animation
+		awm_attack_h	 	: IS_WEAPON_ACTIVE "dualhand" "awm"
+		dragunov_attack_h 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
+		steyr_aug_attack_h 	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
+		m249_attack_h 		: IS_WEAPON_ACTIVE "dualhand" "m249"
+		mp5_acog_attack_h 	: IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
+		unarmed_attack_h 	: default // stop torso animation
 	}
 	
 	entrycommands
@@ -109,12 +113,12 @@ state PRIMARY_ATTACK_FULLAUTO
 	}	
 	states
 	{
-		KILLED				: KILLED
-		PUTAWAY_MAIN			: PUTAWAYMAIN ANIMDONE_TORSO
-		RAISE_WEAPON			: NEW_WEAPON ANIMDONE_TORSO
+		KILLED			: KILLED
+		PUTAWAY_MAIN		: PUTAWAYMAIN ANIMDONE_TORSO
+		RAISE_WEAPON		: NEW_WEAPON ANIMDONE_TORSO
 
 		PRIMARY_ATTACK_FULLAUTO	: !IS_WEAPON_SEMIAUTO ATTACK_PRIMARY ANIMDONE_TORSO IS_WEAPON_READY_TO_FIRE "dualhand"
-		STAND		:  ANIMDONE_TORSO
+		STAND			: ANIMDONE_TORSO
 	}
 }
 state PRIMARY_ATTACK_SEMIAUTO
@@ -123,10 +127,12 @@ state PRIMARY_ATTACK_SEMIAUTO
 
 	torso
 	{
-		steyr_aug_attack_h :  IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
-		m249_attack_h :  IS_WEAPON_ACTIVE "dualhand" "m249"
-		mp5_acog_attack_h : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
-		unarmed_attack_h : default // stop torso animation
+		awm_attack_h 		: IS_WEAPON_ACTIVE "dualhand" "awm"
+		dragunov_attack_h 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
+		steyr_aug_attack_h 	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
+		m249_attack_h 		: IS_WEAPON_ACTIVE "dualhand" "m249"
+		mp5_acog_attack_h 	: IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
+		unarmed_attack_h 	: default // stop torso animation
 	}
 	
 	entrycommands
@@ -136,11 +142,11 @@ state PRIMARY_ATTACK_SEMIAUTO
 	}	
 	states
 	{
-		KILLED				: KILLED
-		PUTAWAY_MAIN			: PUTAWAYMAIN ANIMDONE_TORSO
-		RAISE_WEAPON			: NEW_WEAPON ANIMDONE_TORSO
+		KILLED			: KILLED
+		PUTAWAY_MAIN		: PUTAWAYMAIN ANIMDONE_TORSO
+		RAISE_WEAPON		: NEW_WEAPON ANIMDONE_TORSO
 
-		STAND		:  ANIMDONE_TORSO
+		STAND			: ANIMDONE_TORSO
 	}
 }
 state RAISE_WEAPON
@@ -149,10 +155,12 @@ state RAISE_WEAPON
 
 	torso
 	{
-		steyr_aug_select : IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
-		m249_select : IS_WEAPON_ACTIVE "dualhand" "m249"
-		mp5_acog_select : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
-		unarmed_select : default // default animation, should be something flexible
+		awm_select 		: IS_WEAPON_ACTIVE "dualhand" "awm"
+		dragunov_select 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
+		steyr_aug_select 	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
+		m249_select 		: IS_WEAPON_ACTIVE "dualhand" "m249"
+		mp5_acog_select 	: IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
+		unarmed_select 		: default // default animation, should be something flexible
 	}
 	entrycommands
 	{
@@ -164,7 +172,7 @@ state RAISE_WEAPON
 	}
 	states
 	{
-		KILLED				: KILLED
+		KILLED			: KILLED
 		STAND			: ANIMDONE_TORSO
 	}
 }
@@ -175,10 +183,12 @@ state PUTAWAY_MAIN
 
 	torso
 	{
-		steyr_aug_unselect : IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
-		m249_unselect : IS_WEAPON_ACTIVE "dualhand" "m249"
-		mp5_acog_unselect : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
-		unarmed_unselect : default // default animation, should be something flexible
+		awm_unselect		: IS_WEAPON_ACTIVE "dualhand" "awm"
+		dragunov_unselect	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
+		steyr_aug_unselect	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
+		m249_unselect		: IS_WEAPON_ACTIVE "dualhand" "m249"
+		mp5_acog_unselect	: IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
+		unarmed_unselect	: default // default animation, should be something flexible
 	}
 	entrycommands
 	{
@@ -190,7 +200,7 @@ state PUTAWAY_MAIN
 	}
 	states
 	{
-		KILLED				: KILLED
+		KILLED			: KILLED
 		STAND			: ANIMDONE_TORSO
 	}
 }
