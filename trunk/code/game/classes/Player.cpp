@@ -211,6 +211,7 @@ Player::Player() {
 	st_curStateLegs = "STAND";
 	st_curStateTorso = "STAND";
 	bPutaway = false;
+	bWantsReload = false;
 }
 Player::~Player() {
 	if(characterController) {
@@ -1884,7 +1885,11 @@ bool Player::checkIsWeaponClassReadyToFire(const class stringList_c *arguments, 
 	return false;
 }
 bool Player::checkReload(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
-
+	// check for forced reload
+	if(bWantsReload) {
+		bWantsReload = false; // FIXME
+		return true;
+	}
 	// TODO
 	return false;
 }
