@@ -53,11 +53,13 @@ struct playerState_s : public entityState_s {
 	int			curWeaponEntNum;
 
 	// index in CS_MODELS
+	int			viewModelAnim; // index in CS_ANIMATIONS
+	int			viewModelAnimFlags; // animation flags
 	int			customViewRModelIndex; // 0 means that there is no custom view render model
-	// index in CS_ANIMATIONS
-	int			viewModelAnim;
-	// animation flags
-	int			viewModelAnimFlags;
+
+	int			customViewRModelIndex2; // 0 means that there is no custom view render model
+	int			viewModel2Anim; // index in CS_ANIMATIONS
+	int			viewModel2AnimFlags; // animation flags
 
 	vec3_c		viewangles;		// for fixed views
 	int			viewheight;
@@ -78,6 +80,7 @@ struct playerState_s : public entityState_s {
 		delta_angles[0] = delta_angles[1] = delta_angles[2] = 0;
 		curWeaponEntNum = ENTITYNUM_NONE;
 		customViewRModelIndex = 0;
+		customViewRModelIndex2 = 0;
 		viewangles.set(0,0,0);
 		viewheight = 0;
 		ping = 0;

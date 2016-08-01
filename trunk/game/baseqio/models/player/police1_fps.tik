@@ -3,7 +3,7 @@ setup
 {
 	scale 0.52
 	baseRotation 0 90 0
-	basePosition 0 0 -15
+	basePosition 0 0 -25
 	path models/player/police1_fps/
 	skelmodel fpsHands.md5mesh
 }

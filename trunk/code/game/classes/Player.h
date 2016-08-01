@@ -115,6 +115,7 @@ friend class testPlayerConditionsHandler_c;
 
 	void updateCurWeaponAttachment();
 	void setViewModelAnim(const char *animName, int animFlags);
+	void setViewModel2Anim(const char *animName, int animFlags);
 	void updateCurWeaponClipSize();
 
 	void setPlayerAnimBoth(enum sharedGameAnim_e type);

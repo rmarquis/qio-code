@@ -49,10 +49,15 @@ static aCvar_c cg_printViewWeaponClipSize("cg_printViewWeaponClipSize","0");
 static aCvar_c cg_printViewModelBobbingOffset("cg_printViewModelBobbingOffset","0");
 
 static class rEntityAPI_i *cg_viewModelEntity = 0;
+static class rEntityAPI_i *cg_viewModelEntity2 = 0;
 
 void CG_FreeViewModelEntity() {
 	if(cg_viewModelEntity == 0)
 		return;
+	if(cg_viewModelEntity2) {
+		rf->removeEntity(cg_viewModelEntity2);
+		cg_viewModelEntity2 = 0;
+	}
 	rf->removeEntity(cg_viewModelEntity);
 	cg_viewModelEntity = 0;
 }
@@ -245,6 +250,25 @@ void CG_RunViewModel() {
 	}
 	//g_core->Print("Player velocity: %f %f %f\n",cg.snap->ps.velocity.x,cg.snap->ps.velocity.y,cg.snap->ps.velocity.z);
 
+	rModelAPI_i *viewModel2;
+	if(cg.snap->ps.customViewRModelIndex2) {
+		viewModel2 = cgs.gameModels[cg.snap->ps.customViewRModelIndex2];
+		//g_core->Print("ViewModel2 ndex %i\n",cg.snap->ps.customViewRModelIndex2);
+	} else {
+		viewModel2 = 0;
+	}
+	if(viewModel2 && viewModel2->isValid()) {
+		if(!cg_viewModelEntity2) {
+			cg_viewModelEntity2 = rf->allocEntity();
+			cg_viewModelEntity2->setModel(viewModel2);
+			g_core->Print("ViewModel2 ALLOCATED %s now for index %i\n",cg_viewModelEntity2->getModelName(),cg.snap->ps.customViewRModelIndex2);
+		}
+	} else {
+		if(cg_viewModelEntity2) {
+			rf->removeEntity(cg_viewModelEntity2);
+			cg_viewModelEntity2 = 0;
+		}
+	}
 	// calculate viewmodel bobbing offset based on player velocity
 	viewModelMovement.setConfig(viewModelMovementConfig);
 	viewModelMovement.calcViewModelOffset(cg.snap->ps.isOnGround(),cg.snap->ps.velocity,cg.refdefViewAngles,cg.frametime*0.001f);
@@ -298,6 +322,11 @@ void CG_RunViewModel() {
 	cg_viewModelEntity->setOrigin(origin);
 	cg_viewModelEntity->setAngles(angles);
 	cg_viewModelEntity->setFirstPersonOnly(true);
+	if(cg_viewModelEntity2) {
+		cg_viewModelEntity2->setOrigin(origin);
+		cg_viewModelEntity2->setAngles(angles);
+		cg_viewModelEntity2->setFirstPersonOnly(true);
+	}
 	// set viewmodel model
 	//rModelAPI_i *viewModel = rf->registerModel("models/testweapons/xrealMachinegun/machinegun_view.md5mesh");
 	cg_viewModelEntity->setModel(viewModel);
@@ -313,6 +342,9 @@ void CG_RunViewModel() {
 	} else if(_stricmp(cg_forceViewModelAnimationName.getStr(),"none")) {
 		const char *animName = cg_forceViewModelAnimationName.getStr();
 		cg_viewModelEntity->setAnim(animName,viewModelAnimFlags);
+		if(cg_viewModelEntity2) {
+			cg_viewModelEntity2->setAnim(animName,viewModelAnimFlags);
+		}
 	} else {
 		const char *animName = CG_ConfigString(CS_ANIMATIONS+cg.snap->ps.viewModelAnim);
 		if(cg_printViewModelAnimName.getInt()) {
@@ -322,6 +354,15 @@ void CG_RunViewModel() {
 			cg_viewModelEntity->setAnim(animName,viewModelAnimFlags);
 		} else {
 			g_core->RedWarning("ViewModel %s has no animation %s\n",cg_viewModelEntity->getModelName(),animName);
+		}
+	}
+
+	if(cg_viewModelEntity2) {
+		const char *anim2Name = CG_ConfigString(CS_ANIMATIONS+cg.snap->ps.viewModel2Anim);
+		if(cg_viewModelEntity2->hasAnim(anim2Name)) {
+			cg_viewModelEntity2->setAnim(anim2Name,cg.snap->ps.viewModel2AnimFlags);
+		} else {
+			g_core->RedWarning("ViewModel2 %s has no animation %s\n",cg_viewModelEntity2->getModelName(),anim2Name);
 		}
 	}
 }
