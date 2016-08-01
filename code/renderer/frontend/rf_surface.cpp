@@ -348,6 +348,18 @@ void r_surface_c::updateSkelSurfInstance(const class skelSurfaceAPI_i *skelSF, c
 	const skelVert_s *inV = skelSF->getVerts();
 	const skelWeight_s *inWeights = skelSF->getWeights();
 	bounds.clear();
+	if(bones.size() == 0) {
+		g_core->RedWarning("r_surface_c::updateSkelSurfInstance: empty bones array passed, using identity path\n");
+		for(u32 i = 0; i < verts.size(); i++, v++, inV++) {
+			const skelWeight_s *w = inWeights + inV->firstWeight;
+			v->xyz.clear();
+			for(u32 j = 0; j < inV->numWeights; j++, w++) {
+				v->xyz = w->ofs * w->weight;
+			}
+			bounds.addPoint(v->xyz);
+		}
+		return;
+	}
 	for(u32 i = 0; i < verts.size(); i++, v++, inV++) {
 		const skelWeight_s *w = inWeights + inV->firstWeight;
 		int firstBone = w->boneIndex;

@@ -110,6 +110,8 @@ friend class testPlayerConditionsHandler_c;
 	bool bLoopFire;
 	bool bLoopFireRight;
 	bool bLoopFireLeft;
+	// R key
+	bool bWantsReload;
 
 	void updateCurWeaponAttachment();
 	void setViewModelAnim(const char *animName, int animFlags);
@@ -132,6 +134,10 @@ public:
 	virtual ~Player();
 
 	DECLARE_CLASS( Player );
+
+	void setWantsReloadFlag() {
+		bWantsReload = true;
+	}
 
 	playerState_s	ps;				// communicated by server to clients
 
