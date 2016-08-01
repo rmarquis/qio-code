@@ -1,0 +1,11 @@
+TIKI
+setup
+{
+	scale 0.52
+	baseRotation 0 90 0
+	basePosition 0 0 -15
+	path models/player/police1_fps/
+	skelmodel fpsHands.md5mesh
+}
+
+$include models/player/shared/qio_test_human_fps.tik

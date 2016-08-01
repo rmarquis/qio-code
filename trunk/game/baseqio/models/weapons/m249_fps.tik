@@ -1,0 +1,21 @@
+TIKI
+setup
+{
+	path models/weapons/m249/
+	skelmodel m249_fps.md5mesh
+}
+animations
+{
+	path models/weapons/m249/fps/
+	attack attack.md5anim
+	attack2 attack2.md5anim
+	idle1 idle1.md5anim
+	idle2 idle2.md5anim
+	reload reload.md5anim
+	run run.md5anim
+	select select.md5anim
+	unselect unselect.md5anim
+	pose_r pose_r.md5anim
+	pose_s pose_s.md5anim
+	pose pose.md5anim
+}

@@ -4,5 +4,16 @@ animations
 {
 	// m249 first person animations (for hands)
 	// M249 first person animations for gun are elsewhere.
-	
+	path models/player/shared/m249_fps
+	m249_fps_attack attack.md5anim
+	m249_fps_attack2 attack2.md5anim
+	m249_fps_idle1 idle1.md5anim
+	m249_fps_idle2 idle2.md5anim
+	m249_fps_pose pose.md5anim
+	m249_fps_pose_r pose_r.md5anim
+	m249_fps_pose_s pose_s.md5anim
+	m249_fps_reload reload.md5anim
+	m249_fps_run run.md5anim
+	m249_fps_select select.md5anim
+	m249_fps_unselect unselect.md5anim
 }
