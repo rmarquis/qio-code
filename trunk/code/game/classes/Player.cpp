@@ -970,7 +970,12 @@ void Player::runPlayer() {
 				fpsModelName.stripExtension();
 				fpsModelName.append("_fps.tik");
 				this->ps.customViewRModelIndex = G_RenderModelIndex(fpsModelName);
-				this->ps.customViewRModelIndex2 = G_RenderModelIndex("models/weapons/m249_fps.tik");
+				if(curWeapon) {
+					fpsModelName = curWeapon->getRenderModelName();
+					fpsModelName.stripExtension();
+					fpsModelName.append("_fps.tik");
+					this->ps.customViewRModelIndex2 = G_RenderModelIndex(fpsModelName);
+				}
 				//this->setViewModelAnim("m249_fps_attack",0);
 				//this->setViewModel2Anim("attack",0);
 			} else {
@@ -1100,6 +1105,7 @@ void Player::runPlayer() {
 	this->oldButtons = this->buttons;
 	this->buttons = ucmd->buttons;
 	this->latchedButtons |= this->buttons & ~this->oldButtons;
+	bWantsReload = false;
 }
 #include <shared/trace.h>
 void Player::onUseKeyDown() {

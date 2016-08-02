@@ -14,11 +14,12 @@ state STAND
 
 	viewModelHands 
 	{
-		m249_fps_run : IS_WEAPON_ACTIVE "dualhand" "m249"
+		m249_fps_idle : IS_WEAPON_ACTIVE "dualhand" "m249"
+		dragunov_fps_idle : IS_WEAPON_ACTIVE "dualhand" "dragunov"
 	}
 	viewModelGun
 	{
-		run : IS_WEAPON_ACTIVE "dualhand" "m249"
+		idle : default
 	}
 	states
 	{
@@ -49,7 +50,15 @@ state RELOAD_WEAPON
 	entrycommands
 	{
 		weaponCommand mainHand clip_fill
-		viewmodelanim reload
+	}
+	viewModelHands 
+	{
+		m249_fps_reload : IS_WEAPON_ACTIVE "dualhand" "m249"
+		dragunov_fps_reload : IS_WEAPON_ACTIVE "dualhand" "dragunov"
+	}
+	viewModelGun
+	{
+		reload : default
 	}
 	
 	states
@@ -116,9 +125,17 @@ state PRIMARY_ATTACK_FULLAUTO
 	
 	entrycommands
 	{
-		viewmodelanim fire
 		weaponCommand mainHand shoot
 	}	
+	viewModelHands 
+	{
+		m249_fps_attack : IS_WEAPON_ACTIVE "dualhand" "m249"
+		dragunov_fps_attack : IS_WEAPON_ACTIVE "dualhand" "dragunov"
+	}
+	viewModelGun
+	{
+		attack : default
+	}
 	states
 	{
 		KILLED			: KILLED
