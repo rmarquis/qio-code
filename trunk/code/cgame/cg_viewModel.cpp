@@ -348,7 +348,7 @@ void CG_RunViewModel() {
 		}
 	} else {
 		const char *animName = CG_ConfigString(CS_ANIMATIONS+cg.snap->ps.viewModelAnim);
-		if(strstr(animName,"reload")) {
+		if(strstr(animName,"reload") || strstr(animName,"select")) {
 			///g_core->Print("fixing\n");
 			viewModelAnimFlags |= AF_LOOP_LAST_FRAME;
 		}
@@ -365,7 +365,7 @@ void CG_RunViewModel() {
 	if(cg_viewModelEntity2) {
 		const char *anim2Name = CG_ConfigString(CS_ANIMATIONS+cg.snap->ps.viewModel2Anim);
 		int anim2Flags = cg.snap->ps.viewModel2AnimFlags;
-		if(strstr(anim2Name,"reload")) {
+		if(strstr(anim2Name,"reload") || strstr(anim2Name,"select")) {
 			///g_core->Print("fixing\n");
 			anim2Flags |= AF_LOOP_LAST_FRAME;
 		}

@@ -162,7 +162,6 @@ state PRIMARY_ATTACK_SEMIAUTO
 	
 	entrycommands
 	{
-		viewmodelanim fire
 		weaponCommand mainHand shoot
 	}	
 	states
@@ -187,9 +186,14 @@ state RAISE_WEAPON
 		mp5_acog_select 	: IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_select 		: default // default animation, should be something flexible
 	}
-	entrycommands
+	viewModelHands 
 	{
-		viewmodelanim pullout
+		m249_fps_select : IS_WEAPON_ACTIVE "dualhand" "m249"
+		dragunov_fps_select : IS_WEAPON_ACTIVE "dualhand" "dragunov"
+	}
+	viewModelGun
+	{
+		select : default
 	}
 	exitcommands
 	{
@@ -215,9 +219,14 @@ state PUTAWAY_MAIN
 		mp5_acog_unselect	: IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 		unarmed_unselect	: default // default animation, should be something flexible
 	}
-	entrycommands
+	viewModelHands 
 	{
-		viewmodelanim putaway
+		m249_fps_unselect : IS_WEAPON_ACTIVE "dualhand" "m249"
+		dragunov_fps_unselect : IS_WEAPON_ACTIVE "dualhand" "dragunov"
+	}
+	viewModelGun
+	{
+		unselect : default
 	}
 	exitcommands
 	{
