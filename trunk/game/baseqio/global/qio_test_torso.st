@@ -179,17 +179,17 @@ state RAISE_WEAPON
 
 	torso
 	{
-		awm_select 		: IS_WEAPON_ACTIVE "dualhand" "awm"
-		dragunov_select 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
-		steyr_aug_select 	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
-		m249_select 		: IS_WEAPON_ACTIVE "dualhand" "m249"
-		mp5_acog_select 	: IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
+		awm_select 		: IS_NEW_WEAPON "dualhand" "awm"
+		dragunov_select 	: IS_NEW_WEAPON "dualhand" "dragunov"
+		steyr_aug_select 	: IS_NEW_WEAPON "dualhand" "steyr_aug"
+		m249_select 		: IS_NEW_WEAPON "dualhand" "m249"
+		mp5_acog_select 	: IS_NEW_WEAPON "dualhand" "mp5_acog"
 		unarmed_select 		: default // default animation, should be something flexible
 	}
 	viewModelHands 
 	{
-		m249_fps_select : IS_WEAPON_ACTIVE "dualhand" "m249"
-		dragunov_fps_select : IS_WEAPON_ACTIVE "dualhand" "dragunov"
+		m249_fps_select : IS_NEW_WEAPON "dualhand" "m249"
+		dragunov_fps_select : IS_NEW_WEAPON "dualhand" "dragunov"
 	}
 	viewModelGun
 	{

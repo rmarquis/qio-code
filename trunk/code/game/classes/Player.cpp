@@ -963,6 +963,8 @@ void Player::runPlayer() {
 				// temporary hack, it should be done better way
 				if(curWeapon.getPtr())
 					ps.curWeaponEntNum = curWeapon->getEntNum();
+				else if(nextWeapon.getPtr()) 
+					ps.curWeaponEntNum = nextWeapon->getEntNum();
 				else
 					ps.curWeaponEntNum = ENTITYNUM_NONE;
 
@@ -972,6 +974,10 @@ void Player::runPlayer() {
 				this->ps.customViewRModelIndex = G_RenderModelIndex(fpsModelName);
 				if(curWeapon) {
 					fpsModelName = curWeapon->getRenderModelName();
+				} else if(nextWeapon) {
+					fpsModelName = nextWeapon->getRenderModelName();
+				}
+				if(fpsModelName.length()) {
 					fpsModelName.stripExtension();
 					fpsModelName.append("_fps.tik");
 					this->ps.customViewRModelIndex2 = G_RenderModelIndex(fpsModelName);
