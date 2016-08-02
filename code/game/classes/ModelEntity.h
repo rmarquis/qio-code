@@ -82,9 +82,6 @@ protected:
 	int findBoneDamageZone(int boneNum) const;
 	const char *getDamageZoneName(int zoneNum) const;
 	void printDamageZones() const;
-	virtual const char *getRenderModelName() const {
-		return renderModelName;
-	}
 	void updateAnimations();
 	void attachModel(const char *args);
 	void removeAttachedModel(const char *args);
@@ -94,6 +91,9 @@ public:
 
 	DECLARE_CLASS( ModelEntity );
 
+	virtual const char *getRenderModelName() const {
+		return renderModelName;
+	}
 	int getAnimationTotalTimeMs(const char *animName) const;
 
 	virtual const class vec3_c &getPhysicsOrigin() const;
