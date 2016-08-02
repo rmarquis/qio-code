@@ -187,6 +187,15 @@ bool stState_c::parseState(class stateMachine_c *m, class parser_c &p) {
 			if(torso.parseStateAnims(p)) {
 				return true;
 			}
+		// Qio
+		} else if(p.atWord("viewModelGun")) {
+			if(viewModelGun.parseStateAnims(p)) {
+				return true;
+			}
+		} else if(p.atWord("viewModelHands")) {
+			if(viewModelHands.parseStateAnims(p)) {
+				return true;
+			}
 		} else if(p.atWord("states")) {
 			if(p.atWord_dontNeedWS("{") == false) {
 				int line = p.getCurrentLineNumber();
@@ -239,6 +248,12 @@ const char *stState_c::getLegsAnim(class stateConditionsHandler_i *handler) cons
 }
 const char *stState_c::getActionAnim(class stateConditionsHandler_i *handler) const {
 	return actions.selectAnimation(handler);
+}
+const char *stState_c::getViewModelGunAnim(class stateConditionsHandler_i *handler) const {
+	return viewModelGun.selectAnimation(handler);
+}
+const char *stState_c::getViewModelHandsAnim(class stateConditionsHandler_i *handler) const {
+	return viewModelHands.selectAnimation(handler);
 }
 const char *stState_c::getTorsoAnim(class stateConditionsHandler_i *handler) const {
 	return torso.selectAnimation(handler);
@@ -319,6 +334,18 @@ const char *stateMachine_c::getStateActionAnim(const char *curStateName, class s
 	if(s == 0)
 		return 0;
 	return s->getActionAnim(handler);
+}
+const char *stateMachine_c::getStateViewModelGunAnim(const char *curStateName, class stateConditionsHandler_i *handler) const {
+	const stState_c *s = states.getEntry(curStateName);
+	if(s == 0)
+		return 0;
+	return s->getViewModelGunAnim(handler);
+}
+const char *stateMachine_c::getStateViewModelHandsAnim(const char *curStateName, class stateConditionsHandler_i *handler) const {
+	const stState_c *s = states.getEntry(curStateName);
+	if(s == 0)
+		return 0;
+	return s->getViewModelHandsAnim(handler);
 }
 const char *stateMachine_c::getStateTorsoAnim(const char *curStateName, class stateConditionsHandler_i *handler) const {
 	const stState_c *s = states.getEntry(curStateName);

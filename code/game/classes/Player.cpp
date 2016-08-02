@@ -828,6 +828,17 @@ void Player::runPlayerAnimation_stateMachine() {
 		this->setAnimation(torsoAnim);
 		this->setTorsoAnimation(0);
 	}
+	// Qio viewmodel
+	if(st_torso) {
+		const char *handAnim = st_torso->getStateViewModelHandsAnim(st_curStateTorso,st_handler);
+		if(handAnim && handAnim[0]) {
+			this->setViewModelAnim(handAnim,0);
+		}
+		const char *gunAnim = st_torso->getStateViewModelGunAnim(st_curStateTorso,st_handler);
+		if(gunAnim && gunAnim) {
+			this->setViewModel2Anim(gunAnim,0);
+		}
+	}
 #endif
 }
 void Player::runPlayer() {
@@ -960,8 +971,8 @@ void Player::runPlayer() {
 				fpsModelName.append("_fps.tik");
 				this->ps.customViewRModelIndex = G_RenderModelIndex(fpsModelName);
 				this->ps.customViewRModelIndex2 = G_RenderModelIndex("models/weapons/m249_fps.tik");
-				this->setViewModelAnim("m249_fps_attack",0);
-				this->setViewModel2Anim("attack",0);
+				//this->setViewModelAnim("m249_fps_attack",0);
+				//this->setViewModel2Anim("attack",0);
 			} else {
 				runPlayerAnimation_gameCode();
 			}

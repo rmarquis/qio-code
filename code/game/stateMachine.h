@@ -135,6 +135,9 @@ class stState_c {
 	stAnimsList_c legs;
 	// added for FAKK
 	stAnimsList_c torso;
+	// added for Qio
+	stAnimsList_c viewModelGun;
+	stAnimsList_c viewModelHands;
 	arraySTD_c<stTransition_c> transitions;
 	// for AI states
 	stTime_s time;
@@ -173,6 +176,8 @@ public:
 	const char *getLegsAnim(class stateConditionsHandler_i *handler) const;	
 	const char *getTorsoAnim(class stateConditionsHandler_i *handler) const;	
 	const char *getActionAnim(class stateConditionsHandler_i *handler) const;	
+	const char *getViewModelGunAnim(class stateConditionsHandler_i *handler) const;	
+	const char *getViewModelHandsAnim(class stateConditionsHandler_i *handler) const;	
 	void iterateStateEntryCommands(class keyValueSetter_i *callback) const;
 	void iterateStateExitCommands(class keyValueSetter_i *callback) const;
 };
@@ -190,6 +195,9 @@ class stateMachine_c : public stateMachineAPI_i {
 	virtual const char *getStateLegsAnim(const char *curStateName, class stateConditionsHandler_i *handler) const;
 	virtual const char *getStateActionAnim(const char *curStateName, class stateConditionsHandler_i *handler) const;
 	virtual const char *getStateTorsoAnim(const char *curStateName, class stateConditionsHandler_i *handler) const;
+	virtual const char *getStateViewModelGunAnim(const char *curStateName, class stateConditionsHandler_i *handler) const;
+	virtual const char *getStateViewModelHandsAnim(const char *curStateName, class stateConditionsHandler_i *handler) const;
+
 	virtual const stTime_s *getStateTime(const char *curStateName) const;
 	virtual void iterateStateEntryCommands(const char *stateName, class keyValueSetter_i *callback) const;
 	virtual void iterateStateExitCommands(const char *stateName, class keyValueSetter_i *callback) const;
