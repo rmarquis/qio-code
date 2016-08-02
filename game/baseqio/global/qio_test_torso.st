@@ -12,6 +12,14 @@ state STAND
 		none : default // no torso animation
 	}
 
+	viewModelHands 
+	{
+		m249_fps_run : IS_WEAPON_ACTIVE "dualhand" "m249"
+	}
+	viewModelGun
+	{
+		run : IS_WEAPON_ACTIVE "dualhand" "m249"
+	}
 	states
 	{
 		KILLED				: KILLED
