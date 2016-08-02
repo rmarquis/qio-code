@@ -28,6 +28,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/rEntityAPI.h>
 #include <api/coreAPI.h>
 #include <api/modelDeclAPI.h>
+#include <api/skelAnimAPI.h>
 #include <renderer/rModelAPI.h>
 #include <math/matrix.h>
 #include <math/axis.h>
@@ -347,6 +348,10 @@ void CG_RunViewModel() {
 		}
 	} else {
 		const char *animName = CG_ConfigString(CS_ANIMATIONS+cg.snap->ps.viewModelAnim);
+		if(strstr(animName,"reload")) {
+			///g_core->Print("fixing\n");
+			viewModelAnimFlags |= AF_LOOP_LAST_FRAME;
+		}
 		if(cg_printViewModelAnimName.getInt()) {
 			g_core->Print("ViewModelAnim: %s, flags %i\n",animName,viewModelAnimFlags);
 		}
@@ -359,8 +364,13 @@ void CG_RunViewModel() {
 
 	if(cg_viewModelEntity2) {
 		const char *anim2Name = CG_ConfigString(CS_ANIMATIONS+cg.snap->ps.viewModel2Anim);
+		int anim2Flags = cg.snap->ps.viewModel2AnimFlags;
+		if(strstr(anim2Name,"reload")) {
+			///g_core->Print("fixing\n");
+			anim2Flags |= AF_LOOP_LAST_FRAME;
+		}
 		if(cg_viewModelEntity2->hasAnim(anim2Name)) {
-			cg_viewModelEntity2->setAnim(anim2Name,cg.snap->ps.viewModel2AnimFlags);
+			cg_viewModelEntity2->setAnim(anim2Name,anim2Flags);
 		} else {
 			g_core->RedWarning("ViewModel2 %s has no animation %s\n",cg_viewModelEntity2->getModelName(),anim2Name);
 		}

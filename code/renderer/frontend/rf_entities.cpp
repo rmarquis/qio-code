@@ -429,7 +429,7 @@ void rEntityImpl_c::setAnim(const char *animName, int newFlags) {
 	}
 	if(this->model->isTIKI()) {
 		int animIndex = this->model->getTIKI()->findAnim(animName);
-		this->setTIKIModelAnimLocalIndex(animIndex,0);
+		this->setTIKIModelAnimLocalIndex(animIndex,newFlags);
 		return;
 	}
 	class modelDeclAPI_i *dm = this->model->getDeclModelAPI();
