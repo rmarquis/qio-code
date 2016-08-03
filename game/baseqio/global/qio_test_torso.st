@@ -16,6 +16,7 @@ state STAND
 	{
 		m249_fps_idle : IS_WEAPON_ACTIVE "dualhand" "m249"
 		dragunov_fps_idle : IS_WEAPON_ACTIVE "dualhand" "dragunov"
+		mp5_acog_fps_idle : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 	}
 	viewModelGun
 	{
@@ -55,6 +56,7 @@ state RELOAD_WEAPON
 	{
 		m249_fps_reload : IS_WEAPON_ACTIVE "dualhand" "m249"
 		dragunov_fps_reload : IS_WEAPON_ACTIVE "dualhand" "dragunov"
+		mp5_acog_fps_reload : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 	}
 	viewModelGun
 	{
@@ -131,6 +133,7 @@ state PRIMARY_ATTACK_FULLAUTO
 	{
 		m249_fps_attack : IS_WEAPON_ACTIVE "dualhand" "m249"
 		dragunov_fps_attack : IS_WEAPON_ACTIVE "dualhand" "dragunov"
+		mp5_acog_fps_attack : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 	}
 	viewModelGun
 	{
@@ -190,6 +193,7 @@ state RAISE_WEAPON
 	{
 		m249_fps_select : IS_NEW_WEAPON "dualhand" "m249"
 		dragunov_fps_select : IS_NEW_WEAPON "dualhand" "dragunov"
+		mp5_acog_fps_select : IS_NEW_WEAPON "dualhand" "mp5_acog"
 	}
 	viewModelGun
 	{
@@ -223,6 +227,7 @@ state PUTAWAY_MAIN
 	{
 		m249_fps_unselect : IS_WEAPON_ACTIVE "dualhand" "m249"
 		dragunov_fps_unselect : IS_WEAPON_ACTIVE "dualhand" "dragunov"
+		mp5_acog_fps_unselect : IS_WEAPON_ACTIVE "dualhand" "mp5_acog"
 	}
 	viewModelGun
 	{

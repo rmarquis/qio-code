@@ -29,4 +29,17 @@ animations
 	dragunov_fps_run run.md5anim
 	dragunov_fps_select select.md5anim
 	dragunov_fps_unselect unselect.md5anim
+	// mp5_acog
+	path models/player/shared/mp5_acog_fps
+	mp5_acog_fps_attack attack.md5anim
+	mp5_acog_fps_attack2 attack2.md5anim
+	mp5_acog_fps_idle1 idle1.md5anim
+	mp5_acog_fps_idle2 idle2.md5anim
+	mp5_acog_fps_pose pose.md5anim
+	mp5_acog_fps_pose_r pose_r.md5anim
+	mp5_acog_fps_pose_s pose_s.md5anim
+	mp5_acog_fps_reload reload.md5anim
+	mp5_acog_fps_run run.md5anim
+	mp5_acog_fps_select select.md5anim
+	mp5_acog_fps_unselect unselect.md5anim
 }

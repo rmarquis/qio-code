@@ -1,0 +1,25 @@
+TIKI
+setup
+{
+	scale 0.52
+	baseRotation 0 90 0
+	basePosition 0 0 -25
+	
+	path models/weapons/mp5_acog/
+	skelmodel mp5_acog_fps.md5mesh
+}
+animations
+{
+	path models/weapons/mp5_acog/fps/
+	attack attack.md5anim
+	attack2 attack2.md5anim
+	idle1 idle1.md5anim
+	idle2 idle2.md5anim
+	reload reload.md5anim
+	run run.md5anim
+	select select.md5anim
+	unselect unselect.md5anim
+	pose_r pose_r.md5anim
+	pose_s pose_s.md5anim
+	pose pose.md5anim
+}
