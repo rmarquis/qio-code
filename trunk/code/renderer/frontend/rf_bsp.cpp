@@ -53,6 +53,7 @@ aCvar_c rf_bsp_printFrustumCull("rf_bsp_printFrustumCull","0");
 aCvar_c rf_bsp_noFrustumCull("rf_bsp_noFrustumCull","0");
 aCvar_c rf_bsp_printVisChangeStats("rf_bsp_printVisChangeStats","0");
 aCvar_c rf_bsp_noVis("rf_bsp_noVis","0");
+aCvar_c rf_bsp_noAreaBits("rf_bsp_noAreaBits","0");
 aCvar_c rf_bsp_forceEverythingVisible("rf_bsp_forceEverythingVisible","0");
 aCvar_c rf_bsp_doAllSurfaceBatchesOnCPU("rf_bsp_doAllSurfaceBatchesOnCPU","0");
 aCvar_c rf_bsp_printCPUSurfVertsCount("rf_bsp_printCPUSurfVertsCount","0");
@@ -1654,7 +1655,7 @@ bool rBspTree_c::loadQioAreaPortals(u32 lumpNum) {
 }
 bool rBspTree_c::loadTerrainPatches() {
 	const lump_s &tpl = h->getLumps()[MOH_TERRAIN];
-	if(tpl.fileLen % sizeof(mohStaticModel_s)) {
+	if(tpl.fileLen % sizeof(mohTerrainPatch_s)) {
 		g_core->RedWarning("rBspTree_c::loadTerrainPatches: invalid terrain lump size\n");
 		return true; // error
 	}
@@ -2449,9 +2450,11 @@ void rBspTree_c::updateVisibility() {
 				c_leavesCulledByPVS++;
 				continue; // skip leaves that are not visible
 			}
-			if(areaBits.get(l->area)) {
-				c_leavesCulledByAreaBits++;
-				continue;
+			if(rf_bsp_noAreaBits.getInt() == 0) {
+				if(areaBits.get(l->area)) {
+					c_leavesCulledByAreaBits++;
+					continue;
+				}
 			}
 			if(areaPortals.size() && rf_bsp_rebuildBatchesOnAPVisChange.getInt()) {
 				if(frustumAreaBits.get(l->area)==false) {

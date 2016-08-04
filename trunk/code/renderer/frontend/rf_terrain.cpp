@@ -254,10 +254,14 @@ lodTerrain_c::lodTerrain_c() {
 	///mat = g_ms->registerMaterial("textures/qiotests/simplegrass");
 	//mat = g_ms->registerMaterial("textures/qiotests/diffuseMapBlendingTest");
 	mat = g_ms->registerMaterial("textures/qiotests/terrainBlendingTest");
+	patchCountX = 0;
+	patchCountY = 0;
 }
 void lodTerrain_c::calcPatchIndices(u32 patchX, u32 patchY) {
 
 	u32 index = patchX * patchCountY + patchY;
+	if(index >= patches.size())
+		return;
 	lodTerrainPatch_c &p = patches[index];
 	// see if there is a change
 	int lod_bot = p.bottom != 0 ? p.bottom->curLOD : -1;
