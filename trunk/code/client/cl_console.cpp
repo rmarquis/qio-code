@@ -312,6 +312,11 @@ void Cmd_CompleteMDLName( char *args, int argNum ) {
 		AC_CompleteFilename( "models", "mdl", 0, 0, false, false );
 	}
 }
+void Cmd_CompleteEntDefName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		AC_CompleteFilename( "models", "entDef", 0, 0, false, false );
+	}
+}
 void Cmd_CompleteMD5RName( char *args, int argNum ) {
 	if( argNum == 2 ) {
 		AC_CompleteFilename( "models", "md5r", 0, 0, false, false );
@@ -481,6 +486,8 @@ void Con_Init (void) {
 	Cmd_SetCommandCompletionFunc( "mdlpp_spawn", Cmd_CompleteMDLPPName );
 	Cmd_AddCommand ("mdl_spawn", 0);
 	Cmd_SetCommandCompletionFunc( "mdl_spawn", Cmd_CompleteMDLName );
+	Cmd_AddCommand ("entDef_spawn", 0);
+	Cmd_SetCommandCompletionFunc( "entDef_spawn", Cmd_CompleteEntDefName );
 	Cmd_AddCommand ("phys_spawn_mdl", 0);
 	Cmd_SetCommandCompletionFunc( "phys_spawn_mdl", Cmd_CompleteMDLName );
 	Cmd_AddCommand ("obj_spawn", 0);
