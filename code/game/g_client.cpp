@@ -380,7 +380,7 @@ void ClientCommand( int clientNum ) {
 		e->initRigidBodyPhysics();
 	} else if(!_stricmp(cmd,"testSarge")) {
 		pl->setPlayerModel("$sarge");
-	} else if(!_stricmp(cmd,"spawn")) {
+	} else if(!_stricmp(cmd,"spawn")  || !_stricmp(cmd,"entDef_spawn")) {
 		str model = g_core->Argv(1);
 		if(model.length()) {
 			vec3_c spawnPos = pl->getOrigin();
@@ -389,7 +389,7 @@ void ClientCommand( int clientNum ) {
 			if(g_vfs->FS_ReadFile(model,0) < 1) {
 				str fixed = "models/";
 				fixed.append(model);
-				if(g_vfs->FS_ReadFile(model,0) < 1) {
+				if(g_vfs->FS_ReadFile(fixed,0) < 1) {
 					// if "model" string is not a file name,
 					// it might a entityDef name from .def files (Doom3 declarations)
 					if(g_declMgr->registerEntityDecl(model)) {
