@@ -741,6 +741,7 @@ bool skelAnimGeneric_c::loadSKCAnim(const char *fname) {
 	if(skc.loadSKC(fname)) {
 		return true;
 	}
+	this->animFileName = fname;
 
 	for(u32 i = 0; i < skc.getNumChannels(); i++) {
 		str channelName = skc.getChannelName(i);
@@ -991,11 +992,21 @@ void skelAnimGeneric_c::addFrameRelative(const class boneOrArray_c &ors) {
 }
 void skelAnimGeneric_c::buildLoopAnimLerpFrameBonesLocal(const struct singleAnimLerp_s &lerp, class boneOrArray_c &out, const class skelModelAPI_i *skelModel) const {
 	if(lerp.to >= this->frames.size()) {
-		g_core->RedWarning("skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal: lerp.to frame index %i out of range <0,%i)\n",lerp.to,frames.size());
+		g_core->RedWarning("skelAnimGeneric_c::buildLoopAnimLerpFrameBonesLocal: lerp.to frame index %i out of range <0,%i)\n",lerp.to,frames.size());
 		return;
 	}
 	if(lerp.from >= this->frames.size()) {
-		g_core->RedWarning("skelAnimMD5_c::buildLoopAnimLerpFrameBonesLocal: lerp.from frame index %i out of range <0,%i)\n",lerp.from,frames.size());
+		g_core->RedWarning("skelAnimGeneric_c::buildLoopAnimLerpFrameBonesLocal: lerp.from frame index %i out of range <0,%i)\n",lerp.from,frames.size());
+		return;
+	}
+	// check if frame bones sizes are correct
+	if(frames[lerp.from].bones.size() == 0) {
+		g_core->RedWarning("skelAnimGeneric_c::buildLoopAnimLerpFrameBonesLocal: lerp.from frame %i has no bones (%s)\n",lerp.from,getName());
+		return;
+	}
+	// check if frame bones sizes are correct
+	if(frames[lerp.to].bones.size() == 0) {
+		g_core->RedWarning("skelAnimGeneric_c::buildLoopAnimLerpFrameBonesLocal: lerp.to frame %i has no bones (%s)\n",lerp.to,getName());
 		return;
 	}
 	u32 numBoneDefs;
