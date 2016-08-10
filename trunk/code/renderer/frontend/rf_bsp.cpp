@@ -2385,6 +2385,7 @@ void rBspTree_c::printBSPInfo() {
 	g_core->Print("BSP surfaces count: %i (world surfaces %i)\n",surfs.size(),numWorldSurfs);
 	g_core->Print("BSP materials count: %i\n",bspMaterials.size());
 	g_core->Print("BSP areas count: %i\n",areas.size());
+	g_core->Print("BSP models count: %i (model 0 is worldspawn)\n",models.size());
 	if(vis) {
 		g_core->Print("BSP vis data: clusters %i, clusterBytes %i, total size: %i\n",
 			vis->numClusters,vis->clusterSize,vis->numClusters*vis->clusterSize);
@@ -3015,6 +3016,9 @@ void rBspTree_c::cacheLightWorldInteractions(class rLightImpl_c *l) {
 		}
 		for(u32 j = 0; j < leaf->numLeafSurfaces; j++) {
 			u32 sfNum = leafSurfaces[leaf->firstLeafSurface+j];
+			// fix for test_big_room
+			if(sfNum >= numWorldSurfs)
+				continue;
 			sfNums.add_unique(sfNum);
 		}
 	}
