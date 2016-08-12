@@ -233,7 +233,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90"
 			>
 			<File
-				RelativePath="..\..\code\qcommon\autocompletion.cpp"
+				RelativePath="..\..\code\common\autocompletion.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -583,7 +583,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\cmd.cpp"
+				RelativePath="..\..\code\common\cmd.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -608,7 +608,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\com_systemEventCaster.cpp"
+				RelativePath="..\..\code\common\com_systemEventCaster.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -628,7 +628,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\common.cpp"
+				RelativePath="..\..\code\common\common.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -693,7 +693,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\cvar.cpp"
+				RelativePath="..\..\code\common\cvar.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -718,7 +718,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\files.cpp"
+				RelativePath="..\..\code\common\files.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -743,7 +743,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\iFaceMgrIMPL.cpp"
+				RelativePath="..\..\code\common\iFaceMgrIMPL.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -763,7 +763,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\ioapi.c"
+				RelativePath="..\..\code\common\ioapi.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -788,7 +788,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\md4.cpp"
+				RelativePath="..\..\code\common\md4.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -813,7 +813,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\md5.cpp"
+				RelativePath="..\..\code\common\md5.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -838,7 +838,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\moduleManagerIMPL.cpp"
+				RelativePath="..\..\code\common\moduleManagerIMPL.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -858,32 +858,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\msg.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions=""
-						BrowseInformation="1"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions=""
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\code\qcommon\net_chan.cpp"
+				RelativePath="..\..\code\common\msg.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -908,7 +883,32 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\net_ip.cpp"
+				RelativePath="..\..\code\common\net_chan.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="0"
+						PreprocessorDefinitions=""
+						BrowseInformation="1"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Optimization="2"
+						PreprocessorDefinitions=""
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\code\common\net_ip.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -928,7 +928,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\puff.c"
+				RelativePath="..\..\code\common\puff.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1207,7 +1207,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\unzip.c"
+				RelativePath="..\..\code\common\unzip.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1241,7 +1241,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\autocompletion.h"
+				RelativePath="..\..\code\common\autocompletion.h"
 				>
 			</File>
 			<File
@@ -1281,15 +1281,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\puff.h"
+				RelativePath="..\..\code\common\puff.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\.\qcommon\q_shared.h"
+				RelativePath="..\..\code\.\common\q_shared.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\qcommon.h"
+				RelativePath="..\..\code\common\common.h"
 				>
 			</File>
 			<File
@@ -1309,7 +1309,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\.\qcommon\surfaceflags.h"
+				RelativePath="..\..\code\.\common\surfaceflags.h"
 				>
 			</File>
 			<File
@@ -1317,7 +1317,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\qcommon\unzip.h"
+				RelativePath="..\..\code\common\unzip.h"
 				>
 			</File>
 			<File

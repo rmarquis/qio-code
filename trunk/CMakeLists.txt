@@ -885,7 +885,7 @@ SET ( GAME_HEADERS
 	${MOUNT_DIR}/game/stateMachine.h
 	${MOUNT_DIR}/game/stateMachineShared.h
 	${MOUNT_DIR}/game/stateMachineManager.h
-	${MOUNT_DIR}/qcommon/surfaceflags.h
+	${MOUNT_DIR}/common/surfaceflags.h
 )
 
 SET ( GAME_LUA_HEADERS
@@ -1125,7 +1125,7 @@ SET ( BUILD_CGAME_HEADER
 	${MOUNT_DIR}/cgame/cg_local.h
 	${MOUNT_DIR}/cgame/cg_public.h
 	${MOUNT_DIR}/shared/str.h
-	${MOUNT_DIR}/qcommon/surfaceflags.h
+	${MOUNT_DIR}/common/surfaceflags.h
 )
 
 SET ( BUILD_CGAME_MATH_HEADERS
@@ -1346,7 +1346,7 @@ IF( WIN32 )
 	SET ( EDITOR_SHARED_HEADERS
 		${MOUNT_DIR}/shared/brush.h
 		${MOUNT_DIR}/shared/brushside.h
-		${MOUNT_DIR}/qcommon/q_platform.h
+		${MOUNT_DIR}/common/q_platform.h
 		${MOUNT_DIR}/shared/str.h
 		${MOUNT_DIR}/shared/simpleModel.h
 		${MOUNT_DIR}/shared/textureAxisFromNormal.h
@@ -1432,14 +1432,14 @@ SET ( CORE_HEADER_FILES
 	${MOUNT_DIR}/api/iFaceMgrAPI.h
 	${MOUNT_DIR}/client/keys.h
 	${MOUNT_DIR}/shared/lightFlags.h
-	${MOUNT_DIR}/qcommon/puff.h
+	${MOUNT_DIR}/common/puff.h
 	${MOUNT_DIR}/shared/str.h
-	${MOUNT_DIR}/qcommon/qcommon.h
+	${MOUNT_DIR}/common/common.h
 	${MOUNT_DIR}/server/server.h
-	${MOUNT_DIR}/qcommon/surfaceflags.h
+	${MOUNT_DIR}/common/surfaceflags.h
 	${MOUNT_DIR}/shared/typedefs.h
-	${MOUNT_DIR}/qcommon/unzip.h
-	${MOUNT_DIR}/qcommon/autocompletion.h
+	${MOUNT_DIR}/common/unzip.h
+	${MOUNT_DIR}/common/autocompletion.h
 	${MOUNT_DIR}/server/sv_vis.h
 	${MOUNT_DIR}/sys/sys_loadlib.h
 	${MOUNT_DIR}/sys/sys_local.h
@@ -1532,23 +1532,23 @@ SET ( CORE_SOURCE_FILES
 	${MOUNT_DIR}/client/cl_renderer.cpp
 	${MOUNT_DIR}/client/cl_scrn.cpp
 	${MOUNT_DIR}/client/cl_gui.cpp
-	${MOUNT_DIR}/qcommon/cmd.cpp
-	${MOUNT_DIR}/qcommon/com_systemEventCaster.cpp
-	${MOUNT_DIR}/qcommon/common.cpp
-	${MOUNT_DIR}/qcommon/autocompletion.cpp
+	${MOUNT_DIR}/common/cmd.cpp
+	${MOUNT_DIR}/common/com_systemEventCaster.cpp
+	${MOUNT_DIR}/common/common.cpp
+	${MOUNT_DIR}/common/autocompletion.cpp
 	${MOUNT_DIR}/sys/con_log.cpp
 	${MOUNT_DIR}/sys/con_win32.cpp
-	${MOUNT_DIR}/qcommon/cvar.cpp
-	${MOUNT_DIR}/qcommon/files.cpp
-	${MOUNT_DIR}/qcommon/iFaceMgrIMPL.cpp
-	${MOUNT_DIR}/qcommon/ioapi.c
-	${MOUNT_DIR}/qcommon/md4.cpp
-	${MOUNT_DIR}/qcommon/md5.cpp
-	${MOUNT_DIR}/qcommon/moduleManagerIMPL.cpp
-	${MOUNT_DIR}/qcommon/msg.cpp
-	${MOUNT_DIR}/qcommon/net_chan.cpp
-	${MOUNT_DIR}/qcommon/net_ip.cpp
-	${MOUNT_DIR}/qcommon/puff.c
+	${MOUNT_DIR}/common/cvar.cpp
+	${MOUNT_DIR}/common/files.cpp
+	${MOUNT_DIR}/common/iFaceMgrIMPL.cpp
+	${MOUNT_DIR}/common/ioapi.c
+	${MOUNT_DIR}/common/md4.cpp
+	${MOUNT_DIR}/common/md5.cpp
+	${MOUNT_DIR}/common/moduleManagerIMPL.cpp
+	${MOUNT_DIR}/common/msg.cpp
+	${MOUNT_DIR}/common/net_chan.cpp
+	${MOUNT_DIR}/common/net_ip.cpp
+	${MOUNT_DIR}/common/puff.c
 	${MOUNT_DIR}/server/sv_ccmds.cpp
 	${MOUNT_DIR}/server/sv_client.cpp
 	${MOUNT_DIR}/server/sv_game.cpp
@@ -1560,7 +1560,7 @@ SET ( CORE_SOURCE_FILES
 	${MOUNT_DIR}/sys/sys_main.cpp
 	${MOUNT_DIR}/sys/sys_win32.cpp
 	${MOUNT_DIR}/sys/sys_win32_con.cpp
-	${MOUNT_DIR}/qcommon/unzip.c
+	${MOUNT_DIR}/common/unzip.c
 )
 
 SET ( CORE_SPEEX_LIBRARY
