@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 // server.h
 
-#include "../qcommon/qcommon.h"
+#include "../common/common.h"
 #include "../game/edict.h"
 #include "../game/bg_public.h"
 #include <protocol/userCmd.h>

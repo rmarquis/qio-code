@@ -29,7 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <shared/colorTable.h>
 #include <shared/keyCatchers.h>
 #include <api/coreAPI.h>
-#include <qcommon/autocompletion.h>
+#include <common/autocompletion.h>
 
 #ifdef USE_MUMBLE
 #include "libmumblelink.h"

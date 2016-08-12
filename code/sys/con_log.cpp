@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 
-#include "../qcommon/qcommon.h"
+#include "../common/common.h"
 #include "sys_local.h"
 
 #define MAX_LOG 32768

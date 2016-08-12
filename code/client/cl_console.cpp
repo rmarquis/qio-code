@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/coreAPI.h>
 #include <shared/colorTable.h>
 #include <shared/keyCatchers.h>
-#include <qcommon/autocompletion.h>
+#include <common/autocompletion.h>
 
 int g_console_field_width = 78;
 

@@ -23,11 +23,11 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 
 #include <shared/str.h>
-#include "../qcommon/qcommon.h"
+#include "../common/common.h"
 #include "sys_local.h"
 #include "windows.h"
 #include <shared/field.h>
-#include <qcommon/autocompletion.h>
+#include <common/autocompletion.h>
 
 #define CONSOLE_HISTORY 32
 
