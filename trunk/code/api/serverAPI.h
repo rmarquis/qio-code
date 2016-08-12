@@ -30,11 +30,9 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 #define SERVER_API_IDENTSTR "ServerAPI0001"
 
-typedef struct edict_s edict_s;
-
 // these are only temporary function pointers, TODO: rework them?
 struct svAPI_s : public iFaceBase_i {
-	void (*LocateGameData)( edict_s *gEnts, int numGEntities );
+	void (*LocateGameData)( struct edict_s *gEnts, int numGEntities );
 	void (*DropClient)( int clientNum, const char *reason );
 	void (*SendServerCommand)( int clientNum, const char *text );
 	void (*SetConfigstring)( int num, const char *string );
@@ -44,8 +42,8 @@ struct svAPI_s : public iFaceBase_i {
 	void (*GetUsercmd)( int clientNum, struct userCmd_s *cmd );
 	bool (*isWorldTypeBSP)();
 
-	void (*linkEntity)(edict_s *ed);
-	void (*unlinkEntity)(edict_s *ed);
+	void (*linkEntity)(struct edict_s *ed);
+	void (*unlinkEntity)(struct edict_s *ed);
 
 	// Quake3-style areaPortals access
 	void (*adjustAreaPortalState)(int area0, int area1, bool open);
