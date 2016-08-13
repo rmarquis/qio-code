@@ -32,11 +32,12 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 // these are only temporary function pointers, TODO: rework them?
 struct svAPI_s : public iFaceBase_i {
-	void (*LocateGameData)( struct edict_s *gEnts, int numGEntities );
 	void (*DropClient)( int clientNum, const char *reason );
 	void (*SendServerCommand)( int clientNum, const char *text );
 	void (*SetConfigstring)( int num, const char *string );
 	void (*GetConfigstring)( int num, char *buffer, int bufferSize );
+	u32 (*RegisterConfigString)(const char *s, u32 start, u32 max);	
+
 	void (*GetUserinfo)( int num, char *buffer, int bufferSize );
 	void (*SetUserinfo)( int num, const char *buffer );
 	void (*GetUsercmd)( int clientNum, struct userCmd_s *cmd );

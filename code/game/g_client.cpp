@@ -136,7 +136,7 @@ void ClientBegin( int clientNum ) {
 	Player *pl = dynamic_cast<Player*>(ent->ent);
 
 	pl->pers.connected = CON_CONNECTED;
-	pl->pers.enterTime = level.time;
+	pl->pers.enterTime = g_time;
 
 	// locate ent at a spawn point
 	ClientSpawn( ent );
@@ -210,8 +210,8 @@ void ClientSpawn(edict_s *ent) {
 
 	// run a pl frame to drop exactly to the floor,
 	// initialize animations and other things
-	pl->ps.commandTime = level.time - 100;
-	pl->pers.cmd.serverTime = level.time;
+	pl->ps.commandTime = g_time - 100;
+	pl->pers.cmd.serverTime = g_time;
 	ClientThink( index );
 	// run the presend to set anything else
 	ClientEndFrame( ent );
@@ -503,7 +503,7 @@ void ClientCommand( int clientNum ) {
 		p.z += pl->getViewHeight();
 		p += pl->getForward() * 64.f;
 
-		edict_s *newEdict = G_Spawn();
+		edict_s *newEdict = G_AllocEdict();
 		BE_SetForcedEdict(newEdict);
 		FakePlayer *np = new FakePlayer;
 		np->setOrigin(p);
@@ -818,10 +818,29 @@ void ClientThink( int clientNum ) {
 
 void G_RunClient( edict_s *ent ) {
 	Player *pl = dynamic_cast<Player*>(ent->ent);
-	pl->pers.cmd.serverTime = level.time;
+	pl->pers.cmd.serverTime = g_time;
 	ClientThink_real( ent );
 }
 
+class Player *G_GetPlayer(u32 playerNum) {
+	if(playerNum >= MAX_CLIENTS)
+		return 0;
+	edict_s *ed = &g_entities[playerNum];
+	if(ed->s == 0 || ed->ent == 0) {
+		return 0;
+	}
+	Player *ret = dynamic_cast<Player*>(ed->ent);
+	return ret;
+}
+
+const vec3_c &G_GetPlayerOrigin(u32 playerNum) {
+	edict_s *ed = &g_entities[playerNum];
+	if(ed->s == 0 || ed->ent == 0) {
+		static vec3_c dummy(0,0,0);
+		return dummy;
+	}
+	return ed->ent->getOrigin();
+}
 /*
 ==============
 ClientEndFrame

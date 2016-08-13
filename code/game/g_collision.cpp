@@ -29,7 +29,7 @@ or simply visit <http://www.gnu.org/licenses/>.
  
 // TODO: improve it with octree/kd tree ?
 u32 G_BoxEntities(const aabb &bb, arraySTD_c<BaseEntity*> &out) {
-	for(u32 i = 0; i < level.num_entities; i++) {
+	for(u32 i = 0; i < g_numEdicts; i++) {
 		edict_s *ed = &g_entities[i];
 		if(ed->ent == 0)
 			continue;

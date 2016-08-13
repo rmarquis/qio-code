@@ -232,14 +232,14 @@ BaseEntity *Weapon::getOwner() const {
 void Weapon::onFireKeyHeld() {
 	if(autoFire) {
 		if(canFireAgain()) {
-			this->lastShotTime = level.time;
+			this->lastShotTime = g_time;
 			doWeaponAttack();
 		}
 	}
 }
 void Weapon::onFireKeyDown() {
 	if(canFireAgain()) {
-		this->lastShotTime = level.time;
+		this->lastShotTime = g_time;
 		doWeaponAttack();
 	}
 }
@@ -290,7 +290,7 @@ void Weapon::doWeaponAttackSecondary() {
 
 }
 bool Weapon::canFireAgain() const {
-	u32 timeElapsed = level.time - this->lastShotTime;
+	u32 timeElapsed = g_time - this->lastShotTime;
 	if(timeElapsed < this->delayBetweenShots) {
 		g_core->Print("Weapon::canFireAgain: cant fire because elapsed time is %i and delay is %i\n",timeElapsed,this->delayBetweenShots);
 		return false;

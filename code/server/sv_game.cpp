@@ -32,24 +32,10 @@ static moduleAPI_i *sv_gameDLL = 0;
 gameAPI_s *g_game = 0;
 gameClientAPI_s *g_gameClients = 0;
 
-// these functions must be used instead of pointer arithmetic, because
-// the game allocates gentities with private information after the server shared part
-int	SV_NumForGentity( edict_s *ent ) {
-	int		num;
 
-	// NOTE: edict_s size is now fixed. All the game code should be put in revelant entity classes
-	num = ( (byte *)ent - (byte *)sv.gentities ) / sizeof(edict_s);
-
-	return num;
-}
 
 edict_s *SV_GentityNum( int num ) {
-	edict_s *ent;
-
-	// NOTE: edict_s size is now fixed. All the game code should be put in revelant entity classes
-	ent = (edict_s *)((byte *)sv.gentities + sizeof(edict_s)*(num));
-
-	return ent;
+	return g_game->GetEdict(num);
 }
 
 playerState_s *SV_GameClientNum( int num ) {
@@ -151,18 +137,6 @@ void SV_GetServerinfo( char *buffer, int bufferSize ) {
 
 /*
 ===============
-SV_LocateGameData
-
-===============
-*/
-void SV_LocateGameData( edict_s *gEnts, int numGEntities) {
-	sv.gentities = gEnts;
-	sv.num_entities = numGEntities;
-}
-
-
-/*
-===============
 SV_GetUsercmd
 
 ===============
@@ -247,9 +221,9 @@ Called on a normal map change, not on a map_restart
 */
 void SV_InitGameProgs() {
 	// load the dll or bytecode
-	sv_gameDLL = g_moduleMgr->load("qagame");
+	sv_gameDLL = g_moduleMgr->load("game");
 	if ( !sv_gameDLL ) {
-		Com_Error( ERR_FATAL, "VM_Create on game failed" );
+		Com_Error( ERR_FATAL, "Failed to load game module" );
 	}
 	g_iFaceMan->registerIFaceUser(&g_game,GAME_API_IDENTSTR);
 	if(!g_game) {

@@ -42,6 +42,58 @@ static aCvar_c g_printSpawnedClassNames("g_printSpawnedClassNames","0");
 
 static entDefsList_c g_entDefs;
 
+
+/*
+=================
+G_AllocEdict
+
+Either finds a free entity, or allocates a new one.
+
+  The slots from 0 to MAX_CLIENTS-1 are always reserved for clients, and will
+never be used by anything else.
+
+Try to avoid reusing an entity that was recently freed, because it
+can cause the client to think the entity morphed into something else
+instead of being removed and recreated, which can cause interpolated
+angles and bad trails.
+=================
+*/
+edict_s *G_AllocEdict() {
+	edict_s	*e = 0;
+	u32 entNum = 0;
+	for (u32 force = 0; force < 2; force++) {
+		// if we go through all entities and can't find one to free,
+		// override the normal minimum times before use
+		e = &g_entities[MAX_CLIENTS];
+		for ( entNum = MAX_CLIENTS; entNum < g_numEdicts ; entNum++, e++) {
+			if ( e->s != 0 ) {
+				continue;
+			}
+
+			// the first couple seconds of server time can involve a lot of
+			// freeing and allocating, so relax the replacement policy
+			if ( !force && e->freetime > g_startTime + 2000 && g_time - e->freetime < 1000 ) {
+				continue;
+			}
+
+			// reuse this slot
+			return e;
+		}
+		if ( entNum != MAX_GENTITIES ) {
+			break;
+		}
+	}
+	if ( entNum == ENTITYNUM_MAX_NORMAL ) {
+		g_core->RedWarning( "G_AllocEdict: no free edicts\n" );
+		return 0;
+	}
+	
+	// open up a new slot
+	g_numEdicts++;
+
+	return e;
+}
+
 void G_LoadMapEntities(const char *mapName) {
 	g_entDefs.clear();
 	bool error = g_entDefs.load(mapName);
@@ -245,14 +297,14 @@ void G_SpawnMapEntities(const char *mapName) {
 	// (spawn constraints, etc)
 	G_ProcessEntityEvents();
 	// FIXME: do this other way
-	for(u32 i = 0; i < level.num_entities; i++) {
+	for(u32 i = 0; i < g_numEdicts; i++) {
 		if(g_entities[i].ent) {
 			g_entities[i].ent->postSpawn2();
 		}
 	}
 	if(g_loadingScreen) { // update loading screen (if its present)
 		g_loadingScreen->addLoadingString(" done.\n");
-		g_loadingScreen->addLoadingString("Current game entities count: %i.\n",level.num_entities);
+		g_loadingScreen->addLoadingString("Current game entities count: %i.\n",g_numEdicts);
 	}
 }
 

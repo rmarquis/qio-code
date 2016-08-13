@@ -183,10 +183,10 @@
 //		return;
 //
 //	if(bt_printTimeStep.getInt()) {
-//		g_core->Print("Frametime: %f\n",level.frameTime);
+//		g_core->Print("Frametime: %f\n",g_frameTime);
 //	}
 //	BT_RunVehicles();
-//	float frameTime = level.frameTime;
+//	float frameTime = g_frameTime;
 //	dynamicsWorld->stepSimulation(frameTime,2);
 //	//BT_RemoveRigidBody(BT_CreateBoxBody(vec3_c(0,0,0),vec3_c(8,8,8),0));
 //	//btContactSolverInfo &csi = dynamicsWorld->getSolverInfo();

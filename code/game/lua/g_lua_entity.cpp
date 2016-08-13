@@ -92,7 +92,7 @@ static int entity_Find(lua_State * L)
 
 	lent->e = NULL;
 
-	for(i = 0; i < level.num_entities; i++)
+	for(i = 0; i < g_numEdicts; i++)
 	{
 		// Here we use tent to point to potential targets
 		t = &g_entities[i];

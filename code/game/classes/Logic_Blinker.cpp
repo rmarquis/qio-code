@@ -32,10 +32,10 @@ Logic_Blinker::Logic_Blinker() {
 	bBlinkerState = false;
 	wait_enabled = 1000;
 	wait_disabled = 1000;
-	lastSwitchTime = level.time;
+	lastSwitchTime = g_time;
 }
 void Logic_Blinker::runFrame() {
-	u32 timePassed = level.time - lastSwitchTime;
+	u32 timePassed = g_time - lastSwitchTime;
 	u32 cycleTime = bBlinkerState ? wait_disabled : wait_enabled;
 	while(timePassed > cycleTime) {
 		lastSwitchTime += cycleTime;
@@ -50,7 +50,7 @@ void Logic_Blinker::runFrame() {
 				G_ShowEntitiesWithTargetName(getTarget());
 			//}
 		}
-		timePassed = level.time - lastSwitchTime;
+		timePassed = g_time - lastSwitchTime;
 		cycleTime = bBlinkerState ? wait_disabled : wait_enabled;
 	}
 }

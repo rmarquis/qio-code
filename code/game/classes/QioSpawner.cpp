@@ -42,7 +42,7 @@ QioSpawner::QioSpawner() {
 void QioSpawner::runFrame() {
 	if(spawnedCount >= spawnLimit)
 		return;
-	elapsed += level.frameTime*1000;
+	elapsed += g_frameTime*1000;
 	if(elapsed > intervalToWait) {
 		BaseEntity *be = G_SpawnGeneric(modelToSpawn);
 		if(be) {

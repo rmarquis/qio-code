@@ -24,7 +24,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 // g_ragdoll.cpp
 #include "g_local.h"
 #include "g_ragdoll.h"
-#include "bt_include.h"
 #include <api/afDeclAPI.h>
 #include <api/declManagerAPI.h>
 #include <api/skelAnimAPI.h>

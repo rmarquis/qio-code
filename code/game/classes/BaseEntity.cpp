@@ -91,7 +91,7 @@ public:
 	}
 	bool runInstance(wsEntityScriptInstance_c *i) {
 		if(wait_ms) {
-			wait_ms -= level.frameTimeMs;
+			wait_ms -= g_frameTimeMs;
 			if(wait_ms > 0)
 				return false;
 			if(wait_ms < 0)
@@ -182,7 +182,7 @@ BaseEntity::BaseEntity() {
 		// set entity type
 		myEdict->s->eType = ET_PLAYER;
 	} else {
-		myEdict = G_Spawn();
+		myEdict = G_AllocEdict();
 		// if that's not a player, alloc an entityState_s
 		_myEntityState = myEdict->s = new entityState_s;
 		// set entity type
@@ -221,7 +221,7 @@ BaseEntity::~BaseEntity() {
 		delete wsScript;
 	}
 	memset (myEdict, 0, sizeof(*myEdict));
-	myEdict->freetime = level.time;
+	myEdict->freetime = g_time;
 	myEdict->s = 0;
 }
 void BaseEntity::printInfo() const {
@@ -369,7 +369,7 @@ void BaseEntity::postEvent(int execTime, const char *eventName, const char *arg0
 	eventList->addEvent(execTime,eventName,arg0,arg1,arg2,arg3);
 }	
 void BaseEntity::removeAfterDelay(int delay) {
-	postEvent(level.time+delay,"remove");
+	postEvent(g_time+delay,"remove");
 }
 // maybe I should put those functions in ModelEntity...
 void BaseEntity::link() {
@@ -467,7 +467,7 @@ void BaseEntity::postSpawn() {
 u32 BaseEntity::processPendingEvents() {
 	if(eventList == 0)
 		return 0;
-	u32 c_executed = eventList->executeEvents(level.time,this);
+	u32 c_executed = eventList->executeEvents(g_time,this);
 	if(bMarkedForDelete) {
 		delete this;
 	}

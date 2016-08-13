@@ -56,6 +56,13 @@ tikiAPI_i *g_tikiMgr = 0;
 static gameAPI_s g_staticGameAPI;
 static gameClientAPI_s g_staticGameClientsAPI;
 
+edict_s *GetEdict(u32 entNum) {
+	return &g_entities[entNum];
+}
+u32 GetNumActiveEdicts() {
+	return g_numEdicts;
+}
+
 void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_iFaceMan = iFMA;
 
@@ -64,6 +71,8 @@ void ShareAPIs(iFaceMgrAPI_i *iFMA) {
 	g_staticGameAPI.RunFrame = G_RunFrame;
 	g_staticGameAPI.ShutdownGame = G_ShutdownGame;
 	g_staticGameAPI.DebugDrawFrame = G_DebugDrawFrame;
+	g_staticGameAPI.GetEdict = GetEdict;
+	g_staticGameAPI.GetNumActiveEdicts = GetNumActiveEdicts;
 
 	g_iFaceMan->registerInterface(&g_staticGameAPI,GAME_API_IDENTSTR);
 

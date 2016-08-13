@@ -54,7 +54,7 @@ void FuncRotating::setKeyValue(const char *key, const char *value) {
 }
 void FuncRotating::runFrame() {
 	float rotateSpeed = 10;
-	float delta = rotateSpeed * level.frameTime;
+	float delta = rotateSpeed * g_frameTime;
 	vec3_c a = this->getAngles();
 	// rotationAxis == 1 -> rotate around Z axis
 	// rotationAxis == 0 -> rotate around Y axis

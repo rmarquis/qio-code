@@ -29,7 +29,6 @@ or simply visit <http://www.gnu.org/licenses/>.
 #include <api/cmAPI.h>
 #include <math/vec3.h>
 #include <math/quat.h>
-#include "../bt_include.h"
 #include "../g_ragdoll.h"
 #include <api/declManagerAPI.h>
 #include <api/modelDeclAPI.h>
@@ -621,7 +620,6 @@ void ModelEntity::setPhysBounciness(float newBounciness) {
 	physBounciness = newBounciness;
 	// TODO: update rigid body
 }
-#include "../bt_include.h"
 #include <math/matrix.h>
 void ModelEntity::runPhysicsObject() {
 	if(body) {
@@ -884,7 +882,7 @@ void ModelEntity::attachModel(const char *args) {
 void ModelEntity::updateAnimations() {
 	{
 		u32 prevLegsAnimationTime = legsAnimationTime;
-		legsAnimationTime += level.frameTimeMs;
+		legsAnimationTime += g_frameTimeMs;
 		if(tiki) {
 			const tikiAnim_i *legsAnim = tiki->getAnim(this->myEdict->s->animIndex);
 			if(legsAnim) {
@@ -895,7 +893,7 @@ void ModelEntity::updateAnimations() {
 	}
 	{
 		u32 prevTorsoAnimationTime = torsoAnimationTime;
-		torsoAnimationTime += level.frameTimeMs;
+		torsoAnimationTime += g_frameTimeMs;
 		if(tiki) {
 			const tikiAnim_i *torsoAnim = tiki->getAnim(this->myEdict->s->torsoAnim);
 			if(torsoAnim) {

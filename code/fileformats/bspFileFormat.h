@@ -246,7 +246,7 @@ struct q3Plane_s {
 		}
 		float dist1 = this->distance(corners[0]);
 		float dist2 = this->distance(corners[1]);
-		bool front = false;
+//		bool front = false;
 		if (dist1 >= 0) {
 			if (dist2 < 0)
 				return SIDE_CROSS;
