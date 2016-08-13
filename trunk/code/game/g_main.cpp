@@ -38,17 +38,15 @@ static aCvar_c g_printEntityPositions("g_printEntityPositions","0");
 static aCvar_c g_printModelEntityRenderModelNames("g_printModelEntityRenderModelNames","0");
 static aCvar_c g_printEntityClasses("g_printModelEntityRenderModelNames","0");
 
-level_locals_t	level;
+u32 g_startTime = 0;
+u32 g_time; // in msec
+float g_frameTime; // in sec
+int	g_frameTimeMs;
+int g_previousTime;
 
-edict_s		g_entities[MAX_GENTITIES];
+edict_s	g_entities[MAX_GENTITIES];
+u32 g_numEdicts = 0;
 
-
-/*
-============
-G_InitGame
-
-============
-*/
 void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	char mapName[128];
 
@@ -64,18 +62,16 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	AUTOCMD_RegisterAutoConsoleCommands();
 
 	// set some level globals
-	memset( &level, 0, sizeof( level ) );
-	level.time = levelTime;
-	level.startTime = levelTime;
+	g_time = levelTime;
+	g_startTime = levelTime;
 
 	// initialize all entities for this game
 	memset( g_entities, 0, MAX_GENTITIES * sizeof(g_entities[0]) );
-	level.gentities = g_entities;
 
 	// always leave room for the max number of clients,
 	// even if they aren't all used, so numbers inside that
 	// range are NEVER anything but clients
-	level.num_entities = MAX_CLIENTS;
+	g_numEdicts = MAX_CLIENTS;
 
 //	for ( i=0 ; i<MAX_CLIENTS ; i++ ) {
 ////		g_entities[i].classname = "clientslot";
@@ -83,13 +79,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	//G_AnimationIndex("noanim");
 
-	// let the server system know where the entites are
-	g_server->LocateGameData( level.gentities, level.num_entities );
-
 	// make some data visible to connecting client
 	g_server->SetConfigstring( CS_GAME_VERSION, GAME_VERSION );
 
-	g_server->SetConfigstring( CS_LEVEL_START_TIME, va("%i", level.startTime ) );
+	g_server->SetConfigstring( CS_LEVEL_START_TIME, va("%i", g_startTime ) );
 
 	g_cvars->Cvar_Set( "g_gravity", "800" );
 
@@ -122,14 +115,9 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	g_core->Print ("-----------------------------------\n");
 }
 
-/*
-=================
-G_ShutdownGame
-=================
-*/
 void G_ShutdownGame( int restart ) {
 	g_core->Print ("==== ShutdownGame ====\n");
-	for(u32 i = 0; i < level.num_entities; i++) {
+	for(u32 i = 0; i < g_numEdicts; i++) {
 		edict_s *e = &g_entities[i];
 		if(e->s == 0)
 			continue;
@@ -199,7 +187,7 @@ void G_TestSafePtrs() {
 void G_ProcessEntityEvents() {
 	u32 c_numProcessedEvents = 0;
 	edict_s	*ed = &g_entities[0];
-	for(u32 i = 0; i < level.num_entities; i++, ed++) {
+	for(u32 i = 0; i < g_numEdicts; i++, ed++) {
 		if(ed->s == 0) {
 			// edict is not active
 			continue;
@@ -211,20 +199,11 @@ void G_ProcessEntityEvents() {
 	}
 }
 
-/*
-================
-G_RunFrame
-================
-*/
-void G_RunFrame( int levelTime ) {
-	u32 i;
-	edict_s	*ed;
-
-	level.framenum++;
-	level.previousTime = level.time;
-	level.time = levelTime;
-	level.frameTimeMs = (level.time-level.previousTime);
-	level.frameTime = (level.time-level.previousTime)*0.001f;
+void G_RunFrame(int levelTime) {
+	g_previousTime = g_time;
+	g_time = levelTime;
+	g_frameTimeMs = (g_time-g_previousTime);
+	g_frameTime = (g_time-g_previousTime)*0.001f;
 
 	//G_TestSafePtrs();
 
@@ -236,8 +215,8 @@ void G_RunFrame( int levelTime ) {
 	//
 	// go through all allocated objects
 	//
-	ed = &g_entities[0];
-	for (i = 0; i < level.num_entities; i++, ed++) {
+	edict_s	*ed = &g_entities[0];
+	for (u32 i = 0; i < g_numEdicts; i++, ed++) {
 		if (ed->s == 0) {
 			// edict is not active
 			continue;
@@ -276,7 +255,7 @@ void G_RunFrame( int levelTime ) {
 
 	// perform final fixups on the players
 	ed = &g_entities[0];
-	for (i = 0; i < MAX_CLIENTS; i++, ed++ ) {
+	for (u32 i = 0; i < MAX_CLIENTS; i++, ed++ ) {
 		if (ed->s == 0) {
 			// edict is not active
 			continue;

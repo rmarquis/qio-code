@@ -49,7 +49,7 @@ typedef struct {
 	userCmd_s	cmd;				// we would lose angles if not persistant
 	bool	localClient;		// true if "ip" info key is "localhost"
 	//int			maxHealth;			// for handicapping
-	int			enterTime;			// level.time the client entered the game
+	int			enterTime;			// g_time the client entered the game
 } clientPersistant_t;
 
 enum weaponState_e {

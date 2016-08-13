@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "server.h"
 #include <shared/autoCvar.h>
 #include <api/coreAPI.h>
+#include <api/gameAPI.h>
 #include <shared/entityType.h>
 #include <protocol/snapFlags.h>
 #include <protocol/voipFlags.h>
@@ -341,8 +342,8 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_s *fra
 		procVisHandle = sv_procVis->SetupCurrentPVS(origin);		
 	}
 
-
-	for ( e = 0 ; e < sv.num_entities ; e++ ) {
+	u32 numActiveEdicts = g_game->GetNumActiveEdicts();
+	for ( e = 0 ; e < numActiveEdicts; e++ ) {
 		ent = SV_GentityNum(e);
 
 		// never send entities that aren't active

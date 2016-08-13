@@ -79,7 +79,7 @@ void *G_SpawnClassDef(const char *className) {
 		return 0;
 	// hack
 	if(cd->hasClassName("Player") || cd->hasClassName("FakePlayer")) {	
-		edict_s *newEdict = G_Spawn();
+		edict_s *newEdict = G_AllocEdict();
 		BE_SetForcedEdict(newEdict);
 	}
 	return cd->allocNewInstance();

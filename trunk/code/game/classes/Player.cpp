@@ -510,7 +510,6 @@ void Player::enableCharacterController() {
 		this->characterController->setCharacterEntity(this);
 	}
 }
-#include "../bt_include.h"
 void Player::createCharacterControllerCapsule(float cHeight, float cRadius) {
 	if(cm == 0) {
 
@@ -563,14 +562,14 @@ void Player::setPlayerAnimTorso(enum sharedGameAnim_e type) {
 	}
 }
 void Player::playPainAnimation(const char *newPainAnimationName, u32 animTime) {
-	lastPainTime = level.time;
+	lastPainTime = g_time;
 	curPainAnimationName = newPainAnimationName;
 	if(modelDecl) {
 		curPainAnimationTime = modelDecl->getAnimationTimeMSec(newPainAnimationName);
 	}
 }
 bool Player::isPainAnimActive() const {
-	if(level.time - lastPainTime > curPainAnimationTime)
+	if(g_time - lastPainTime > curPainAnimationTime)
 		return false;
 	if(curPainAnimationName.length() == 0)
 		return false;
@@ -782,7 +781,7 @@ void Player::runPlayerAnimation_stateMachine() {
 			const char *next = st->transitionState(*state,st_handler);
 			if(next && next[0]) {
 				if(g_printPlayerStateChange.getInt()) {
-					g_core->Print("(Time %i): Changing %s state from %s to %s\n",level.time,name,state->c_str(),next);
+					g_core->Print("(Time %i): Changing %s state from %s to %s\n",g_time,name,state->c_str(),next);
 				}
 				// leaving state, so execute exit commnads
 				st->iterateStateExitCommands(state->c_str(),this);
@@ -845,12 +844,12 @@ void Player::runPlayer() {
 	userCmd_s *ucmd = &this->pers.cmd;
 
 	// sanity check the command time to prevent speedup cheating
-	if ( ucmd->serverTime > level.time + 200 ) {
-		ucmd->serverTime = level.time + 200;
+	if ( ucmd->serverTime > g_time + 200 ) {
+		ucmd->serverTime = g_time + 200;
 //		g_core->Print("serverTime <<<<<\n" );
 	}
-	if ( ucmd->serverTime < level.time - 1000 ) {
-		ucmd->serverTime = level.time - 1000;
+	if ( ucmd->serverTime < g_time - 1000 ) {
+		ucmd->serverTime = g_time - 1000;
 //		g_core->Print("serverTime >>>>>\n" );
 	} 
 
@@ -867,7 +866,7 @@ void Player::runPlayer() {
 
 	if(health <= 0) {
 		// player must wait 1 second before respawning again
-		if(level.time - lastDeathTime > 1000) {
+		if(g_time - lastDeathTime > 1000) {
 			if(ucmd->buttons & BUTTON_ATTACK) {
 				ClientSpawn(this->myEdict);
 			}
@@ -893,9 +892,9 @@ void Player::runPlayer() {
 					vec3_c f,r,u;
 					//g_core->Print("Yaw %f\n",ent->client->ps.viewangles[1]);
 					v.angleVectors(f,r,u);
-					f *= level.frameTime*ucmd->forwardmove;
-					r *= level.frameTime*ucmd->rightmove;
-					u *= level.frameTime*ucmd->upmove;
+					f *= g_frameTime*ucmd->forwardmove;
+					r *= g_frameTime*ucmd->rightmove;
+					u *= g_frameTime*ucmd->upmove;
 					dir += f;
 					dir += r;
 					dir += u;
@@ -1167,7 +1166,7 @@ void Player::onFireKeyHeld() {
 			// reload weapon if clip is empty
 			if(curWeapon->hasEmptyClip()) {
 				if(curWeapon->getReloadTime()) {
-					weaponTime = level.time;
+					weaponTime = g_time;
 					weaponState = WP_RELOADING;
 					setViewModelAnim("reload",ANIMFLAG_STOPATLASTFRAME);
 				} else {
@@ -1177,7 +1176,7 @@ void Player::onFireKeyHeld() {
 				curWeapon->onFireKeyHeld();
 
 				if(curWeapon->getDelayBetweenShots()) {
-					weaponTime = level.time;
+					weaponTime = g_time;
 					weaponState = WP_FIRING;
 					setViewModelAnim("fire",ANIMFLAG_STOPATLASTFRAME);
 				}
@@ -1197,7 +1196,7 @@ void Player::onFireKeyDown() {
 			// reload weapon if clip is empty
 			if(curWeapon->hasEmptyClip()) {
 				if(curWeapon->getReloadTime()) {
-					weaponTime = level.time;
+					weaponTime = g_time;
 					weaponState = WP_RELOADING;
 					setViewModelAnim("reload",ANIMFLAG_STOPATLASTFRAME);
 				} else {
@@ -1207,7 +1206,7 @@ void Player::onFireKeyDown() {
 				curWeapon->onFireKeyDown();
 
 				if(curWeapon->getDelayBetweenShots()) {
-					weaponTime = level.time;
+					weaponTime = g_time;
 					weaponState = WP_FIRING;
 					setViewModelAnim("fire",ANIMFLAG_STOPATLASTFRAME);
 				}
@@ -1417,7 +1416,7 @@ void Player::addWeapon(class Weapon *newWeapon) {
 		setViewModelAnim("raise",ANIMFLAG_STOPATLASTFRAME);
 		curWeapon = newWeapon;
 		updateCurWeaponAttachment();
-		weaponTime = level.time;
+		weaponTime = g_time;
 	} else if(weaponState == WP_IDLE) {
 		// putaway old weapon and then raise new one
 		if(curWeapon.getPtr() == 0) {
@@ -1427,7 +1426,7 @@ void Player::addWeapon(class Weapon *newWeapon) {
 		setViewModelAnim("putaway",ANIMFLAG_STOPATLASTFRAME);
 		// we will bring new weapon up after putting this one away
 		nextWeapon = newWeapon;
-		weaponTime = level.time;
+		weaponTime = g_time;
 	}
 #endif
 }
@@ -1472,7 +1471,7 @@ void Player::updatePlayerWeapon() {
 		return;
 	}
 	if(weaponState == WP_RAISE) {
-		u32 elapsed = level.time - weaponTime;
+		u32 elapsed = g_time - weaponTime;
 		if(g_printPlayerWeaponState.getInt()) {
 			g_core->Print("Player::updatePlayerWeapon: raising weapon (elapsed %i, needed %i)\n",elapsed,curWeapon->getRaiseTime());
 		}
@@ -1481,7 +1480,7 @@ void Player::updatePlayerWeapon() {
 			setViewModelAnim("idle",0);
 		}
 	} else if(weaponState == WP_PUTAWAY) {
-		u32 elapsed = level.time - weaponTime;
+		u32 elapsed = g_time - weaponTime;
 		if(g_printPlayerWeaponState.getInt()) {
 			g_core->Print("Player::updatePlayerWeapon: puting away weapon (elapsed %i, needed %i)\n",elapsed,curWeapon->getPutawayTime());
 		}
@@ -1494,13 +1493,13 @@ void Player::updatePlayerWeapon() {
 				curWeapon = nextWeapon;
 				updateCurWeaponAttachment();
 				nextWeapon.nullPtr();
-				weaponTime = level.time;
+				weaponTime = g_time;
 			} else {
 				setViewModelAnim("none",0);
 			}
 		}
 	} else if(weaponState == WP_FIRING) {
-		u32 elapsed = level.time - weaponTime;
+		u32 elapsed = g_time - weaponTime;
 		if(g_printPlayerWeaponState.getInt()) {
 			g_core->Print("Player::updatePlayerWeapon: firing weapon (elapsed %i, needed %i)\n",elapsed,curWeapon->getPutawayTime());
 		}
@@ -1509,7 +1508,7 @@ void Player::updatePlayerWeapon() {
 			setViewModelAnim("idle",0);
 		}
 	} else if(weaponState == WP_RELOADING) {
-		u32 elapsed = level.time - weaponTime;
+		u32 elapsed = g_time - weaponTime;
 		if(g_printPlayerWeaponState.getInt()) {
 			g_core->Print("Player::updatePlayerWeapon: RELOADING weapon (elapsed %i, needed %i)\n",elapsed,curWeapon->getPutawayTime());
 		}
@@ -1555,7 +1554,7 @@ void Player::onDeath() {
 	if(health > 0) {
 		health = -1; // ensure that this entity is dead
 	}
-	lastDeathTime = level.time;
+	lastDeathTime = g_time;
 	if(curWeapon) {
 		this->dropCurrentWeapon();
 	}

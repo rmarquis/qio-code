@@ -99,7 +99,7 @@ void Mover::postSpawn() {
 void Mover::runFrame() {
 	if(moverState != MOVER_1TO2 && moverState != MOVER_2TO1)
 		return;
-	float delta = level.frameTime * speed;
+	float delta = g_frameTime * speed;
 	vec3_c dest;
 	if(moverState == MOVER_1TO2) {
 		dest = pos2;

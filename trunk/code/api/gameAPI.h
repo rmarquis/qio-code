@@ -36,6 +36,10 @@ struct gameAPI_s : public iFaceBase_i {
 	void (*RunFrame)( int levelTime );
 	void (*ShutdownGame)( int restart );
 	void (*DebugDrawFrame)(class rAPI_i *pRFAPI);
+
+	// entities access
+	struct edict_s *(*GetEdict)(u32 entNum);
+	u32 (*GetNumActiveEdicts)();
 };
 
 #define GAMECLIENTS_API_IDENTSTR "ServerGameClientsAPI0001"

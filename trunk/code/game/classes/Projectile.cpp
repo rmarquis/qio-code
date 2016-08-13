@@ -41,7 +41,7 @@ Projectile::Projectile() {
 	collisionTime = 0;
 	bSyncModelAngles = false;
 	lifeTime = -1;
-	projLaunchTime = level.time;
+	projLaunchTime = g_time;
 	bHasStartVelocitySet = false;
 	// rocket projectiles (like Q3 rocket launcher rocket or MoH/FAKK rockets) 
 	// should have physics disabled.
@@ -89,7 +89,7 @@ void Projectile::explodeProjectile() {
 }
 void Projectile::runFrame() {
 	if(this->lifeTime > 0) {
-		int passedTime = level.time - projLaunchTime;
+		int passedTime = g_time - projLaunchTime;
 		if(passedTime > this->lifeTime) {
 			explodeProjectile();
 			return;
@@ -102,13 +102,13 @@ void Projectile::runFrame() {
 		return;
 	}
 	if(collisionTime) {
-		if(collisionTime + explosionDelay < level.time) {
+		if(collisionTime + explosionDelay < g_time) {
 			delete this;
 		}
 		return;
 	}
 	// run the physics manually
-	vec3_c newPos = this->getOrigin() + linearVelocity * level.frameTime;
+	vec3_c newPos = this->getOrigin() + linearVelocity * g_frameTime;
 	trace_c tr;
 	tr.setupRay(this->getOrigin(),newPos);
 	if(g_physWorld->traceRay(tr)) {
@@ -140,7 +140,7 @@ void Projectile::runFrame() {
 			g_server->SendServerCommand(-1,va("createDecal %f %f %f %f %f %f %f %s",pos.x,pos.y,pos.z,dir.x,dir.y,dir.z,
 				explosionInfo.markRadius,explosionInfo.explosionMark.c_str()));
 		}
-		collisionTime = level.time;
+		collisionTime = g_time;
 		this->linearVelocity.clear();
 		return;
 	}

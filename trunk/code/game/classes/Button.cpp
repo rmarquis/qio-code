@@ -85,7 +85,7 @@ void Button::runFrame() {
 	Mover::runFrame();
 	//if(state != MOVER_1TO2 && state != MOVER_2TO1)
 	//	return;
-	//float delta = level.frameTime * speed;
+	//float delta = g_frameTime * speed;
 	//vec3_c dest;
 	//if(state == MOVER_1TO2) {
 	//	dest = pos2;

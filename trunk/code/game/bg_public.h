@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef __BG_PUBLIC_H__
 #define __BG_PUBLIC_H__
 
+#include <shared/typedefs.h>
 #include <protocol/netLimits.h>
 
 // because games can change separately from the main system version, we need a

@@ -65,7 +65,7 @@ void World::iterateKeyValues(class keyValuesListener_i *listener) const {
 	}
 }
 void World::runGlobalWaterPhysics() {
-	for(u32 i = MAX_CLIENTS; i < level.num_entities; i++) {
+	for(u32 i = MAX_CLIENTS; i < g_numEdicts; i++) {
 		edict_s *ed =  &g_entities[i];
 		if(ed->s == 0)
 			continue;

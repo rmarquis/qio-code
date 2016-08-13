@@ -121,5 +121,5 @@ void G_ShutdownPhysicsEngine() {
 void G_RunPhysics() {
 	if(g_runPhysics.getInt() == 0)
 		return;
-	g_physWorld->runFrame(level.frameTime);
+	g_physWorld->runFrame(g_frameTime);
 }

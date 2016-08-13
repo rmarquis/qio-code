@@ -74,7 +74,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\system\qagamex86.dll"
+				OutputFile="..\..\game\system\gamex86.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\lib&quot;"
@@ -173,7 +173,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="..\..\game\system\qagamex86.dll"
+				OutputFile="..\..\game\system\gamex86.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="&quot;..\..\code\external\bullet-2.80-rev2531\lib&quot;"
@@ -303,7 +303,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\game\g_configStrings.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_debugDraw.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\code\game\g_ents.cpp"
 				>
 			</File>
 			<File
@@ -364,31 +372,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\code\game\g_utils.cpp"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="0"
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;BUILDING_REF_GL;DEBUG;GLOBALRANK;"
-						BrowseInformation="1"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Optimization="2"
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;GLOBALRANK;"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="..\..\code\game\g_weapons.cpp"
 				>
 			</File>
@@ -419,10 +402,6 @@
 			>
 			<File
 				RelativePath="..\..\code\game\bg_public.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\game\bt_include.h"
 				>
 			</File>
 			<File

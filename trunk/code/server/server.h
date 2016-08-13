@@ -78,13 +78,8 @@ struct server_s {
 	int				snapshotCounter;	// incremented for each snapshot built
 	int				timeResidual;		// <= 1000 / sv_frame->value
 	int				nextFrameTime;		// when time > nextFrameTime, process world
-	struct cmodel_s	*models[MAX_MODELS];
 	char			*configstrings[MAX_CONFIGSTRINGS];
 	svEntity_s		svEntities[MAX_GENTITIES];
-
-	// the game virtual machine will update these on init and changes
-	edict_s	*gentities;
-	int				num_entities;		// current number, <= MAX_GENTITIES
 
 	int				restartTime;
 	int				time;
@@ -319,6 +314,7 @@ int SV_RateMsec(client_t *client);
 //
 void SV_SetConfigstring( int index, const char *val );
 void SV_GetConfigstring( int index, char *buffer, int bufferSize );
+u32 SV_RegisterConfigString(const char *s, u32 start, u32 max);
 void SV_UpdateConfigstrings( client_t *client );
 
 void SV_SetUserinfo( int index, const char *val );
@@ -370,7 +366,6 @@ void SV_SendClientSnapshot( client_t *client );
 //
 // sv_game.c
 //
-int	SV_NumForGentity( edict_s *ent );
 edict_s *SV_GentityNum( int num );
 playerState_s *SV_GameClientNum( int num );
 svEntity_s	*SV_SvEntityForGentity( edict_s *gEnt );
@@ -380,7 +375,6 @@ void		SV_ShutdownGameProgs ();
 void		SV_RestartGameProgs();
 void SV_GameSendServerCommand( int clientNum, const char *text );
 void SV_GameDropClient( int clientNum, const char *reason );
-void SV_LocateGameData( edict_s *gEnts, int numGEntities );
 void SV_GetUsercmd( int clientNum, userCmd_s *cmd );
 void SV_LinkEntity(edict_s *ed);
 void SV_UnlinkEntity(edict_s *ed);

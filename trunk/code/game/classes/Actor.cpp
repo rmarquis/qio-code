@@ -471,7 +471,7 @@ void Actor::runActorStateMachines() {
 	if(g_actor_printActiveStateFiles.getInt()) {
 		g_core->Print("Actor::runActorStateMachines: %s is using %s\n",getRenderModelName(),st->getName());
 	}
-	st_passedTime += level.frameTime;
+	st_passedTime += g_frameTime;
 	if(st_handler == 0) {
 		st_handler = new genericConditionsHandler_t<Actor>(&g_actorConditionsTable,this);
 	}
@@ -482,7 +482,7 @@ void Actor::runActorStateMachines() {
 			const char *next = st->transitionState(st_curState,st_handler);
 			if(next && next[0]) {
 				if(g_actor_printStateChange.getInt()) 
-					g_core->Print("Actor::runActorStateMachines: time %i: changing from %s to %s\n",level.time,st_curState.c_str(),next);
+					g_core->Print("Actor::runActorStateMachines: time %i: changing from %s to %s\n",g_time,st_curState.c_str(),next);
 				st->iterateStateExitCommands(st_curState,this);
 				st_curState = next;
 				st->iterateStateEntryCommands(st_curState,this);
@@ -590,7 +590,7 @@ void Actor::runFrame() {
 		recalcABSBounds();
 	}
 	if(behaviour) {
-		behaviour->advanceTime(level.frameTime);
+		behaviour->advanceTime(g_frameTime);
 	}
 }
 void Actor::loadAIStateMachine(const char *fname) {
@@ -612,7 +612,7 @@ void Actor::setKeyValue(const char *key, const char *value) {
 	ModelEntity::setKeyValue(key,value);
 }
 void Actor::onBulletHit(const vec3_c &hitPosWorld, const vec3_c &dirWorld, int damage) {
-	painTime = level.time;
+	painTime = g_time;
 }
 void Actor::onDeath() {
 	forceState = "DEATH";
@@ -727,13 +727,13 @@ bool Actor::checkOnFire(const class stringList_c *arguments, class patternMatche
 
 bool Actor::checkSmallPain(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	u32 del = 100;
-	if(level.time < this->painTime + del)
+	if(g_time < this->painTime + del)
 		return true;
 	return false;
 }
 bool Actor::checkPain(const class stringList_c *arguments, class patternMatcher_c *patternMatcher) {
 	u32 del = 100;
-	if(level.time < this->painTime + del)
+	if(g_time < this->painTime + del)
 		return true;
 	return false;
 }

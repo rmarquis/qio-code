@@ -45,7 +45,7 @@ bool G_SaveCurrentSceneToMapFile(const char *outFName) {
 	file.endEntity();
 	// ============================
 	// write worldspawn entity first
-	for(u32 i = MAX_CLIENTS; i < level.num_entities; i++) {
+	for(u32 i = MAX_CLIENTS; i < g_numEdicts; i++) {
 		edict_s *ed = &g_entities[i];
 		if(ed->s == 0)
 			continue;

@@ -33,8 +33,8 @@ svAPI_s *g_server = 0;
 
 void SV_InitServerAPI() {
 	g_staticSVApi.DropClient = SV_GameDropClient;
-	g_staticSVApi.LocateGameData = (void (__cdecl *)(edict_s *,int))SV_LocateGameData;
 	g_staticSVApi.GetConfigstring = SV_GetConfigstring;
+	g_staticSVApi.RegisterConfigString = SV_RegisterConfigString;
 	g_staticSVApi.SendServerCommand = SV_GameSendServerCommand;
 	g_staticSVApi.SetConfigstring = SV_SetConfigstring;
 	g_staticSVApi.GetUserinfo = SV_GetUserinfo;
@@ -120,12 +120,33 @@ void SV_UpdateConfigstrings(client_t *client)
 	}
 }
 
-/*
-===============
-SV_SetConfigstring
+u32 SV_RegisterConfigString(const char *name, u32 start, u32 max) {
+	if ( !name || !name[0] ) {
+		return 0;
+	}
 
-===============
-*/
+	u32 idx;
+	// find empty slot
+	for (idx = 1; idx < max; idx++) {
+		char s[MAX_STRING_CHARS];
+
+		SV_GetConfigstring(start + idx, s, sizeof(s));
+		if (!s[0]) {
+			break;
+		}
+		if (!strcmp(s,name)) {
+			return idx;
+		}
+	}
+	if (idx == max) {
+		g_core->DropError( "G_FindConfigstringIndex: overflow" );
+	}
+
+	SV_SetConfigstring(start + idx, name);
+
+	return idx;
+}
+
 void SV_SetConfigstring (int index, const char *val) {
 	int		i;
 	client_t	*client;
@@ -164,12 +185,6 @@ void SV_SetConfigstring (int index, const char *val) {
 	}
 }
 
-/*
-===============
-SV_GetConfigstring
-
-===============
-*/
 void SV_GetConfigstring( int index, char *buffer, int bufferSize ) {
 	if ( bufferSize < 1 ) {
 		Com_Error( ERR_DROP, "SV_GetConfigstring: bufferSize == %i", bufferSize );
@@ -238,7 +253,8 @@ static void SV_CreateBaseline() {
 	int				entnum;	
 
 	// dont create baselines for players
-	for ( entnum = MAX_CLIENTS; entnum < sv.num_entities ; entnum++ ) {
+	u32 numActiveEdicts = g_game->GetNumActiveEdicts();
+	for ( entnum = MAX_CLIENTS; entnum < numActiveEdicts; entnum++ ) {
 		svent = SV_GentityNum(entnum);
 
 		// skip if entity is inactive
@@ -756,7 +772,7 @@ void SV_Init (void)
 #else
 	sv_master[0] = Cvar_Get("sv_master1", "notset", 0);
 #endif
-	sv_master[1] = Cvar_Get("sv_master2", "master.ioquake3.org", 0);
+	sv_master[1] = Cvar_Get("sv_master2", "notset", 0);
 	for(index = 2; index < MAX_MASTER_SERVERS; index++)
 		sv_master[index] = Cvar_Get(va("sv_master%d", index + 1), "", CVAR_ARCHIVE);
 
