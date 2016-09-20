@@ -7,6 +7,7 @@ state STAND
 	}
 	legs
 	{
+		knife_hold_f 		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_hold_f 		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_hold_f 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_hold_f	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
@@ -38,6 +39,7 @@ state RUN_FORWARD
 {
 	legs
 	{
+		knife_run_f		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_run_f		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_run_f		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_run_f 	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
@@ -68,6 +70,7 @@ state RUN_BACKWARD
 {
 	legs
 	{
+		knife_run_b		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_run_b		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_run_b		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_run_b		: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
@@ -97,6 +100,7 @@ state RUN_LEFT
 {
 	legs
 	{
+		knife_run_l		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_run_l		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_run_l		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_run_l		: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
@@ -126,6 +130,7 @@ state RUN_RIGHT
 {
 	legs
 	{
+		knife_run_r		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_run_r		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_run_r		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_run_r		: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
@@ -157,6 +162,7 @@ state WALK_FORWARD
 {
 	legs
 	{
+		knife_walk_f		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_walk_f		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_walk_f		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_walk_f	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
@@ -186,6 +192,7 @@ state WALK_BACKWARD
 {
 	legs
 	{
+		knife_walk_b		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_walk_b		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_walk_b		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_walk_b	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
@@ -216,6 +223,7 @@ state WALK_LEFT
 {
 	legs
 	{
+		knife_walk_l		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_walk_l		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_walk_l		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_walk_l	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
@@ -245,6 +253,7 @@ state WALK_RIGHT
 {
 	legs
 	{
+		knife_walk_r		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_walk_r		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_walk_r		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_walk_r	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
@@ -278,6 +287,7 @@ state JUMP_STANDING
 	}*/
 	legs
 	{
+		knife_jump_bg		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_jump_bg		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_jump_bg	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_jump_bg	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
@@ -299,6 +309,7 @@ state FALL
 {
 	legs
 	{
+		knife_jump_id		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_jump_id		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_jump_id	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_jump_id	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
@@ -316,6 +327,7 @@ state LAND
 {
 	legs
 	{
+		knife_jump_ed		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_jump_ed		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_jump_ed	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_jump_ed	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"

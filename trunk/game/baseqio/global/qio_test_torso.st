@@ -41,6 +41,7 @@ state RELOAD_WEAPON
 
 	torso
 	{
+		knife_reload 		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_reload 		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_reload 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_reload 	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
@@ -117,6 +118,7 @@ state PRIMARY_ATTACK_FULLAUTO
 
 	torso
 	{
+		knife_attack_h	 	: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_attack_h	 	: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_attack_h 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_attack_h 	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
@@ -155,6 +157,7 @@ state PRIMARY_ATTACK_SEMIAUTO
 
 	torso
 	{
+		knife_attack_h 		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_attack_h 		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_attack_h 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_attack_h 	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
@@ -182,6 +185,7 @@ state RAISE_WEAPON
 
 	torso
 	{
+		knife_select 		: IS_NEW_WEAPON "dualhand" "knife"
 		awm_select 		: IS_NEW_WEAPON "dualhand" "awm"
 		dragunov_select 	: IS_NEW_WEAPON "dualhand" "dragunov"
 		steyr_aug_select 	: IS_NEW_WEAPON "dualhand" "steyr_aug"
@@ -216,6 +220,7 @@ state PUTAWAY_MAIN
 
 	torso
 	{
+		knife_unselect		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_unselect		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_unselect	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
 		steyr_aug_unselect	: IS_WEAPON_ACTIVE "dualhand" "steyr_aug"
