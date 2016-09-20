@@ -4,6 +4,44 @@ animations
 {
 
 
+	// knife third person animations (for full player body)
+	path models/player/shared/knife/
+	
+	knife_attack_h attack_h.md5anim
+	knife_attack_h_s attack_h_s.md5anim
+	knife_attack_l attack_l.md5anim
+	knife_attack_l_s attack_l_s.md5anim
+	knife_hold_f hold_f.md5anim
+	knife_hold_s hold_s.md5anim
+	knife_hold_sit_f hold_sit_f.md5anim
+	knife_hold_sit_s hold_sit_s.md5anim
+	knife_jump_bg jump_bg.md5anim
+	knife_jump_ed jump_ed.md5anim
+	knife_jump_id jump_id.md5anim
+	knife_pose pose.md5anim
+	knife_pose_bend_f pose_bend_f.md5anim
+	knife_pose_bend_l pose_bend_l.md5anim
+	knife_pose_l pose_l.md5anim
+	knife_pose_l_s pose_l_s.md5anim
+	knife_pose_s pose_s.md5anim
+	knife_reload reload.md5anim
+	knife_run_b run_b.md5anim
+	knife_run_f run_f.md5anim
+	knife_run_f2 run_f2.md5anim
+	knife_run_l run_l.md5anim
+	knife_run_r run_r.md5anim
+	knife_select select.md5anim
+	knife_sit_b sit_b.md5anim
+	knife_sit_f sit_f.md5anim
+	knife_sit_l sit_l.md5anim
+	knife_sit_r sit_r.md5anim
+	knife_unselect unselect.md5anim
+	knife_walk_b walk_b.md5anim
+	knife_walk_f walk_f.md5anim
+	knife_walk_l walk_l.md5anim
+	knife_walk_r walk_r.md5anim
+
+
 	// awm third person animations (for full player body)
 	path models/player/shared/awm/
 	
