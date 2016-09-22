@@ -26,7 +26,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __G_LOCAL_H__
 #define __G_LOCAL_H__
 
-#include "bg_public.h"
+#include <protocol/configStrings.h>
 #include "edict.h"
 #include <shared/str.h>
 #include <shared/array.h>

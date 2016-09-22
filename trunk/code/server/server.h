@@ -23,7 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "../common/common.h"
 #include "../game/edict.h"
-#include "../game/bg_public.h"
+#include <protocol/configStrings.h>
 #include <protocol/userCmd.h>
 #include <protocol/playerState.h>
 #include <shared/infoString.h>

@@ -401,10 +401,6 @@
 			Filter="h;hpp;hxx;hm;inl;fi;fd"
 			>
 			<File
-				RelativePath="..\..\code\game\bg_public.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\game\edict.h"
 				>
 			</File>

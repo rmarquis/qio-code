@@ -1261,6 +1261,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\code\common\common.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\code\game\g_public.h"
 				>
 			</File>
@@ -1286,10 +1290,6 @@
 			</File>
 			<File
 				RelativePath="..\..\code\.\common\q_shared.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\code\common\common.h"
 				>
 			</File>
 			<File
@@ -1868,6 +1868,10 @@
 		<Filter
 			Name="protocol"
 			>
+			<File
+				RelativePath="..\..\code\protocol\configStrings.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\code\protocol\entityState.h"
 				>

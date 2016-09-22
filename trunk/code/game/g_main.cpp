@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
 #include "g_local.h"
+#include <protocol/configStrings.h>
 #include <api/serverAPI.h>
 #include <api/cvarAPI.h>
 #include <api/coreAPI.h>
@@ -31,7 +32,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "classes/World.h"
 #include <shared/autoCvar.h>
 #include <shared/autoCmd.h>
-#include <game/bg_public.h>
 #include "g_pathNodes.h"
 
 static aCvar_c g_printEntityPositions("g_printEntityPositions","0");

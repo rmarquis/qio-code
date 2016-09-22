@@ -470,10 +470,6 @@
 			Filter="h"
 			>
 			<File
-				RelativePath="..\..\code\game\bg_public.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\code\cgame\cg_emitter.h"
 				>
 			</File>
