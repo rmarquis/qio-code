@@ -22,7 +22,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 ============================================================================
 */
 // g_configStrings.cpp
-#include "bg_public.h"
+#include <protocol/configStrings.h>
 #include <api/serverAPI.h>
 
 u32 G_RenderModelIndex( const char *name ) {

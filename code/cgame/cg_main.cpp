@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // cg_main.c -- initialization and primary entry point for cgame
 #include "cg_local.h"
-#include <game/bg_public.h>
+#include <protocol/configStrings.h>
 #include "cg_emitter_base.h"
 #include <api/coreAPI.h>
 #include <api/clientAPI.h>

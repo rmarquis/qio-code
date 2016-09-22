@@ -528,6 +528,9 @@ void Cmd_SetCommandCompletionFunc( const char *command,
 	completionFunc_t complete );
 void Cmd_CompleteArgument( const char *command, char *args, int argNum );
 void Cmd_CompleteCfgName( char *args, int argNum );
+void Cmd_CompleteTGAName( char *args, int argNum );
+void Cmd_CompleteJPGName( char *args, int argNum );
+void Cmd_CompletePNGName( char *args, int argNum );
 
 int		Cmd_Argc (void);
 const char*Cmd_Argv (int arg);

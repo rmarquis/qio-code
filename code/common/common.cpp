@@ -1414,6 +1414,29 @@ void Com_Editor_f() {
 	Com_Printf("Not functional now - please start engine with -editor parameter.\n");
 	//Com_InitEditorDLL();
 }
+
+#include <api/imgAPI.h>
+imgAPI_i *g_img = 0;
+
+void Com_ConvertImageToWebPLossless_f() {
+	if(Cmd_Argc()<=1) {
+		g_core->Print("Command required at least one argument (image name)\n");
+		return;
+	}
+	const char *imgName = Cmd_Argv(1);
+	g_core->Print("Converting image %s to webp\n",imgName);
+	byte *data = 0;
+	u32 w = 0, h = 0;
+	g_img->loadImage(imgName,&data,&w,&h);
+	if(data == 0) {
+		g_core->RedWarning("Failed to load %s\n",imgName);
+		return;
+	}
+	str newName = imgName;
+	newName.setExtension("webp");
+	g_img->writeWebPLossless(newName,data,w,h,4);
+}
+
 static void Com_DetectAltivec(void)
 {
 	// Only detect if user hasn't forcibly disabled it.
@@ -1531,6 +1554,7 @@ void Com_InitCoreAPI() {
 	g_iFaceMan->registerInterface((iFaceBase_i *)(void*)g_moduleMgr,MODULEMANAGER_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_ms,MATERIALSYSTEM_API_IDENTSTR);
 	g_iFaceMan->registerIFaceUser(&g_modelLoader,MODELLOADERDLL_API_IDENTSTR);
+	g_iFaceMan->registerIFaceUser(&g_img,IMG_API_IDENTSTR);
 
 	IN_InitInputSystemAPI();
 	Com_InitSysEventCasterAPI();
@@ -1797,6 +1821,13 @@ void Com_Init( char *commandLine ) {
 	Cmd_AddCommand("game_restart", Com_GameRestart_f);
 	Cmd_AddCommand("bench_sqrt", Com_BenchRSQRTFunctions_f);
 	Cmd_AddCommand("editor", Com_Editor_f);
+	Cmd_AddCommand ("img_convertToWebP_lossless", Com_ConvertImageToWebPLossless_f);
+	Cmd_AddCommand ("tga_convertToWebP_lossless", Com_ConvertImageToWebPLossless_f);
+	Cmd_AddCommand ("jpg_convertToWebP_lossless", Com_ConvertImageToWebPLossless_f);
+	Cmd_AddCommand ("png_convertToWebP_lossless", Com_ConvertImageToWebPLossless_f);
+	Cmd_SetCommandCompletionFunc( "tga_convertToWebP_lossless", Cmd_CompleteTGAName );
+	Cmd_SetCommandCompletionFunc( "jpg_convertToWebP_lossless", Cmd_CompleteJPGName );
+	Cmd_SetCommandCompletionFunc( "png_convertToWebP_lossless", Cmd_CompletePNGName );
 
 	Com_ExecuteCfg();
 

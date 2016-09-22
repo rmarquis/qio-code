@@ -24,8 +24,10 @@ or simply visit <http://www.gnu.org/licenses/>.
 // img_webpp.cpp - webpp image format
 #include "img_local.h"
 #include <api/vfsAPI.h>
+#include <api/coreAPI.h>
 
 #include <webp/decode.h>
+#include <webp/encode.h>
 
 bool IMG_LoadWEBP(const char *fname, const byte *buffer, const u32 bufferLen, byte **pic, u32 *width, u32 *height) {
 	int h, w;
@@ -40,5 +42,29 @@ bool IMG_LoadWEBP(const char *fname, const byte *buffer, const u32 bufferLen, by
 		return true;
 	}
 	*pic = out;
+	return false;
+}
+
+bool IMG_SaveWEBPLossy(const char *fname, const byte *pic, u32 width, u32 height, u32 bpp, float quality) {
+
+	
+	return false;
+}
+bool IMG_SaveWEBPLossless(const char *fname, const byte *pic, u32 width, u32 height, u32 bpp) {
+	u32 res;
+	byte *output;
+	if(bpp == 3) {
+		res = WebPEncodeLosslessRGB(pic,width,height,3*width,&output);
+	} else if(bpp == 4) {
+		res = WebPEncodeLosslessRGBA(pic,width,height,4*width,&output);
+	} else {
+		return true;
+	}
+	if(res == 0 || output == 0) {
+		g_core->RedWarning("IMG_SaveWEBPLossless: saving to %s (sizes %i %i) failed\n",fname,width,height);
+		return true;
+	}	
+	g_core->Print("IMG_SaveWEBPLossless: Writing %i bytes to %s\n",res,fname);
+	g_vfs->FS_WriteFile(fname, output, res);
 	return false;
 }

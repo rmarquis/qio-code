@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <api/gameAPI.h>
 #include <api/loadingScreenMgrAPI.h>
 #include <protocol/snapFlags.h>
+#include <protocol/configStrings.h>
 
 static svAPI_s g_staticSVApi;
 svAPI_s *g_server = 0;

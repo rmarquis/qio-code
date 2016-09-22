@@ -858,22 +858,28 @@ void Cmd_List_f (void)
 	Com_Printf ("%i commands\n", i);
 }
 
-/*
-==================
-Cmd_CompleteCfgName
-==================
-*/
 void Cmd_CompleteCfgName( char *args, int argNum ) {
 	if( argNum == 2 ) {
 		AC_CompleteFilename( "", "cfg", 0, 0, false, true );
 	}
 }
+void Cmd_CompleteTGAName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		AC_CompleteFilename( "", "tga", 0, 0, false, true );
+	}
+}
+void Cmd_CompletePNGName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		AC_CompleteFilename( "", "png", 0, 0, false, true );
+	}
+}
+void Cmd_CompleteJPGName( char *args, int argNum ) {
+	if( argNum == 2 ) {
+		AC_CompleteFilename( "", "jpg", 0, 0, false, true );
+	}
+}
 
-/*
-============
-Cmd_Init
-============
-*/
+
 void Cmd_Init (void) {
 	Cmd_AddCommand ("cmdlist",Cmd_List_f);
 	Cmd_AddCommand ("exec",Cmd_Exec_f);

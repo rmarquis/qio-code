@@ -26,6 +26,8 @@ or simply visit <http://www.gnu.org/licenses/>.
 #ifndef __IFACEBASE_H__
 #define __IFACEBASE_H__
 
+#include <shared/typedefs.h>
+
 class iFaceBase_i {
 
 };

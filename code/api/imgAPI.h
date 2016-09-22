@@ -42,6 +42,7 @@ public:
 
 	// image saving (for screenshots, etc)
 	virtual bool writeTGA(const char *fname, byte *pic, u32 width, u32 height, u32 bpp) = 0;
+	virtual bool writeWebPLossless(const char *fname, byte *pic, u32 width, u32 height, u32 bpp) = 0;
 
 	// image processing
 	virtual void convert8BitImageToRGBA32(byte **converted, u32 *outWidth, u32 *outHeight, const byte *pixels, u32 width, u32 height, const byte *palette) = 0;

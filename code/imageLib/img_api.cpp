@@ -35,7 +35,13 @@ class imgAPIImpl_c : public imgAPI_i {
 		IMG_GetDefaultImage(outData,outW,outH);
 	}
 	virtual const char *loadImage(const char *fname, byte **outData, u32 *outW, u32 *outH) {
-		return IMG_LoadImageInternal(fname,outData,outW,outH);
+		const char *ret = IMG_LoadImageInternal(fname,outData,outW,outH);
+#if 0
+		if(outData && *outData && *outW) {
+			writeWebPLossless("webptest.webp",*outData,*outW,*outH,4);
+		}
+#endif
+		return ret;
 	}
 	virtual void freeImageData(byte *data) {
 		free(data);
@@ -54,6 +60,9 @@ class imgAPIImpl_c : public imgAPI_i {
 	}
 	virtual bool writeTGA(const char *fname, byte *pic, u32 width, u32 height, u32 bpp) {
 		return IMG_WriteTGA(fname,pic,width,height,bpp);
+	}
+	virtual bool writeWebPLossless(const char *fname, byte *pic, u32 width, u32 height, u32 bpp) {
+		return IMG_SaveWEBPLossless(fname,pic,width,height,bpp);
 	}
 };
 
