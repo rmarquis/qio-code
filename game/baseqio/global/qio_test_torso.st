@@ -14,6 +14,7 @@ state STAND
 
 	viewModelHands 
 	{
+		beretta_m9_fps_idle 	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_fps_idle 		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		m249_fps_idle 		: IS_WEAPON_ACTIVE "dualhand" "m249"
 		dragunov_fps_idle 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -42,6 +43,7 @@ state RELOAD_WEAPON
 
 	torso
 	{
+		beretta_m9_reload 	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_reload 		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_reload 		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_reload 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -56,6 +58,7 @@ state RELOAD_WEAPON
 	}
 	viewModelHands 
 	{
+		beretta_m9_fps_reload 	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_fps_reload 	: IS_WEAPON_ACTIVE "dualhand" "knife"
 		m249_fps_reload 	: IS_WEAPON_ACTIVE "dualhand" "m249"
 		dragunov_fps_reload 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -120,6 +123,7 @@ state PRIMARY_ATTACK_FULLAUTO
 
 	torso
 	{
+		beretta_m9_attack_h	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_attack_h	 	: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_attack_h	 	: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_attack_h 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -135,6 +139,7 @@ state PRIMARY_ATTACK_FULLAUTO
 	}	
 	viewModelHands 
 	{
+		beretta_m9_fps_attack 	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_fps_attack 	: IS_WEAPON_ACTIVE "dualhand" "knife"
 		m249_fps_attack 	: IS_WEAPON_ACTIVE "dualhand" "m249"
 		dragunov_fps_attack 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -160,6 +165,7 @@ state PRIMARY_ATTACK_SEMIAUTO
 
 	torso
 	{
+		beretta_m9_attack_h 	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_attack_h 		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_attack_h 		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_attack_h 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -188,6 +194,7 @@ state RAISE_WEAPON
 
 	torso
 	{
+		beretta_m9_select 	: IS_NEW_WEAPON "dualhand" "beretta_m9"
 		knife_select 		: IS_NEW_WEAPON "dualhand" "knife"
 		awm_select 		: IS_NEW_WEAPON "dualhand" "awm"
 		dragunov_select 	: IS_NEW_WEAPON "dualhand" "dragunov"
@@ -198,6 +205,7 @@ state RAISE_WEAPON
 	}
 	viewModelHands 
 	{
+		beretta_m9_fps_select 	: IS_NEW_WEAPON "dualhand" "beretta_m9"
 		knife_fps_select 	: IS_NEW_WEAPON "dualhand" "knife"
 		m249_fps_select 	: IS_NEW_WEAPON "dualhand" "m249"
 		dragunov_fps_select 	: IS_NEW_WEAPON "dualhand" "dragunov"
@@ -224,6 +232,7 @@ state PUTAWAY_MAIN
 
 	torso
 	{
+		beretta_m9_unselect	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_unselect		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_unselect		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_unselect	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -234,6 +243,7 @@ state PUTAWAY_MAIN
 	}
 	viewModelHands 
 	{
+		beretta_m9_fps_unselect : IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_fps_unselect 	: IS_WEAPON_ACTIVE "dualhand" "knife"
 		m249_fps_unselect 	: IS_WEAPON_ACTIVE "dualhand" "m249"
 		dragunov_fps_unselect 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"

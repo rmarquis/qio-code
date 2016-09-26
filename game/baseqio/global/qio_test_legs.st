@@ -7,6 +7,7 @@ state STAND
 	}
 	legs
 	{
+		beretta_m9_hold_f 	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_hold_f 		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_hold_f 		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_hold_f 	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -39,6 +40,7 @@ state RUN_FORWARD
 {
 	legs
 	{
+		beretta_m9_run_f	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_run_f		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_run_f		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_run_f		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -70,6 +72,7 @@ state RUN_BACKWARD
 {
 	legs
 	{
+		beretta_m9_run_b	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_run_b		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_run_b		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_run_b		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -100,6 +103,7 @@ state RUN_LEFT
 {
 	legs
 	{
+		beretta_m9_run_l	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_run_l		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_run_l		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_run_l		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -130,6 +134,7 @@ state RUN_RIGHT
 {
 	legs
 	{
+		beretta_m9_run_r	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_run_r		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_run_r		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_run_r		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -162,6 +167,7 @@ state WALK_FORWARD
 {
 	legs
 	{
+		beretta_m9_walk_f	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_walk_f		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_walk_f		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_walk_f		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -192,6 +198,7 @@ state WALK_BACKWARD
 {
 	legs
 	{
+		beretta_m9_walk_b	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_walk_b		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_walk_b		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_walk_b		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -223,6 +230,7 @@ state WALK_LEFT
 {
 	legs
 	{
+		beretta_m9_walk_l	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_walk_l		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_walk_l		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_walk_l		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -253,6 +261,7 @@ state WALK_RIGHT
 {
 	legs
 	{
+		beretta_m9_walk_r	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_walk_r		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_walk_r		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_walk_r		: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -287,6 +296,7 @@ state JUMP_STANDING
 	}*/
 	legs
 	{
+		beretta_m9_jump_bg	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_jump_bg		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_jump_bg		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_jump_bg	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -309,6 +319,7 @@ state FALL
 {
 	legs
 	{
+		beretta_m9_jump_id	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_jump_id		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_jump_id		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_jump_id	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
@@ -327,6 +338,7 @@ state LAND
 {
 	legs
 	{
+		beretta_m9_jump_ed	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_jump_ed		: IS_WEAPON_ACTIVE "dualhand" "knife"
 		awm_jump_ed		: IS_WEAPON_ACTIVE "dualhand" "awm"
 		dragunov_jump_ed	: IS_WEAPON_ACTIVE "dualhand" "dragunov"
