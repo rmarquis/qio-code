@@ -4,6 +4,22 @@ animations
 {
 
 
+	// glock17 first person animations (for hands)
+	// glock17 first person animations for gun are elsewhere.
+	path models/player/shared/glock17_fps
+	glock17_fps_attack attack.md5anim
+	glock17_fps_attack2 attack2.md5anim
+	glock17_fps_idle1 idle1.md5anim
+	glock17_fps_idle2 idle2.md5anim
+	glock17_fps_pose pose.md5anim
+	glock17_fps_pose_r pose_r.md5anim
+	glock17_fps_pose_s pose_s.md5anim
+	glock17_fps_reload reload.md5anim
+	glock17_fps_run run.md5anim
+	glock17_fps_select select.md5anim
+	glock17_fps_unselect unselect.md5anim
+
+
 	// beretta_m9 first person animations (for hands)
 	// beretta_m9 first person animations for gun are elsewhere.
 	path models/player/shared/beretta_m9_fps
