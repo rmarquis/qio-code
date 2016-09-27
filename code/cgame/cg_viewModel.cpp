@@ -24,6 +24,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 // cg_viewmodel.cpp - first person weapon and hands animation
 #include "cg_local.h"
 #include <shared/autoCvar.h>
+#include "cg_entities.h"
 #include <api/rAPI.h>
 #include <api/rEntityAPI.h>
 #include <api/coreAPI.h>
@@ -185,8 +186,8 @@ void CG_RunViewModel() {
 	int viewModelEntity = cg.snap->ps.curWeaponEntNum;
 	if(cg_thirdPerson.getInt()) {
 		CG_FreeViewModelEntity();
-		if(viewModelEntity != ENTITYNUM_NONE && cg_entities[viewModelEntity].rEnt) {
-			cg_entities[viewModelEntity].rEnt->showModel();
+		if(viewModelEntity != ENTITYNUM_NONE && cg_entities[viewModelEntity].getRenderEntity()) {
+			cg_entities[viewModelEntity].getRenderEntity()->showModel();
 		}
 		return;
 	}
@@ -194,9 +195,9 @@ void CG_RunViewModel() {
 		CG_FreeViewModelEntity();
 		return;
 	}
-	if(cg_entities[viewModelEntity].rEnt) {
+	if(cg_entities[viewModelEntity].getRenderEntity()) {
 		//cg_entities[viewModelEntity].rEnt->hideModel();
-		cg_entities[viewModelEntity].rEnt->setThirdPersonOnly(true);
+		cg_entities[viewModelEntity].getRenderEntity()->setThirdPersonOnly(true);
 	}
 
 	// local weapons offset (affected by cg_gunX/Y/Z cvars)
@@ -208,8 +209,8 @@ void CG_RunViewModel() {
 	if(cg.snap->ps.customViewRModelIndex) {
 		viewModel = cgs.gameModels[cg.snap->ps.customViewRModelIndex];
 	} else {
-		if(cg_entities[viewModelEntity].rEnt) {
-			viewModel = cg_entities[viewModelEntity].rEnt->getModel();
+		if(cg_entities[viewModelEntity].getRenderEntity()) {
+			viewModel = cg_entities[viewModelEntity].getRenderEntity()->getModel();
 		} else {
 			viewModel = 0;
 		}

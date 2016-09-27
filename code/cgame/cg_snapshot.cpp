@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // not necessarily every single rendered frame
 
 #include "cg_local.h"
+#include "cg_entities.h"
 #include "cg_emitter.h"
 #include <api/clientAPI.h>
 #include <api/rAPI.h>
@@ -40,215 +41,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <protocol/snapFlags.h>
 
 static aCvar_c cg_printSnapEntities("cg_printSnapEntities","0");
-static aCvar_c cg_printNewSnapEntities("cg_printNewSnapEntities","0");
-static aCvar_c cg_ignoreBakedLights("cg_ignoreBakedLights","0");
 static aCvar_c cg_printInitialSnapshots("cg_printInitialSnapshots","0");
-
-/*
-==================
-CG_ResetEntity
-==================
-*/
-static void CG_ResetEntity( centity_s *cent ) {
-	cent->lerpOrigin = cent->currentState.origin;
-	cent->lerpAngles = cent->currentState.angles;
-	if ( cent->currentState.eType == ET_PLAYER ) {
-//		cent->extrapolated = false;	
-	}
-}
-
-static void CG_TransitionLight(centity_s *cent) {
-	if(cg_ignoreBakedLights.getInt()) {
-		// ignore (don't add to renderer) lights that have lightmaps baked into BSP file
-		if(cent->currentState.lightFlags & LF_HASBSPLIGHTING) {
-			if(cent->rLight) {
-				rf->removeLight(cent->rLight);
-				cent->rLight = 0;
-			}
-			return;
-		}
-	}
-	if(cent->rLight == 0) {
-		g_core->RedWarning("CG_TransitionLight: found ET_LIGHT without rLight (entity %i)\n",cent->currentState.number);
-		// it still happens sometimes, let's fix it here for now.
-#if 0
-		return;
-#else
-		cent->rLight = rf->allocLight();
-#endif
-	}
-	cent->rLight->setOrigin(cent->currentState.origin);
-	cent->rLight->setRadius(cent->currentState.lightRadius);
-}
-static void CG_TransitionModel(centity_s *cent) {
-	if(cent->rEnt == 0) {
-		g_core->RedWarning("CG_TransitionModel: found entity without rEntity (entity %i)\n",cent->currentState.number);
-		// it still happens sometimes, let's fix it here for now.
-#if 0
-		return;
-#else
-		cent->rEnt = rf->allocEntity();
-#endif
-	}
-	cent->rEnt->setOrigin(cent->currentState.origin);
-	cent->rEnt->setAngles(cent->currentState.angles);
-	cent->rEnt->setModel(cgs.gameModels[cent->currentState.rModelIndex]);
-	for(u32 i = 0; i < MAX_RMODEL_ATTACHMENTS; i++) {
-		if(cent->currentState.attachments[i].isEmpty() == false) {
-			const char *boneName = CG_ConfigString(CS_MODELS+cent->currentState.attachments[i].boneIndex);
-			const char *modelName = CG_ConfigString(CS_MODELS+cent->currentState.attachments[i].modelIndex);
-			cent->rEnt->setAttachment(i,modelName,boneName);
-		} else {
-			cent->rEnt->setAttachment(i,0,0);
-		}
-	}
-	if(cent->rEnt->hasDeclModel()) {
-		cent->rEnt->setDeclModelAnimLocalIndex(cent->currentState.animIndex);
-	} else if(cent->rEnt->hasTIKIModel()) {
-		cent->rEnt->setTIKIModelAnimLocalIndex(cent->currentState.animIndex);
-		cent->rEnt->setTIKIModelTorsoAnimLocalIndex(cent->currentState.torsoAnim);
-	} else if(cent->rEnt->isQ3PlayerModel()) {
-		cent->rEnt->setQ3LegsAnimLocalIndex(cent->currentState.animIndex);
-		cent->rEnt->setQ3TorsoAnimLocalIndex(TORSO_STAND);
-	} else if(cent->rEnt->hasWolfAnimConfig() || cent->rEnt->hasCharacterFile()) {
-		cent->rEnt->setAnim(CG_ConfigString(CS_ANIMATIONS+cent->currentState.animIndex));
-	} else if(cent->rEnt->isKeyframed()) {
-		cent->rEnt->setAnimationFrame(cent->currentState.animIndex);
-	} else {
-		cent->rEnt->setAnim(cgs.gameAnims[cent->currentState.animIndex]);
-		cent->rEnt->setTorsoAnim(cgs.gameAnims[cent->currentState.torsoAnim]);
-	}
-	if(cent->currentState.rSkinIndex) {
-		// if we have a custom skin...
-		const char *skinName = CG_ConfigString(CS_SKINS + cent->currentState.rSkinIndex);
-		cent->rEnt->setSkin(skinName);
-	}
-	if(cent->currentState.number == cg.clientNum) {
-		cent->rEnt->setThirdPersonOnly(true);
-	} else {
-		cent->rEnt->setThirdPersonOnly(false);
-	}
-	if(cent->currentState.eFlags & EF_HIDDEN) {
-		cent->rEnt->hideModel();
-	} else {
-		cent->rEnt->showModel();
-	}
-	if(cent->currentState.activeRagdollDefNameIndex) {
-		const afDeclAPI_i *af = cgs.gameAFs[cent->currentState.activeRagdollDefNameIndex];
-		cent->rEnt->setRagdoll(af);
-		if(af) {
-			for(u32 i = 0; i < af->getNumBodies(); i++) {
-				const netBoneOr_s &in = cent->currentState.boneOrs[i];
-				boneOrQP_c or;
-				or.setPos(in.xyz);
-				or.setQuatXYZ(in.quatXYZ);
-				cent->rEnt->setRagdollBodyOr(i,or);
-			}
-		}
-	} else {
-		cent->rEnt->setRagdoll(0);
-	}
-}
-/*
-===============
-CG_TransitionEntity
-
-cent->nextState is moved to cent->currentState and events are fired
-===============
-*/
-static void CG_TransitionEntity( centity_s *cent ) {
-	entityState_s previousState = cent->currentState;
-	cent->currentState = cent->nextState;
-	cent->currentValid = true;
-
-	// reset if the entity wasn't in the last frame or was teleported
-	if ( !cent->interpolate ) {
-		CG_ResetEntity( cent );
-	}
-
-	// set all the values here in case that entity cant be interpolated between two snapshots
-	
-	// NOTE: some centities might have both rEnt and rLight present
-	if(cent->currentState.eType == ET_LIGHT) {
-		CG_TransitionLight(cent);
-	} else {
-		// handle extra entity-light effect as well
-		if(cent->currentState.lightRadius > 0.f) {
-			if(cent->rLight == 0) {
-				// entity light has been enabled
-				cent->rLight = rf->allocLight();
-			}
-			CG_TransitionLight(cent);
-		} else {
-			if(cent->rLight) {	
-				// entity light has been disabled
-				rf->removeLight(cent->rLight);
-				cent->rLight = 0;
-			}
-		}
-		CG_TransitionModel(cent);
-	}
-	if(cent->rEnt) {
-		cent->rEnt->setEntityType(cent->currentState.eType);
-	}
-
-	// clear the next state.  if will be set by the next CG_SetNextSnap
-	cent->interpolate = false;
-}
-
-static void CG_RemoveEntity(u32 entNum) {
-	centity_s *cent = &cg_entities[entNum];
-//	if(cent->currentState.eType == ET_LIGHT) {
-		if(cent->rLight) {
-			rf->removeLight(cent->rLight);
-			cent->rLight = 0;
-		}
-///	} else {
-		if(cent->rEnt) {
-			rf->removeEntity(cent->rEnt);
-			cent->rEnt = 0;
-		}
-//	}
-	if(cent->emitter) {
-		delete cent->emitter;
-		cent->emitter = 0;
-	}
-}
-static void CG_NewEntity(u32 entNum) {
-	centity_s *cent = &cg_entities[entNum];
-#if 1
-	if(cent->currentState.number != entNum) {
-		cent->currentState = cent->nextState;
-	}
-#endif
-	if(cg_printNewSnapEntities.getInt()) {
-		CG_Printf("CG_NewEntity: entNum %i, eType %i, ptr %i\n",entNum,cent->currentState.eType,cent);
-	}
-	if(cent->currentState.eType == ET_LIGHT) {
-		// new render light
-		if(cent->rLight) {
-			CG_Printf(S_COLOR_RED"CG_NewEntity: centity_s %i already have rLight assigned\n",entNum);
-			rf->removeLight(cent->rLight);
-		}
-		cent->rLight = rf->allocLight();
-	} else {
-		// new render entity
-		if(cent->rEnt) {
-			CG_Printf(S_COLOR_RED"CG_NewEntity: centity_s %i already have rEntity assigned\n",entNum);
-			rf->removeEntity(cent->rEnt);
-		}
-		cent->rEnt = rf->allocEntity();
-		cent->rEnt->setNetworkingEntityNumber(entNum);
-		if(cent->currentState.lightRadius >= 0) {
-			// new render light
-			if(cent->rLight) {
-				CG_Printf(S_COLOR_RED"CG_NewEntity: centity_s %i already have rLight assigned\n",entNum);
-				rf->removeLight(cent->rLight);
-			}
-			cent->rLight = rf->allocLight();
-		}
-	}
-}
 
 /*
 ==================
@@ -263,7 +56,7 @@ FIXME: Also called by map_restart?
 */
 void CG_SetInitialSnapshot( snapshot_t *snap ) {
 	int				i;
-	centity_s		*cent;
+	cgEntity_c		*cent;
 	entityState_s	*state;
 
 	if(cg_printInitialSnapshots.getInt()) {
@@ -272,11 +65,10 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 
 	cg.snap = snap;
 
-	snap->ps.toEntityState(&cg_entities[ snap->ps.clientNum ].currentState, false);
-	CG_NewEntity(snap->ps.clientNum);
-
-	// sort out solid entities
-//	CG_BuildSolidList();
+	entityState_s tmp;
+	snap->ps.toEntityState(&tmp, false);
+	cg_entities[snap->ps.clientNum].setCurState(&tmp);
+	cg_entities[snap->ps.clientNum].setupNewEntity(snap->ps.clientNum);
 
 	CG_ExecuteNewServerCommands( snap->serverCommandSequence );
 
@@ -287,14 +79,10 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 	for ( i = 0 ; i < cg.snap->numEntities ; i++ ) {
 		state = &cg.snap->entities[ i ];
 		cent = &cg_entities[ state->number ];
-
-		memcpy(&cent->currentState, state, sizeof(entityState_s));
-		//cent->currentState = *state;
-		cent->interpolate = false;
-		cent->currentValid = true;
-
-		CG_ResetEntity( cent );
-		CG_NewEntity( state->number );
+	
+		cent->setCurState(state);
+		cent->resetEntity();
+		cent->setupNewEntity(state->number);
 	}
 }
 
@@ -306,8 +94,8 @@ CG_TransitionSnapshot
 The transition point from snap to nextSnap has passed
 ===================
 */
-static void CG_TransitionSnapshot( void ) {
-	centity_s			*cent;
+static void CG_TransitionSnapshot() {
+	cgEntity_c			*cent;
 	snapshot_t			*oldFrame;
 
 	if ( !cg.snap ) {
@@ -361,28 +149,24 @@ static void CG_TransitionSnapshot( void ) {
 			continue;
 		}
 		if(snapEntNum == i) {
-			if(cent->currentValid == false) {
+			if(cent->isCurrentValid() == false) {
 				if(cg_printSnapEntities.getInt()) {
 					CG_Printf("CG_TransitionSnapshot: %i: new entity %i\n",cg.snap->serverTime,i);
 				}
-				CG_NewEntity(i);
+				cent->setupNewEntity(i);
 			}
 			if(cg_printSnapEntities.getInt() > 1) {
 				CG_Printf("CG_TransitionSnapshot: %i: transition entity %i\n",cg.snap->serverTime,i);
 			}
-			CG_TransitionEntity( cent );
-
-			// remember time of snapshot this entity was last updated in
-			cent->snapShotTime = cg.snap->serverTime;
+			cent->transitionEntity();
 
 			snapEnt++;
-		} else if(cent->currentValid) {
+		} else if(cent->isCurrentValid()) {
 			if(cg_printSnapEntities.getInt()) {
 				CG_Printf("CG_TransitionSnapshot: %i: removed entity %i\n",cg.snap->serverTime,i);
 			}
-			CG_RemoveEntity(i);
-			cent->currentValid = false;
-		} else if(cent->rEnt) {
+			cent->clearEntity();
+		} else if(cent->getRenderEntity()) {
 			CG_Error("CG_TransitionSnapshot: found entity with currentValid == false and renderEntity present\n");
 		}
 	}
@@ -393,16 +177,8 @@ static void CG_TransitionSnapshot( void ) {
 	oldFrame = cg.snap;
 	cg.snap = cg.nextSnap;
 
-	if(oldFrame == 0) {
-		cg.snap->ps.toEntityState(&cg_entities[ cg.snap->ps.clientNum ].currentState, false );
-	} else {
-		cg.snap->ps.toEntityState(&cg_entities[ cg.snap->ps.clientNum ].nextState, false );
-	}
-	cg_entities[ cg.snap->ps.clientNum ].interpolate = false;
-	if(cg_entities[cg.snap->ps.clientNum].rEnt) {
-		// set the playerModel flag as soon as its possible
-		cg_entities[cg.snap->ps.clientNum].rEnt->setIsPlayerModel(true);
-	}
+	cg_entities[ cg.snap->ps.clientNum ].transitionLocalPlayer(cg.snap->ps,oldFrame == 0);
+
 #endif
 
 	cg.nextSnap = NULL;
@@ -419,7 +195,7 @@ static void CG_TransitionSnapshot( void ) {
 		//if ( cg_nopredict.getInt() || cg_synchronousClients.getInt() ) {
 			CG_TransitionPlayerState( ps, ops );
 		//}
-		CG_TransitionEntity(&cg_entities[ps->clientNum]);
+		cg_entities[ps->clientNum].transitionEntity();
 	}
 
 }
@@ -435,28 +211,20 @@ A new snapshot has just been read in from the client system.
 static void CG_SetNextSnap( snapshot_t *snap ) {
 	int					num;
 	entityState_s		*es;
-	centity_s			*cent;
+	cgEntity_c			*cent;
 
 	cg.nextSnap = snap;
 
-	snap->ps.toEntityState(&cg_entities[ snap->ps.clientNum ].nextState, false );
-	cg_entities[ cg.snap->ps.clientNum ].interpolate = true;
+	entityState_s tmp;
+	snap->ps.toEntityState(&tmp, false );
+	cg_entities[ cg.snap->ps.clientNum ].setNextState(&tmp);
 
 	// check for extrapolation errors
 	for ( num = 0 ; num < snap->numEntities ; num++ ) {
 		es = &snap->entities[num];
 		cent = &cg_entities[ es->number ];
 
-		memcpy(&cent->nextState, es, sizeof(entityState_s));
-		//cent->nextState = *es;
-
-		// if this frame is a teleport, or the entity wasn't in the
-		// previous frame, don't interpolate
-		if ( !cent->currentValid ) {//|| ( ( cent->currentState.eFlags ^ es->eFlags ) & EF_TELEPORT_BIT )  ) {
-			cent->interpolate = false;
-		} else {
-			cent->interpolate = true;
-		}
+		cent->setNextState(es);
 	}
 
 	// sort out solid entities
@@ -474,7 +242,7 @@ times if the client system fails to return a
 valid snapshot.
 ========================
 */
-static snapshot_t *CG_ReadNextSnapshot( void ) {
+static snapshot_t *CG_ReadNextSnapshot() {
 	bool	r;
 	snapshot_t	*dest;
 
@@ -542,7 +310,7 @@ of an interpolating one)
 
 ============
 */
-void CG_ProcessSnapshots( void ) {
+void CG_ProcessSnapshots() {
 	snapshot_t		*snap;
 	int				n;
 

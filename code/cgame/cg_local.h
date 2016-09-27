@@ -37,37 +37,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #define	LAND_RETURN_TIME	300
 #define	STEP_TIME			200
 #define	DUCK_TIME			100
-#define	ZOOM_TIME			150
 
-#define	MAX_STEP_CHANGE		32
-
-#define	CHAR_WIDTH			32
-#define	CHAR_HEIGHT			48
-
-//=================================================
-
-
-// centity_s have a direct corespondence with edict_s in the game, but
-// only the entityState_s is directly communicated to the cgame
-struct centity_s {
-	entityState_s	currentState;	// from cg.frame
-	entityState_s	nextState;		// from cg.nextFrame, if available
-	bool		interpolate;	// true if next is valid to interpolate to
-	bool		currentValid;	// true if cg.frame holds this entity
-
-	int				snapShotTime;	// last time this entity was found in a snapshot
-	int				lastUpdateFrame; // cg.frameNum when entity was updated
-
-	bool		extrapolated;	// false if origin / angles is an interpolation
-
-	// exact interpolated position of entity on this frame
-	vec3_c			lerpOrigin;
-	vec3_c			lerpAngles;
-
-	class rEntityAPI_i *rEnt; // for all entity types except ET_LIGHT
-	class rLightAPI_i *rLight; // for ET_LIGHT and for all entities with entityState_t::lightRadius != 0.f
-	class emitterBase_c *emitter; // for all entities with entity emitter enabled
-};
 
 
 //======================================================================
@@ -105,7 +75,6 @@ struct cg_t {
 
 	// prediction state
 	playerState_s	predictedPlayerState;
-	centity_s		predictedPlayerEntity;
 	bool	validPPS;				// clear until the first call to CG_PredictPlayerState
 
 	float		stepChange;				// for stair up smoothing
@@ -137,17 +106,6 @@ struct cg_t {
 
 };
 
-
-// all of the model, shader, and sound references that are
-// loaded at gamestate time are stored in cgMedia_t
-// Other media that can be tied to clients, weapons, or items are
-// stored in the clientInfo_t, itemInfo_t, weaponInfo_t, and powerupInfo_t
-struct cgMedia_t {
-	class mtrAPI_i *charsetShader;
-	class mtrAPI_i *whiteShader;
-
-
-};
 
 
 // The client game static (cgs) structure hold everything
@@ -182,16 +140,12 @@ struct cgs_t {
 //	str gameAnimNames[MAX_ANIMATIONS];
 	const class afDeclAPI_i	*gameAFs[MAX_RAGDOLLDEFS];
 	class mtrAPI_i *gameMaterials[MAX_MATERIALS];
-	// media
-	cgMedia_t		media;
-
 };
 
 //==============================================================================
 
 extern	cgs_t			cgs;
 extern	cg_t			cg;
-extern	centity_s		cg_entities[MAX_GENTITIES];
 
 extern	aCvar_c		cg_lagometer;
 extern	aCvar_c		cg_drawFPS;
@@ -205,68 +159,58 @@ extern	aCvar_c		cg_timescaleFadeEnd;
 extern	aCvar_c		cg_timescaleFadeSpeed;
 
 //
-// cg_main.c
+// cg_main.cpp
 //
 void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum );
-void CG_Shutdown( void );
+void CG_Shutdown();
 const char *CG_ConfigString( int index );
 const char *CG_Argv( int arg );
 
 void CG_Printf( const char *msg, ... );
 void CG_Error( const char *msg, ... );
 
-void CG_UpdateCvars( void );
+void CG_UpdateCvars();
 
 //
-// cg_view.c
+// cg_view.cpp
 //
 void CG_DrawActiveFrame( int serverTime, bool demoPlayback );
 
 
-//
-// cg_player.c
-//
-void CG_Player( centity_s *cent );
 
 //
-// cg_ents.c
+// cg_snapshot.cpp
 //
-void CG_AddPacketEntities( void );
-
-
-//
-// cg_snapshot.c
-//
-void CG_ProcessSnapshots( void );
+void CG_ProcessSnapshots();
 
 //
-// cg_consolecmds.c
+// cg_consolecmds.cpp
 //
-bool CG_ConsoleCommand( void );
-void CG_InitConsoleCommands( void );
+bool CG_ConsoleCommand();
+void CG_InitConsoleCommands();
 
 //
-// cg_servercmds.c
+// cg_servercmds.cpp
 //
 void CG_ExecuteNewServerCommands( int latestSequence );
-void CG_ParseServerinfo( void );
-void CG_SetConfigValues( void );
+void CG_ParseServerinfo();
+void CG_SetConfigValues();
 
 
 //
-// cg_playerstate.c
+// cg_playerstate.cpp
 //
-void CG_Respawn( void );
+void CG_Respawn();
 void CG_TransitionPlayerState( playerState_s *ps, playerState_s *ops );
 void CG_CheckChangedPredictableEvents( playerState_s *ps );
 void CG_PredictPlayerState();
 
 //
-// cg_draw.c
+// cg_draw.cpp
 //
 void CG_DrawActive();
 void CG_AddLagometerSnapshotInfo( snapshot_t *snap );
-void CG_AddLagometerFrameInfo( void ) ;
+void CG_AddLagometerFrameInfo() ;
 
 //
 // cg_collision.cpp
