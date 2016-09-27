@@ -92,7 +92,7 @@ void cgEntity_c::transitionLight() {
 		}
 	}
 	if(this->rLight == 0) {
-		g_core->RedWarning("CG_TransitionLight: found ET_LIGHT without rLight (entity %i)\n",this->currentState.number);
+		g_core->RedWarning("cgEntity_c::transitionLight: found ET_LIGHT without rLight (entity %i)\n",this->currentState.number);
 		// it still happens sometimes, let's fix it here for now.
 #if 0
 		return;
@@ -105,7 +105,7 @@ void cgEntity_c::transitionLight() {
 }
 void cgEntity_c::transitionModel() {
 	if(this->rEnt == 0) {
-		g_core->RedWarning("CG_TransitionModel: found entity without rEntity (entity %i)\n",this->currentState.number);
+		g_core->RedWarning("cgEntity_c::transitionModel: found entity without rEntity (entity %i)\n",this->currentState.number);
 		// it still happens sometimes, let's fix it here for now.
 #if 0
 		return;
@@ -278,7 +278,7 @@ void cgEntity_c::updateEntityEmitter() {
 		// get emitter name (it might be a material name or Doom3 particleDecl name)
 		const char *emitterName = CG_ConfigString(CS_MATERIALS+this->currentState.trailEmitterMaterial);
 		if(emitterName[0] == 0) {
-			g_core->RedWarning("CG_UpdateEntityEmitter: NULL entity emitter name\n");
+			g_core->RedWarning("cgEntity_c::updateEntityEmitter: NULL entity emitter name\n");
 		} else {
 			// see if we have a Doom3 .prt decl for it
 			class particleDeclAPI_i *prtDecl = g_declMgr->registerParticleDecl(emitterName);
@@ -413,32 +413,18 @@ void cgEntity_c::clearEntity() {
 	this->bCurrentValid = false;
 }
 void cgEntity_c::interpolateEntityOrientation() {
-	float		f;
-
-	// it would be an internal error to find an entity that interpolates without
-	// a snapshot ahead of the current one
 	if ( cg.nextSnap == NULL ) {
-		CG_Error( "CG_InterpoateEntityPosition: cg.nextSnap == NULL" );
+		// It should never happen, but it actually happens sometimes when the FPS is very low...
+		g_core->RedWarning( "cgEntity_c::interpolateEntityOrientation: cg.nextSnap == NULL\n" );
 	}
-	//CG_Printf("CG_InterpolateEntityPosition: TODO\n");
-	f = cg.frameInterpolation;
-
-	// this will linearize a sine or parabolic curve, but it is important
-	// to not extrapolate player positions if more recent data is available
-	//BG_EvaluateTrajectory( &this->currentState.pos, cg.snap->serverTime, current );
-	//BG_EvaluateTrajectory( &this->nextState.pos, cg.nextSnap->serverTime, next );
-
 	const float *current = this->currentState.origin;
 	const float *next = this->nextState.origin;
 
-	this->lerpOrigin[0] = current[0] + f * ( next[0] - current[0] );
-	this->lerpOrigin[1] = current[1] + f * ( next[1] - current[1] );
-	this->lerpOrigin[2] = current[2] + f * ( next[2] - current[2] );
+	this->lerpOrigin[0] = current[0] + cg.frameInterpolation * ( next[0] - current[0] );
+	this->lerpOrigin[1] = current[1] + cg.frameInterpolation * ( next[1] - current[1] );
+	this->lerpOrigin[2] = current[2] + cg.frameInterpolation * ( next[2] - current[2] );
 
-	//BG_EvaluateTrajectory( &this->currentState.apos, cg.snap->serverTime, current );
-	//BG_EvaluateTrajectory( &this->nextState.apos, cg.nextSnap->serverTime, next );
-
-	this->lerpAngles = this->currentState.angles.lerpDegrees(this->nextState.angles, f);
+	this->lerpAngles = this->currentState.angles.lerpDegrees(this->nextState.angles, cg.frameInterpolation);
 
 	// update render entity and/or render light
 	this->onEntityOrientationChange();
