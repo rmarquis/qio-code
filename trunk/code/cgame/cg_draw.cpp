@@ -123,7 +123,7 @@ CG_AddLagometerFrameInfo
 Adds the current interpolate / extrapolate bar for this frame
 ==============
 */
-void CG_AddLagometerFrameInfo( void ) {
+void CG_AddLagometerFrameInfo() {
 	int			offset;
 
 	offset = cg.time - cg.latestSnapshotTime;
@@ -162,7 +162,7 @@ CG_DrawDisconnect
 Should we draw something differnet for long lag vs no packets?
 ==============
 */
-static void CG_DrawDisconnect( void ) {
+static void CG_DrawDisconnect() {
 	float		x, y;
 	int			cmdNum;
 	userCmd_s	cmd;
@@ -197,113 +197,6 @@ static void CG_DrawDisconnect( void ) {
 }
 
 
-#define	MAX_LAGOMETER_PING	900
-#define	MAX_LAGOMETER_RANGE	300
-
-/*
-==============
-CG_DrawLagometer
-==============
-*/
-static void CG_DrawLagometer( void ) {
-	int		a, i;
-	float	v;
-	float	ax, ay, aw, ah, mid, range;
-	int		color;
-	float	vscale;
-
-	if ( !cg_lagometer.getInt() || cgs.localServer ) {
-		CG_DrawDisconnect();
-		return;
-	}
-
-	//
-	// draw the graph
-	//
-
-	rf->set2DColor( NULL );
-	//CG_DrawPic( x, y, 48, 48, cgs.media.lagometerShader );
-
-	u32 ww = rf->getWinWidth();
-	u32 wh = rf->getWinHeight();
-	ax = ww - 64;
-	ay = wh - 64;
-	aw = 48;
-	ah = 48;
-
-	color = -1;
-	range = ah / 3;
-	mid = ay + range;
-
-	vscale = range / MAX_LAGOMETER_RANGE;
-
-	// draw the frame interpoalte / extrapolate graph
-	for ( a = 0 ; a < aw ; a++ ) {
-		i = ( lagometer.frameCount - 1 - a ) & (LAG_SAMPLES - 1);
-		v = lagometer.frameSamples[i];
-		v *= vscale;
-		if ( v > 0 ) {
-			if ( color != 1 ) {
-				color = 1;
-				rf->set2DColor( g_color_table[ColorIndex(COLOR_YELLOW)] );
-			}
-			if ( v > range ) {
-				v = range;
-			}
-			rf->drawStretchPic ( ax + aw - a, mid - v, 1, v, 0, 0, 0, 0, cgs.media.whiteShader );
-		} else if ( v < 0 ) {
-			if ( color != 2 ) {
-				color = 2;
-				rf->set2DColor( g_color_table[ColorIndex(COLOR_BLUE)] );
-			}
-			v = -v;
-			if ( v > range ) {
-				v = range;
-			}
-			rf->drawStretchPic( ax + aw - a, mid, 1, v, 0, 0, 0, 0, cgs.media.whiteShader );
-		}
-	}
-
-	// draw the snapshot latency / drop graph
-	range = ah / 2;
-	vscale = range / MAX_LAGOMETER_PING;
-
-	for ( a = 0 ; a < aw ; a++ ) {
-		i = ( lagometer.snapshotCount - 1 - a ) & (LAG_SAMPLES - 1);
-		v = lagometer.snapshotSamples[i];
-		if ( v > 0 ) {
-			if ( lagometer.snapshotFlags[i] & SNAPFLAG_RATE_DELAYED ) {
-				if ( color != 5 ) {
-					color = 5;	// YELLOW for rate delay
-					rf->set2DColor( g_color_table[ColorIndex(COLOR_YELLOW)] );
-				}
-			} else {
-				if ( color != 3 ) {
-					color = 3;
-					rf->set2DColor( g_color_table[ColorIndex(COLOR_GREEN)] );
-				}
-			}
-			v = v * vscale;
-			if ( v > range ) {
-				v = range;
-			}
-			rf->drawStretchPic( ax + aw - a, ay + ah - v, 1, v, 0, 0, 0, 0, cgs.media.whiteShader );
-		} else if ( v < 0 ) {
-			if ( color != 4 ) {
-				color = 4;		// RED for dropped snapshots
-				rf->set2DColor( g_color_table[ColorIndex(COLOR_RED)] );
-			}
-			rf->drawStretchPic( ax + aw - a, ay + ah - range, 1, range, 0, 0, 0, 0, cgs.media.whiteShader );
-		}
-	}
-
-	rf->set2DColor( NULL );
-
-	CG_DrawDisconnect();
-}
-
-
-
 /*
 ===============================================================================
 
@@ -323,8 +216,7 @@ static void CG_Draw2D()
 	if ( cg_draw2D.getInt() == 0 ) {
 		return;
 	}
-
-	CG_DrawLagometer();
+	CG_DrawDisconnect();
 
 	CG_DrawUpperRight();
 

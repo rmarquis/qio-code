@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // cg_view.c -- setup all the parameters (position, angle, etc)
 // for a 3D rendering
 #include "cg_local.h"
+#include "cg_entities.h"
 #include <api/cvarAPI.h>
 #include <api/rAPI.h>
 #include <api/rbAPI.h>
@@ -57,7 +58,7 @@ CG_OffsetThirdPersonView
 ===============
 */
 #define	FOCUS_DISTANCE	512
-static void CG_OffsetThirdPersonView( void ) {
+static void CG_OffsetThirdPersonView() {
 	vec3_c		forward, right, up;
 	vec3_c		view;
 	vec3_c		focusAngles;
@@ -135,7 +136,7 @@ float thirdPersonRange = 128.f;
 
 
 // this causes a compiler bug on mac MrC compiler
-static void CG_StepOffset( void ) {
+static void CG_StepOffset() {
 	int		timeDelta;
 	
 	// smooth out stair climbing
@@ -152,7 +153,7 @@ CG_OffsetFirstPersonView
 
 ===============
 */
-static void CG_OffsetFirstPersonView( void ) {
+static void CG_OffsetFirstPersonView() {
 	float			*origin;
 	float			*angles;
 	float			delta;
@@ -211,7 +212,7 @@ static void CG_OffsetFirstPersonView( void ) {
 
 //======================================================================
 
-void CG_ZoomDown_f( void ) { 
+void CG_ZoomDown_f() { 
 	if ( cg.zoomed ) {
 		return;
 	}
@@ -219,7 +220,7 @@ void CG_ZoomDown_f( void ) {
 	cg.zoomTime = cg.time;
 }
 
-void CG_ZoomUp_f( void ) { 
+void CG_ZoomUp_f() { 
 	if ( !cg.zoomed ) {
 		return;
 	}
@@ -247,13 +248,11 @@ CG_CalcViewValues
 Sets cg.refdef view values
 ===============
 */
-static int CG_CalcViewValues( void ) {
-	playerState_s	*ps;
-
+static int CG_CalcViewValues() {
 	// calculate size of 3D view
 	CG_CalcVrect();
 
-	ps = &cg.predictedPlayerState;
+	playerState_s	*ps = &cg.predictedPlayerState;
 
 	cg.refdefViewOrigin = ps->origin;
 	cg.refdefViewAngles = ps->viewangles;
@@ -345,7 +344,7 @@ void CG_DrawActiveFrame( int serverTime, bool demoPlayback ) {
 	CG_UpdateBulletTracers();
 
 	// build the render lists
-	CG_AddPacketEntities();			// adter calcViewValues, so predicted player state is correct
+	CG_RunEntities();			// adter calcViewValues, so predicted player state is correct
 
 //	cg.refdef.time = cg.time;
 //	memcpy( cg.refdef.areamask, cg.snap->areamask, sizeof( cg.refdef.areamask ) );

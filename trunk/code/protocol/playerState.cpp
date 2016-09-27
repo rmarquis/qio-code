@@ -27,7 +27,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 
 // This is done after each set of userCmd_s on the server,
 // and after local prediction on the client
-void playerState_s::toEntityState(entityState_s *s, bool snap) {
+void playerState_s::toEntityState(entityState_s *s, bool snap) const {
 
 	//if ( this->pm_type == PM_INTERMISSION || this->pm_type == PM_SPECTATOR ) {
 	//	s->eType = ET_INVISIBLE;

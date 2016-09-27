@@ -26,6 +26,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // be a valid snapshot this frame
 
 #include "cg_local.h"
+#include "cg_entities.h"
 #include <api/clientAPI.h>
 #include <api/cmAPI.h>
 #include <api/rAPI.h>
@@ -45,7 +46,7 @@ This is called explicitly when the gamestate is first received,
 and whenever the server updates any serverinfo flagged cvars
 ================
 */
-void CG_ParseServerinfo( void ) {
+void CG_ParseServerinfo() {
 	const char	*info;
 	const char	*mapName;
 
@@ -78,7 +79,7 @@ CG_ConfigStringModified
 
 ================
 */
-static void CG_ConfigStringModified( void ) {
+static void CG_ConfigStringModified() {
 	const char	*str;
 	int		num;
 
@@ -128,7 +129,7 @@ A tournement restart will clear everything, but doesn't
 require a reload of all the media
 ===============
 */
-static void CG_MapRestart( void ) {
+static void CG_MapRestart() {
 
 
 //	cg.mapRestart = true;
@@ -163,7 +164,7 @@ static void CG_TestBulletAttack() {
 	//mtrAPI_i *decalMaterial = g_ms->registerMaterial("qiotests/testdecalmaterial");
 	mtrAPI_i *decalMaterial = g_ms->registerMaterial(decalMaterialName);
 	float radius = 8.f;
-	centity_s *hit = tr.getHitCGEntity();
+	cgEntity_c *hit = tr.getHitCGEntity();
 	if(hit == 0) {
 		CG_Printf("CG_TestBulletAttack: hit is NULL\n");
 	} else if(hit == &cg_entities[ENTITYNUM_WORLD]) {
@@ -175,8 +176,8 @@ static void CG_TestBulletAttack() {
 		return;
 	} else {
 		CG_Printf("CG_TestBulletAttack: hit entity\n");
-		if(hit->rEnt) {
-			hit->rEnt->addDecalWorldSpace(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
+		if(hit->getRenderEntity()) {
+			hit->getRenderEntity()->addDecalWorldSpace(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
 		} else {
 			CG_Printf("CG_TestBulletAttack: hit centity has NULL rEnt\n");
 		}
@@ -223,7 +224,7 @@ static void CG_DoRailgunEffect() {
 
 	mtrAPI_i *decalMaterial = g_ms->registerMaterial(decalMaterialName);
 	float radius = 32.f;
-	centity_s *hit = tr.getHitCGEntity();
+	cgEntity_c *hit = tr.getHitCGEntity();
 	if(hit == 0 || hit == &cg_entities[ENTITYNUM_WORLD]) {
 		CG_Printf("CG_DoRailgunEffect: hit Worldspawn\n");
 		if(cg_debugDrawBulletAttack.getInt()) {
@@ -232,8 +233,8 @@ static void CG_DoRailgunEffect() {
 		rf->addWorldMapDecal(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
 	} else {
 		CG_Printf("CG_DoRailgunEffect: hit entity\n");
-		if(hit->rEnt) {
-			hit->rEnt->addDecalWorldSpace(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
+		if(hit->getRenderEntity()) {
+			hit->getRenderEntity()->addDecalWorldSpace(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
 		} else {
 			CG_Printf("CG_DoRailgunEffect: hit centity has NULL rEnt\n");
 		}
@@ -247,15 +248,15 @@ void CG_CreateDecal(const vec3_c &p, const vec3_c &dir, float radius, const char
 		return; // no hit
 	}
 	mtrAPI_i *decalMaterial = g_ms->registerMaterial(matName);
-	centity_s *hit = tr.getHitCGEntity();
+	cgEntity_c *hit = tr.getHitCGEntity();
 	if(hit == 0 || hit == &cg_entities[ENTITYNUM_WORLD]) {
 		CG_Printf("CG_CreateDecal: creating world decal\n");
 		rf->addWorldMapDecal(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
 		return;
 	} else {
 		CG_Printf("CG_CreateDecal: creating entity decal\n");
-		if(hit->rEnt) {
-			hit->rEnt->addDecalWorldSpace(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
+		if(hit->getRenderEntity()) {
+			hit->getRenderEntity()->addDecalWorldSpace(tr.getHitPos(),tr.getHitPlaneNormal(),radius,decalMaterial);
 		} else {
 			CG_Printf("CG_CreateDecal: hit centity has NULL rEnt\n");
 		}
@@ -293,7 +294,7 @@ The string has been tokenized and can be retrieved with
 Cmd_Argc() / Cmd_Argv()
 =================
 */
-static void CG_ServerCommand( void ) {
+static void CG_ServerCommand() {
 	const char	*cmd;
 
 	cmd = CG_Argv(0);

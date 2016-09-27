@@ -23,6 +23,7 @@ or simply visit <http://www.gnu.org/licenses/>.
 */
 // cg_testModel.cpp - clientside entity/model testing
 #include "cg_local.h"
+#include "cg_entities.h"
 #include <shared/autoCvar.h>
 #include <api/rAPI.h>
 #include <api/rEntityAPI.h>
@@ -78,10 +79,10 @@ void CG_RunTestModel() {
 	cg_testModelEntity->setAnim(cg_testAnim.getStr());
 	if(cg_testModelParentEntity.strLen() && _stricmp(cg_testModelParentEntity.getStr(),"none")) {
 		int entNum = atoi(cg_testModelParentEntity.getStr());
-		centity_s *cent = &cg_entities[entNum];
-		if(cent->rEnt) {
+		cgEntity_c *cent = &cg_entities[entNum];
+		if(cent->getRenderEntity()) {
 			matrix_c orMat;
-			cent->rEnt->getBoneWorldOrientation(cg_testModelParentTag.getStr(),orMat);
+			cent->getRenderEntity()->getBoneWorldOrientation(cg_testModelParentTag.getStr(),orMat);
 			cg_testModelEntity->setOrigin(orMat.getOrigin());
 			vec3_c angles = orMat.getAngles();
 			angles[PITCH] += cg_testModelAttached_extraPitch.getFloat();

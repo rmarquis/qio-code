@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // cg_main.c -- initialization and primary entry point for cgame
 #include "cg_local.h"
+#include "cg_entities.h"
 #include <protocol/configStrings.h>
 #include "cg_emitter_base.h"
 #include <api/coreAPI.h>
@@ -38,7 +39,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 cg_t				cg;
 cgs_t				cgs;
-centity_s			cg_entities[MAX_GENTITIES];
 
 aCvar_c		cg_lagometer("cg_lagometer","0");
 aCvar_c		cg_drawFPS("cg_drawFPS","0");
@@ -56,7 +56,7 @@ aCvar_c		cg_timescaleFadeSpeed("cg_timescaleFadeSpeed","0");
 CG_RegisterCvars
 =================
 */
-void CG_RegisterCvars( void ) {
+void CG_RegisterCvars() {
 	char var[64];
 	// see if we are also running the server on this machine
 	g_cvars->Cvar_VariableStringBuffer( "sv_running", var, sizeof( var ) );
@@ -161,10 +161,6 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	cgs.processedSnapshotNum = serverMessageNum;
 	cgs.serverCommandSequence = serverCommandSequence;
-
-	// load a few needed things before we do any screen updates
-	cgs.media.charsetShader		= rf->registerMaterial( "gfx/2d/bigchars" );
-	cgs.media.whiteShader		= rf->registerMaterial( "white" );
 
 	// init cgame console variables
 	AUTOCVAR_RegisterAutoCvars();
@@ -313,22 +309,9 @@ CG_Shutdown
 Called before every level change or subsystem restart
 =================
 */
-void CG_Shutdown( void ) {
-	for(u32 i = 0; i < MAX_GENTITIES; i++) {
-		centity_s *cent = &cg_entities[i];
-		if(cent->rEnt) {
-			rf->removeEntity(cent->rEnt);
-			cent->rEnt = 0;
-		}
-		if(cent->rLight) {
-			rf->removeLight(cent->rLight);
-			cent->rLight = 0;
-		}
-		if(cent->emitter) {
-			delete cent->emitter;
-			cent->emitter = 0;
-		}
-	}
+void CG_Shutdown() {
+	// free entities
+	CG_ShutdownEntities();
 	// shutdown test material
 	CG_FreeTestMaterialClass();
 	// some mods may need to do cleanup work here,

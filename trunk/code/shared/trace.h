@@ -49,7 +49,7 @@ class trace_c {
 		// SERVERSIDE trace hit info
 		class BaseEntity *hitEntity; // for game module
 		// CLIENTSIDE trace hit info
-		struct centity_s *clEntity; // for cgame module
+		class cgEntity_c *clEntity; // for cgame module
 		class rEntityAPI_i *hitREntity; // for cgame and renderer
 		class mtrAPI_i *hitRMaterial; // for cgame and renderer
 		// for renderer
@@ -116,7 +116,7 @@ public:
 	void setHitEntity(class BaseEntity *newHitEntity) {
 		hitEntity = newHitEntity;
 	}
-	void setHitCGEntity(struct centity_s *newHitCGEntity) {
+	void setHitCGEntity(class cgEntity_c *newHitCGEntity) {
 		clEntity = newHitCGEntity;
 	}
 	void setHitREntity(class rEntityAPI_i *newHitREnt) {
@@ -138,7 +138,7 @@ public:
 	class BaseEntity *getHitEntity() const {
 		return hitEntity;
 	}
-	struct centity_s *getHitCGEntity() const {
+	class cgEntity_c *getHitCGEntity() const {
 		return clEntity;
 	}
 	class rEntityAPI_i *getHitREntity() const {
