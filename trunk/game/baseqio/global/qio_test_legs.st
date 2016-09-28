@@ -7,6 +7,7 @@ state STAND
 	}
 	legs
 	{
+		ak-47_hold_f 		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_hold_f 		: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_hold_f 	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_hold_f 		: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -41,6 +42,7 @@ state RUN_FORWARD
 {
 	legs
 	{
+		ak-47_run_f		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_run_f		: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_run_f	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_run_f		: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -74,6 +76,7 @@ state RUN_BACKWARD
 {
 	legs
 	{
+		ak-47_run_b		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_run_b		: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_run_b	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_run_b		: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -106,6 +109,7 @@ state RUN_LEFT
 {
 	legs
 	{
+		ak-47_run_l		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_run_l		: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_run_l	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_run_l		: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -138,6 +142,7 @@ state RUN_RIGHT
 {
 	legs
 	{
+		ak-47_run_r		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_run_r		: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_run_r	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_run_r		: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -172,6 +177,7 @@ state WALK_FORWARD
 {
 	legs
 	{
+		ak-47_walk_f		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_walk_f		: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_walk_f	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_walk_f		: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -204,6 +210,7 @@ state WALK_BACKWARD
 {
 	legs
 	{
+		ak-47_walk_b		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_walk_b		: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_walk_b	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_walk_b		: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -237,6 +244,7 @@ state WALK_LEFT
 {
 	legs
 	{
+		ak-47_walk_l		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_walk_l		: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_walk_l	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_walk_l		: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -269,6 +277,7 @@ state WALK_RIGHT
 {
 	legs
 	{
+		ak-47_walk_r		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_walk_r		: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_walk_r	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_walk_r		: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -305,6 +314,7 @@ state JUMP_STANDING
 	}*/
 	legs
 	{
+		ak-47_jump_bg		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_jump_bg		: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_jump_bg	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_jump_bg		: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -329,6 +339,7 @@ state FALL
 {
 	legs
 	{
+		ak-47_jump_id		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_jump_id		: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_jump_id	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_jump_id		: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -349,6 +360,7 @@ state LAND
 {
 	legs
 	{
+		ak-47_jump_ed		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_jump_ed		: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_jump_ed	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_jump_ed		: IS_WEAPON_ACTIVE "dualhand" "knife"

@@ -14,6 +14,7 @@ state STAND
 
 	viewModelHands 
 	{
+		ak-47_fps_idle		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_fps_idle 	: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_fps_idle 	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_fps_idle 		: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -44,6 +45,7 @@ state RELOAD_WEAPON
 
 	torso
 	{
+		ak-47_reload 		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_reload 		: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_reload 	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_reload 		: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -60,6 +62,7 @@ state RELOAD_WEAPON
 	}
 	viewModelHands 
 	{
+		ak-47_fps_reload 	: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_fps_reload 	: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_fps_reload 	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_fps_reload 	: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -126,6 +129,7 @@ state PRIMARY_ATTACK_FULLAUTO
 
 	torso
 	{
+		ak-47_attack_h		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_attack_h	: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_attack_h	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_attack_h	 	: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -143,6 +147,7 @@ state PRIMARY_ATTACK_FULLAUTO
 	}	
 	viewModelHands 
 	{
+		ak-47_fps_attack 	: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_fps_attack 	: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_fps_attack 	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_fps_attack 	: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -170,6 +175,7 @@ state PRIMARY_ATTACK_SEMIAUTO
 
 	torso
 	{
+		ak-47_attack_h		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_attack_h 	: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_attack_h 	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_attack_h 		: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -200,6 +206,7 @@ state RAISE_WEAPON
 
 	torso
 	{
+		ak-47_select 		: IS_NEW_WEAPON "dualhand" "ak-47"
 		glock17_select 		: IS_NEW_WEAPON "dualhand" "glock17"
 		beretta_m9_select 	: IS_NEW_WEAPON "dualhand" "beretta_m9"
 		knife_select 		: IS_NEW_WEAPON "dualhand" "knife"
@@ -212,6 +219,7 @@ state RAISE_WEAPON
 	}
 	viewModelHands 
 	{
+		ak-47_fps_select 	: IS_NEW_WEAPON "dualhand" "ak-47"
 		glock17_fps_select 	: IS_NEW_WEAPON "dualhand" "glock17"
 		beretta_m9_fps_select 	: IS_NEW_WEAPON "dualhand" "beretta_m9"
 		knife_fps_select 	: IS_NEW_WEAPON "dualhand" "knife"
@@ -240,6 +248,7 @@ state PUTAWAY_MAIN
 
 	torso
 	{
+		ak-47_unselect		: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_unselect	: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_unselect	: IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_unselect		: IS_WEAPON_ACTIVE "dualhand" "knife"
@@ -252,6 +261,7 @@ state PUTAWAY_MAIN
 	}
 	viewModelHands 
 	{
+		ak-47_fps_unselect 	: IS_WEAPON_ACTIVE "dualhand" "ak-47"
 		glock17_fps_unselect 	: IS_WEAPON_ACTIVE "dualhand" "glock17"
 		beretta_m9_fps_unselect : IS_WEAPON_ACTIVE "dualhand" "beretta_m9"
 		knife_fps_unselect 	: IS_WEAPON_ACTIVE "dualhand" "knife"
