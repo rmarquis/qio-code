@@ -52,7 +52,6 @@ void CG_ParseServerinfo() {
 
 	info = CG_ConfigString( CS_SERVERINFO );
 
-	cgs.maxclients = atoi( Info_ValueForKey( info, "sv_maxclients" ) );
 	mapName = Info_ValueForKey( info, "mapname" );
 	// NOTE: the order matters here! .map should always be last, 
 	// because .map file is somtimes present for .bsp files and such.

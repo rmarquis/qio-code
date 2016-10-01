@@ -50,10 +50,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 struct cg_t {
 	int			clientFrame;		// incremented each frame
-
 	int			clientNum;
 
-	bool	demoPlayback;
 
 	// there are only one or two snapshot_t that are relevent at a time
 	int			latestSnapshotNum;	// the number of snapshots the client system has received
@@ -71,8 +69,6 @@ struct cg_t {
 								// is rendering at.
 	int			oldTime;		// time at last frame, used for missile trails and prediction checking
 
-	int			physicsTime;	// either cg.snap->time or cg.nextSnap->time
-
 	// prediction state
 	playerState_s	predictedPlayerState;
 	bool	validPPS;				// clear until the first call to CG_PredictPlayerState
@@ -85,10 +81,6 @@ struct cg_t {
 
 	float		landChange;				// for landing hard
 	int			landTime;
-
-	// input state sent to server
-
-
 
 	// view rendering
 	vec3_c		refdefViewOrigin;
@@ -103,7 +95,6 @@ struct cg_t {
 	// zFar value
 	float farPlane;
 
-
 };
 
 
@@ -114,16 +105,9 @@ struct cg_t {
 // all clients to begin playing instantly
 struct cgs_t {
 	gameState_s		gameState;			// gamestate from server
-	float			screenXScale;		// derived from renderer
-	float			screenYScale;
-	float			screenXBias;
-
 	int				serverCommandSequence;	// reliable command stream counter
 	int				processedSnapshotNum;// the number of snapshots cgame has requested
 
-	bool		localServer;		// detected on startup by checking sv_running
-
-	int				maxclients;
 	char			mapname[1024];
 
 
@@ -133,13 +117,11 @@ struct cgs_t {
 	//
 	// locally derived information from gamestate
 	//
-	class rModelAPI_i	*gameModels[MAX_MODELS];
-	class cMod_i		*gameCollModels[MAX_MODELS];
-	//sfxHandle_t		gameSounds[MAX_SOUNDS];
+	class rModelAPI_i			*gameModels[MAX_MODELS];
+	class cMod_i				*gameCollModels[MAX_MODELS];
 	const class skelAnimAPI_i	*gameAnims[MAX_ANIMATIONS];
-//	str gameAnimNames[MAX_ANIMATIONS];
-	const class afDeclAPI_i	*gameAFs[MAX_RAGDOLLDEFS];
-	class mtrAPI_i *gameMaterials[MAX_MATERIALS];
+	const class afDeclAPI_i		*gameAFs[MAX_RAGDOLLDEFS];
+	class mtrAPI_i				*gameMaterials[MAX_MATERIALS];
 };
 
 //==============================================================================
