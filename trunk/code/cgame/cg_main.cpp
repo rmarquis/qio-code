@@ -51,17 +51,6 @@ aCvar_c		cg_timescale("timescale","1");
 aCvar_c		cg_timescaleFadeEnd("cg_timescaleFadeEnd","1");
 aCvar_c		cg_timescaleFadeSpeed("cg_timescaleFadeSpeed","0");
 
-/*
-=================
-CG_RegisterCvars
-=================
-*/
-void CG_RegisterCvars() {
-	char var[64];
-	// see if we are also running the server on this machine
-	g_cvars->Cvar_VariableStringBuffer( "sv_running", var, sizeof( var ) );
-	cgs.localServer = atoi( var );
-}
 																															
 void CG_Printf( const char *msg, ... ) {
 	va_list		argptr;
@@ -164,13 +153,8 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
 
 	// init cgame console variables
 	AUTOCVAR_RegisterAutoCvars();
-	CG_RegisterCvars();
 	// init console commands
 	AUTOCMD_RegisterAutoConsoleCommands();
-
-	// get the rendering configuration from the client system
-	cgs.screenXScale = rf->getWinWidth() / 640.0;
-	cgs.screenYScale = rf->getWinHeight() / 480.0;
 
 	// get the gamestate from the client system
 	g_client->GetGameState( &cgs.gameState );

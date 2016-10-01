@@ -839,7 +839,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 	char	cwd[MAX_OSPATH];
 	s32		startTime, endTime, i, totalMsec = 0, countMsec = 0;
 	char	commandLine[MAX_STRING_CHARS] = { 0 };
-
+	s32 lastFrameMSec = 0;
 	if (hPrevInstance) {
 		return 0;
 	}
@@ -902,7 +902,9 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 
 	while (1) {
 		if (g_WinV.isMinimized || (com_dedicated && com_dedicated->integer)) {
-			Sleep(5);
+			if(lastFrameMSec < 5) {
+				Sleep(5);
+			}
 		}
 
 		startTime = Sys_Milliseconds();
@@ -911,7 +913,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 		Com_Frame();
 
 		endTime = Sys_Milliseconds();
-		totalMsec += endTime - startTime;
+		lastFrameMSec = endTime - startTime;
+		totalMsec += lastFrameMSec;
 		countMsec++;
 	}
 

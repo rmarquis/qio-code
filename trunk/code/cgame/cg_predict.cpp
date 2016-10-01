@@ -122,14 +122,7 @@ void CG_PredictPlayerState() {
 		cg.predictedPlayerState = cg.snap->ps;
 	}
 
-
-	// demo playback just copies the moves
-	if ( cg.demoPlayback ) {
-		CG_InterpolatePlayerState( false );
-		return;
-	}
-
-	// V: prediction removed.
+	// TODO: prediction
 	CG_InterpolatePlayerState( true );
 }
 
