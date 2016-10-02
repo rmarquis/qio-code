@@ -888,7 +888,8 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
 	NET_Init();
 
 #ifndef DEDICATED
-	IN_Init();
+	if(com_dedicated->integer != 2)
+		IN_Init();
 #endif
 
 	_getcwd(cwd, sizeof(cwd));

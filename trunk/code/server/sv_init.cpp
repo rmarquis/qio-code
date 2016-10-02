@@ -510,8 +510,10 @@ void SV_SpawnServer( char *server, bool killBots ) {
 	Hunk_Clear();
 
 #ifndef DEDICATED
-	// Restart renderer
-	CL_StartHunkUsers( true );
+	if(com_dedicated->integer != 2) {
+		// Restart renderer
+		CL_StartHunkUsers( true );
+	}
 #endif
 
 	// clear collision map data

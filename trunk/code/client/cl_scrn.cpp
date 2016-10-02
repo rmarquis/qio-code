@@ -120,7 +120,8 @@ This will be called twice if rendering in stereo mode
 ==================
 */
 void SCR_DrawScreenField() {
-	bool uiFullscreen;
+	//if(rf == 0)
+	//	return; // safe exit for dedicated
 
 	rf->beginFrame();
 
@@ -134,6 +135,7 @@ void SCR_DrawScreenField() {
 		return; 
 	}
 
+	bool uiFullscreen;
 	uiFullscreen = 0;// (uivm && VM_Call( uivm, UI_IS_FULLSCREEN ));
 
 	// wide aspect ratio screens need to have the sides cleared
@@ -220,6 +222,9 @@ text to the screen.
 ==================
 */
 void SCR_UpdateScreen() {
+
+	if(com_dedicated->integer == 2)
+		return;
 	static int	recursive;
 
 	if ( !scr_initialized ) {
@@ -231,28 +236,10 @@ void SCR_UpdateScreen() {
 	}
 	recursive = 1;
 
-	// If there is no VM, there are also no rendering commands issued. Stop the renderer in
-	// that case.
-	if( 1 || com_dedicated->integer )
-	{	
+	SCR_DrawScreenField();
 
-		//// XXX
-		//int in_anaglyphMode = Cvar_VariableIntegerValue("r_anaglyphMode");
-		//// if running in stereo, we need to draw the frame twice
-		//if ( cls.glconfig.stereoEnabled || in_anaglyphMode) {
-		//	SCR_DrawScreenField( STEREO_LEFT );
-		//	SCR_DrawScreenField( STEREO_RIGHT );
-		//} else {
-			SCR_DrawScreenField();
-		//}
-		
+	rf->endFrame();
 
-		//if ( com_speeds->integer ) {
-		//	re.EndFrame( &time_frontend, &time_backend );
-		//} else {
-			rf->endFrame();
-		//}
-	}
 	
 	recursive = 0;
 }

@@ -642,6 +642,8 @@ of OpenGL
 */
 void GLimp_Init()
 {
+	g_core->Print("GLimp_Init\n");
+
 	r_sdlDriver = g_cvars->Cvar_Get( "r_sdlDriver", "", CVAR_ROM );
 	r_allowResize = g_cvars->Cvar_Get( "r_allowResize", "0", CVAR_ARCHIVE );
 	r_centerWindow = g_cvars->Cvar_Get( "r_centerWindow", "0", CVAR_ARCHIVE );
