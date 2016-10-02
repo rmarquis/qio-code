@@ -116,6 +116,9 @@ void AC_CompleteKeyname()
 	if( !AC_Complete( ) )
 		Key_KeynameCompletion( PrintMatches );
 }
+#else
+void AC_CompleteKeyname() {
+}
 #endif
 
 void AC_AddMatch_Unique(const char *m) {

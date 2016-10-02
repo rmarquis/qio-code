@@ -1952,7 +1952,8 @@ void Com_Init( char *commandLine ) {
 	}
 	
 	if(com_bEditorMode == false) {
-		CL_StartHunkUsers( false );
+		if(com_dedicated->integer != 2)
+			CL_StartHunkUsers( false );
 	}
 
 	// make sure single player is off by default

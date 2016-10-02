@@ -3238,7 +3238,8 @@ void CL_Init() {
 	Cmd_AddCommand ("stopvideo", CL_StopVideo_f );
 	Cmd_AddCommand ("forcedownload", CL_ForceDownload_f );
 	
-	CL_InitRef();
+	if(com_dedicated->integer != 2)
+		CL_InitRef();
 
 	SCR_Init ();
 
