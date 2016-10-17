@@ -225,7 +225,14 @@ BaseEntity *G_SpawnEntDef(const class entDefAPI_i *entDef) {
 			mEnt->setRigidBodyPhysicsEnabled(false);
 			ent = mEnt;
 		} else {
-			g_core->Print("G_SpawnEntDef: Failed to spawn class %s\n",className);
+			const char *originStr = entDef->getKeyValue("origin");
+			if(originStr == 0)
+				originStr = "";
+			const char *targetNameStr = entDef->getKeyValue("targetName");
+			if(targetNameStr == 0)
+				targetNameStr = "";
+			g_core->Print("G_SpawnEntDef: Failed to spawn class %s (origin='%s',targetname='%s')\n",
+				className,originStr,targetNameStr);
 			return 0;
 		}
 	}
