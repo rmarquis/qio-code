@@ -25,6 +25,7 @@ namespace mtrGenSimple
         private Thread getImageThread;
         private PictureBox curPb;
         private Random r = new Random();
+        private MaterialsSystem ms = new MaterialsSystem();
 
         public FormMtrGenSimple()
         {
@@ -179,322 +180,15 @@ namespace mtrGenSimple
             }
             cbMatFile.SelectedIndex = 0;
         }
-        class MaterialDef
-        {
-            private string matName;
-            // after mat name, before {
-            private int matDefStart;
-            private int matDefEnd;
-
-            public MaterialDef(string matName, int start, int end)
-            {
-                this.matName = matName;
-                this.matDefStart = start;
-                this.matDefEnd = end;
-
-              //  MessageBox.Show("New material name " + matName);
-            }
-            public int getStart()
-            {
-                return matDefStart;
-            }
-            public int getEnd()
-            {
-                return matDefEnd;
-            }
-            public string getName()
-            {
-                return matName;
-            }
-        }
-        class MtrFile
-        {
-            private string name;
-            private Parser p;
-            private List<MaterialDef> materials;
-
-            public string getName()
-            {
-                return name;
-            }
-            public List<MaterialDef> getDefs()
-            {
-                return materials;
-            }
-            public string getMaterialDefText(string name)
-            {
-                MaterialDef md = findMaterialDef(name);
-                if (md == null)
-                    return null;
-                string d = p.getData();
-                return d.Substring(md.getStart(), md.getEnd() - md.getStart());
-            }
-            public string getRawText()
-            {
-                return p.getData();
-            }
-            public MaterialDef findMaterialDef(string name)
-            {
-                foreach (MaterialDef md in materials)
-                {
-                    if (name.Equals(md.getName()))
-                    {
-                        return md;
-                    }
-                }
-                return null;
-            }
-            public void precacheMtrFile()
-            {
-                materials = new List<MaterialDef>();
-                p = new Parser();
-                p.beginParsingFile(name);
-                while (p.isAtEOF() == false)
-                {
-                    if (p.isAtToken("table"))
-                    {
-                        string tabName;
-                        p.readString(out tabName,"{");
-                        if (p.isAtToken("{", false) == false)
-                        {
-                            MessageBox.Show("Material file parse error.",
-                                "Expected '{' to follow table name " + tabName + " in mat file " + name + " at line " + p.getCurrentLineNumber(),
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Exclamation,
-                        MessageBoxDefaultButton.Button1);
-                            return; // error
-                        }
-                        p.skipCurlyBracedBlock();
-                    }
-                    else
-                    {
-                        string matName;
-                        p.skipWhiteSpaces();
-                        int start = p.getPos();
-                        p.readString(out matName, "{");
-                        if (p.isAtToken("{", false) == false)
-                        {
-                            MessageBox.Show("Material file parse error!",
-                                "Expected '{' to follow material name " + matName + " in mat file " + name + " at line " + p.getCurrentLineNumber(),
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Exclamation,
-                            MessageBoxDefaultButton.Button1);
-                            return; // error
-                        }
-                        p.skipCurlyBracedBlock();
-                        int end = p.getPos();
-                        materials.Add(new MaterialDef(matName, start, end));
-                    }
-                }
-            }
-            static int STR_SkipOf(string s, int at, string skip)
-            {
-                while(at < s.Length)
-                {
-                    char ch = s[at];
-                    if (skip.IndexOf(ch) == -1)
-                        return at;
-                    at++;
-                }
-                return at;
-            }
-            private int autoGenerateQerEditorImageLineForMaterial(String matName, int start, int end)
-            {
-                // get material text
-                String mtrText = p.getData().Substring(start, end - start);
-                // check is there already a qer_editorImage
-                if(mtrText.IndexOf("qer_editorImage", StringComparison.InvariantCultureIgnoreCase) != -1)
-                {
-                    return 0;
-                }
-                int br = mtrText.IndexOf('{');
-                if(br == -1)
-                {
-                    MessageBox.Show("Material parse error","Unexpected error - '{' not found in material text",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Exclamation,
-                        MessageBoxDefaultButton.Button1);
-                    return 0;
-                }
-                br++; // skip '{'
-                int at = STR_SkipOf(mtrText,br," \t");
-                at = STR_SkipOf(mtrText, at, "\n\r");
-                //string editorImageName = matName;
-                string editorImageName = findDiffuseMapValue(mtrText);
-                if(editorImageName == null)
-                {
-                    editorImageName = matName;
-                }
-                else
-                {
-                    int d = editorImageName.LastIndexOf('.');
-                    if(d != -1)
-                    {
-                        editorImageName = editorImageName.Substring(0, d);
-                    }
-                }
-                string textToInsert = "\tqer_editorImage " + editorImageName + "\r\n";
-                int insertedLen = textToInsert.Length;
-                p.setData(p.getData().Insert(start+at, textToInsert));
-                return insertedLen;
-            }
-            public static string findDiffuseMapValue(String materialText)
-            {
-                string s;
-                Parser p = new Parser();
-                p.beginParsingText(materialText);
-                while(p.isAtEOF()== false)
-                {
-                    if(p.isAtToken("diffusemap") || p.isAtToken("colormap"))
-                    {
-                        p.readToken(out s);
-                        return s;
-                    }
-                    else
-                    {
-                        p.readToken(out s);
-                    }
-                }
-                return null;
-            }
-            public void autoGenerateQerEditorImageLines()
-            {
-                int changedMaterialDefs = 0;
-                p = new Parser();
-                p.beginParsingFile(name);
-                while (p.isAtEOF() == false)
-                {
-                    if (p.isAtToken("table"))
-                    {
-                        string tabName;
-                        p.readString(out tabName, "{");
-                        if (p.isAtToken("{", false) == false)
-                        {
-                            MessageBox.Show("Material file parse error.","Expected '{' to follow table name " + tabName + " in mat file " + name,
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Exclamation,
-                            MessageBoxDefaultButton.Button1);
-                            return; // error
-                        }
-                        p.skipCurlyBracedBlock();
-                    }
-                    else
-                    {
-                        string matName;
-                        p.skipWhiteSpaces();
-                        int start = p.getPos();
-                        p.readString(out matName, "{");
-                        if (p.isAtToken("{", false) == false)
-                        {
-                            MessageBox.Show("Material file parse error", "Expected '{' to follow material name " + matName + " in mat file " + name,
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Exclamation,
-                        MessageBoxDefaultButton.Button1);
-                            return; // error
-                        }
-
-                        p.skipCurlyBracedBlock();
-                        int end = p.getPos();
-                        int insertedLen = autoGenerateQerEditorImageLineForMaterial(matName, start, end);
-                        if(insertedLen != 0)
-                        {
-                            changedMaterialDefs++;
-                        }
-                        // after generating end offset might have changed
-                        p.setPos(start);
-                        p.readString(out matName, "{");
-                        if (p.isAtToken("{", false) == false)
-                        {
-                            MessageBox.Show("Material file parse error.","Expected '{' to follow material name " + matName + " in mat file " + name,
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Exclamation,
-                        MessageBoxDefaultButton.Button1);
-                            return; // error
-                        }
-                        p.skipCurlyBracedBlock();
-                    }
-                }
-                // reload all material definitions
-                precacheMtrFile();
-                MessageBox.Show("Autogeneration done.",
-                    "Updated " + changedMaterialDefs + " material definitions out of " + materials.Count + " total.",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Exclamation,
-                        MessageBoxDefaultButton.Button1);
-            }
-            public MtrFile(String fname)
-            {
-                this.name = fname;
-                precacheMtrFile();
-            }
-        }
-        private List<MtrFile> matFiles;
-
-        private MaterialDef findMaterialDef(string name)
-        {
-            foreach (MtrFile f in matFiles)
-            {
-                MaterialDef md = f.findMaterialDef(name);
-                if (md != null)
-                    return md;
-            }
-            return null;
-        }
-        private bool materialExists(string name)
-        {
-            if (findMaterialDef(name) != null)
-                return true;
-            return false;
-        }
-        private MtrFile findMtrFile(string name)
-        {
-            if (matFiles == null)
-                return null;
-            foreach (MtrFile f in matFiles)
-            {
-                if(name.CompareTo(f.getName())==0)
-                {
-                    return f;
-                }
-            }
-            return null;
-        }
-        private void loadOrReloadMaterialFile(string name)
-        {
-            // see if its loaded
-            MtrFile f = findMtrFile(name);
-            if (f != null)
-            {
-                f.precacheMtrFile();
-                return;
-            }
-            // if not, load new
-            loadNewMtrFile(name);
-        }
-        private void loadNewMtrFile(string path)
-        {
-            try
-            {
-                MtrFile mf;
-                mf = new MtrFile(path);
-                matFiles.Add(mf);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Precache failed.","Failed to precache material file " + path,
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Exclamation,
-                        MessageBoxDefaultButton.Button1);
-            }
-        }
+ 
         private void PrecacheMaterialFiles()
         {
-            matFiles = new List<MtrFile>();
+            ms.clearAll();
             for (int i = 0; i < cbMatFile.Items.Count; i++)
             {
                 String name = cbMatFile.Items[i].ToString();
                 String path = getAbsoluteMaterialFilePath(name);
-                loadNewMtrFile(path);
+                ms.loadNewMtrFile(path);
             }
             cbMatFile_SelectedIndexChanged(null, null); // HACK
         }
@@ -775,7 +469,7 @@ namespace mtrGenSimple
                         MessageBoxDefaultButton.Button1);
                 return;
             }
-            if (materialExists(tbMatName.Text))
+            if (ms.materialExists(tbMatName.Text))
             {
                 MessageBox.Show("Name already used","Material with given name already exists. Please use different name.",
                         MessageBoxButtons.OK,
@@ -931,7 +625,7 @@ namespace mtrGenSimple
 
             MessageBox.Show("Material creation success.","Successfully added new material text to " + mtrFile + ". Generated text lenght: "+mtrText.Length+".");
 
-            loadOrReloadMaterialFile(mtrFile);
+            ms.loadOrReloadMaterialFile(mtrFile);
 
             sendCommandToGame("mat_refreshMaterialSourceFile " + getCurrentMatFileComboText());
             sendCommandToGame("cg_testMaterial " + tbMatName.Text);
@@ -1071,7 +765,7 @@ namespace mtrGenSimple
         private void cbMatFile_SelectedIndexChanged(object sender, EventArgs e)
         {
            string path = getCurrentMatFileNamePath();
-           MtrFile mf = findMtrFile(path);
+           MtrFile mf = ms.findMtrFile(path);
            cbMaterialsFromMatFile.Items.Clear();
            if (mf == null)
                return;
@@ -1088,7 +782,7 @@ namespace mtrGenSimple
         private void cbMaterialsFromMatFile_SelectedIndexChanged(object sender, EventArgs e)
         {
             string path = getCurrentMatFileNamePath();
-            MtrFile mf = findMtrFile(path);
+            MtrFile mf = ms.findMtrFile(path);
             if (mf == null)
                 return;
             string matName = cbMaterialsFromMatFile.Text;
@@ -1165,7 +859,7 @@ namespace mtrGenSimple
             }
 #else
             string path = getCurrentMatFileNamePath();
-            MtrFile f = findMtrFile(path);
+            MtrFile f = ms.findMtrFile(path);
             if(f == null)
             {
                 MessageBox.Show("Material file not precached","Material file must be precached or created first.",

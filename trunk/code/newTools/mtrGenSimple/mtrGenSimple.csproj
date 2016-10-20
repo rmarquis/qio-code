@@ -49,6 +49,15 @@
     <Compile Include="..\tShared\Parser.cs">
       <Link>Parser.cs</Link>
     </Compile>
+    <Compile Include="..\tShared\tMaterialsSystem\MaterialDef.cs">
+      <Link>MaterialDef.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\tMaterialsSystem\MaterialsSystem.cs">
+      <Link>MaterialsSystem.cs</Link>
+    </Compile>
+    <Compile Include="..\tShared\tMaterialsSystem\MtrFile.cs">
+      <Link>MtrFile.cs</Link>
+    </Compile>
     <Compile Include="..\tShared\tMath\AABB.cs">
       <Link>AABB.cs</Link>
     </Compile>
