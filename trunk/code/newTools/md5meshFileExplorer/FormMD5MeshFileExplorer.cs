@@ -88,6 +88,7 @@ namespace md5meshFileExplorer
                 MessageBox.Show("Failed to load .md5mesh file '" + name + "' - directory not found exception.");
                 return;
             }
+            this.md5model = nm;
             refreshTreeView();
         }
         private void exportObjFile(string fileName)
